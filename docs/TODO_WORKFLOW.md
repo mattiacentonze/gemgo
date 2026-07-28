@@ -1,9 +1,5 @@
 # Product TODO workflow
 
-The tourism team maintains product suggestions in the shared Google Doc:
-
-<https://docs.google.com/document/d/1AT6jVmsd7aX4V35q6NutOMTxYXD5F_pDo_8K4QE-v0w/edit?tab=t.0>
-
 ## Decision states
 
 1. **Open** — active text without strike-through.
