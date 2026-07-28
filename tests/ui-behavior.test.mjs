@@ -31,6 +31,31 @@ test("pin shell keeps a visible fallback and centers its logo", () => {
   assert.match(css, /\.gemgo-marker img[\s\S]*translateX\(-50%\)/);
 });
 
+test("map recovers its layout after returning from another SPA page", () => {
+  const source = read("app/components/DestinationMap.tsx");
+  assert.match(source, /new ResizeObserver/);
+  assert.match(source, /map\.invalidateSize/);
+  assert.match(source, /size\.width === 0 \|\| size\.height === 0/);
+});
+
+test("shared UI geometry keeps controls and cards aligned", () => {
+  const page = read("app/page.tsx");
+  const css = read("app/globals.css");
+  assert.match(page, /gemgo-logo-green\.svg\?v=2/);
+  assert.match(page, /aria-label="Open app settings"/);
+  assert.match(css, /\.quick-settings \{[\s\S]*repeat\(2, minmax\(0, 1fr\)\)/);
+  assert.match(
+    css,
+    /\.xp-pill,[\s\S]*\.header-actions \.outline-button[\s\S]*white-space: nowrap/,
+  );
+  assert.match(
+    css,
+    /\.destination-card \.destination-actions button:first-child[\s\S]*background: var\(--forest\)/,
+  );
+  assert.match(css, /\.map-credit \{[\s\S]*left: 8px/);
+  assert.match(css, /\.settings-backdrop \{[\s\S]*align-items: center/);
+});
+
 test("public destination data contains no private team fields", () => {
   const data = JSON.parse(read("app/data/destinations.json"));
   assert.equal(data.meta.schema, "public_demo_v1");
