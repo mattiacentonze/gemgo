@@ -23,12 +23,34 @@ Transient state is held in React. The MVP persists only presentation data in
 `localStorage`:
 
 - GemXP balance
+- append-only-style local GemXP history with reason, timestamp and resulting balance
+- one saved itinerary
 - simulated location
 - notification history and read state
 - one-time crowd-report and photo reward keys
 
 There is no shared account database yet. Consequently, state does not follow a
 user across devices and is not suitable for monetary rewards.
+
+## Reward vocabulary
+
+- **GemXP** represents participation and progress. It starts without
+  registration, stays local in the MVP and is not directly spendable.
+- **GemCredits** represents a future account-linked balance that can be
+  redeemed with partners. Only eligible, verified XP may be converted.
+
+The separation prevents the interface from implying that an unverified local
+browser balance already has monetary value. GemDeals never deduct GemXP.
+
+## Planner behaviour
+
+The automatic planner scores preferences, transport fit and estimated crowd
+conditions. A destination whose date-aware result is `Busy` is excluded from
+automatic plans. A user can still explicitly add a place from Explore; this is
+treated as an intentional choice and receives an off-peak suggested time.
+
+The “Why this plan?” panel exposes the main ranking inputs. The current plan can
+be saved locally and restored on the same device.
 
 ## Location trust model
 
