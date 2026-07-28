@@ -12,9 +12,25 @@ type Props = {
 };
 
 const crowdMeta = (popularity: number) => {
-  if (popularity >= 4) return { color: "#e2493f", label: "Usually busy" };
-  if (popularity >= 3) return { color: "#ee9b37", label: "Often moderate" };
-  return { color: "#35a66f", label: "Usually manageable" };
+  if (popularity >= 4) {
+    return {
+      color: "#e2493f",
+      label: "Usually busy",
+      logo: "/assets/gemgo-logo-red.svg",
+    };
+  }
+  if (popularity >= 3) {
+    return {
+      color: "#ee9b37",
+      label: "Often moderate",
+      logo: "/assets/gemgo-logo-orange.svg",
+    };
+  }
+  return {
+    color: "#35a66f",
+    label: "Usually manageable",
+    logo: "/assets/gemgo-logo.png",
+  };
 };
 
 export default function DestinationMap({
@@ -75,7 +91,7 @@ export default function DestinationMap({
         const active = destination.id === selected.id;
         const icon = L.divIcon({
           className: "gemgo-marker-shell",
-          html: `<span class="gemgo-marker${active ? " is-selected" : ""}" style="--marker-color:${crowd.color}"><b>GEMGO</b></span>`,
+          html: `<span class="gemgo-marker${active ? " is-selected" : ""}" style="--marker-color:${crowd.color}"><img src="${crowd.logo}" alt="" aria-hidden="true"></span>`,
           iconSize: [48, 52],
           iconAnchor: [24, 50],
           popupAnchor: [0, -46],
