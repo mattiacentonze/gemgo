@@ -14,10 +14,12 @@ test("map keeps small groups as pins and removes legacy marker titles", () => {
 });
 
 test("map logo SVGs are self-contained and cannot disappear behind blocked image references", () => {
+  const source = read("app/components/DestinationMap.tsx");
   for (const color of ["green", "orange", "red"]) {
     const logo = read(`public/assets/gemgo-logo-${color}.svg`);
     assert.match(logo, /href="data:image\/png;base64,/);
     assert.doesNotMatch(logo, /href="gemgo-logo\.png"/);
+    assert.match(source, new RegExp(`gemgo-logo-${color}\\.svg\\?v=2`));
   }
 });
 
