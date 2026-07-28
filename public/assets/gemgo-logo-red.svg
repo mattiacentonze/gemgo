@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 682" role="img" aria-labelledby="title">
+  <title id="title">GemGo logo — red crowd level</title>
+  <defs>
+    <filter id="red-palette" color-interpolation-filters="sRGB">
+      <feColorMatrix
+        type="matrix"
+        values="
+          0.20 1.02 0.06 0 0
+          0.02 0.16 0.01 0 0
+          0.02 0.09 0.05 0 0
+          0    0    0    1 0"
+      />
+    </filter>
+  </defs>
+  <image
+    href="gemgo-logo.png"
+    width="1024"
+    height="682"
+    preserveAspectRatio="xMidYMid meet"
+    filter="url(#red-palette)"
+  />
+</svg>
