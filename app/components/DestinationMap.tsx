@@ -29,7 +29,7 @@ const crowdMeta = (popularity: number): CrowdMeta => {
       clusterBackground: "#fff0ed",
       label: "Usually busy",
       level: "busy",
-      logo: "/assets/gemgo-logo-red.svg",
+      logo: "/assets/gemgo-logo-red.svg?v=2",
       rgb: [226, 73, 63],
     };
   }
@@ -39,7 +39,7 @@ const crowdMeta = (popularity: number): CrowdMeta => {
       clusterBackground: "#fff6e7",
       label: "Often moderate",
       level: "moderate",
-      logo: "/assets/gemgo-logo-orange.svg",
+      logo: "/assets/gemgo-logo-orange.svg?v=2",
       rgb: [238, 155, 55],
     };
   }
@@ -48,7 +48,7 @@ const crowdMeta = (popularity: number): CrowdMeta => {
     clusterBackground: "#ecf8f1",
     label: "Usually manageable",
     level: "manageable",
-    logo: "/assets/gemgo-logo-green.svg",
+    logo: "/assets/gemgo-logo-green.svg?v=2",
     rgb: [53, 166, 111],
   };
 };
