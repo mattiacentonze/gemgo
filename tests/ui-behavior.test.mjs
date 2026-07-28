@@ -7,9 +7,26 @@ const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf
 test("map keeps small groups as pins and removes legacy marker titles", () => {
   const source = read("app/components/DestinationMap.tsx");
   assert.match(source, /cluster\.destinations\.length <= 5/);
-  assert.match(source, /iconSize: \[34, 41\]/);
+  assert.match(source, /zoom >= 12 \? 0/);
+  assert.match(source, /iconSize: \[30, 36\]/);
   assert.doesNotMatch(source, /bindTooltip/);
   assert.match(source, /className = "crowd-veil"/);
+});
+
+test("map logo SVGs are self-contained and cannot disappear behind blocked image references", () => {
+  for (const color of ["green", "orange", "red"]) {
+    const logo = read(`public/assets/gemgo-logo-${color}.svg`);
+    assert.match(logo, /href="data:image\/png;base64,/);
+    assert.doesNotMatch(logo, /href="gemgo-logo\.png"/);
+  }
+});
+
+test("pin shell keeps a visible fallback and centers its logo", () => {
+  const css = read("app/globals.css");
+  assert.match(css, /\.gemgo-marker::before/);
+  assert.match(css, /\.gemgo-marker::after/);
+  assert.match(css, /\.gemgo-marker img[\s\S]*left: 50%/);
+  assert.match(css, /\.gemgo-marker img[\s\S]*translateX\(-50%\)/);
 });
 
 test("public destination data contains no private team fields", () => {
