@@ -9,7 +9,9 @@
 | Crowd label | Popularity, weekday, time and weather heuristics | Estimate | Not live occupancy and not Google Popular Times. |
 | User crowd report | Device-local rating after location gate | Local pilot signal | Not aggregated across users yet. |
 | GemDeals businesses | Public business websites | Real entities | Discount terms are mocked partnership concepts. |
-| GemXP and notifications | Browser storage | Local MVP data | No account sync or monetary value. |
+| GemXP, ledger and notifications | Browser storage | Local MVP data | No account sync or monetary value. |
+| GemCredits | Not issued in MVP | Future account data | Reserved for verified, redeemable rewards. |
+| Saved plan | Browser storage | Local MVP data | One plan, available only on the same device. |
 | Simulated location | Settings selection | Explicit mock | Presentation-only; always labelled. |
 
 ## Crowd data
@@ -23,3 +25,7 @@ official Places API. A production crowd layer therefore needs one or more of:
 - calibrated predictions from historical visits, calendar, weather and events.
 
 Every crowd result should expose its source, freshness and confidence.
+
+In Explore, the MVP therefore shows a categorical estimate for the selected
+trip date, names GemGo as the estimator and labels confidence as medium. It
+never presents the value as live occupancy.
