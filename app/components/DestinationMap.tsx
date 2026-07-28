@@ -158,7 +158,10 @@ export default function DestinationMap({
       destinationMarkersRef.current.clear();
 
       const zoom = map.getZoom();
-      const clusterRadius = zoom >= 14 ? 0 : Math.max(48, 88 - zoom * 4);
+      // Preserve normal pins for groups of five or fewer. At street-level zoom
+      // clustering is disabled entirely so expanding a cluster always ends in
+      // visible, individually selectable destinations.
+      const clusterRadius = zoom >= 12 ? 0 : Math.max(38, 80 - zoom * 4);
       const clusters: {
         destinations: Destination[];
         x: number;
@@ -194,9 +197,9 @@ export default function DestinationMap({
         const icon = L.divIcon({
           className: "gemgo-marker-shell",
           html: `<span class="gemgo-marker${isActive ? " is-selected" : ""}" style="--marker-color:${crowd.color}"><img src="${crowd.logo}" alt="" aria-hidden="true"></span>`,
-          iconSize: [34, 41],
-          iconAnchor: [17, 38],
-          popupAnchor: [0, -36],
+          iconSize: [30, 36],
+          iconAnchor: [15, 35],
+          popupAnchor: [0, -32],
         });
         const marker = L.marker([destination.lat, destination.lng], {
           icon,
@@ -259,7 +262,7 @@ export default function DestinationMap({
           );
           map.fitBounds(bounds, {
             animate: true,
-            maxZoom: Math.min(14, zoom + 3),
+            maxZoom: Math.min(12, zoom + 4),
             padding: [56, 56],
           });
         });
@@ -381,7 +384,7 @@ export default function DestinationMap({
       return;
     }
 
-    map.flyTo([selected.lat, selected.lng], Math.max(map.getZoom(), 11), {
+    map.flyTo([selected.lat, selected.lng], Math.max(map.getZoom(), 12), {
       duration: 0.7,
     });
   }, [selected]);
