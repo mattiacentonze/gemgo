@@ -7,17 +7,31 @@ import {
   BadgePercent,
   Bell,
   BellOff,
+  BookmarkPlus,
   Check,
+  CheckCircle2,
+  ChevronDown,
+  ChevronUp,
   Circle,
+  Clock3,
+  CloudSun,
   ExternalLink,
   Gem,
+  History,
+  Info,
   LoaderCircle,
   MapPin,
+  Navigation,
+  Route,
+  Save,
   Search,
   Send,
   Settings,
   Share2,
   Sparkles,
+  Undo2,
+  UserRoundCheck,
+  WalletCards,
   X,
 } from "lucide-react";
 import alpineData from "./data/destinations.json";
@@ -72,6 +86,20 @@ type GemNotification = {
   body: string;
   createdAt: string;
   read: boolean;
+};
+
+type PointEvent = {
+  id: string;
+  amount: number;
+  reason: string;
+  createdAt: string;
+  balanceAfter: number;
+  status: "local" | "verified";
+};
+
+type PlanUndo = {
+  previousPlan: PlanDay[];
+  message: string;
 };
 
 const fussenDestinations = [
@@ -280,6 +308,7 @@ const gemDeals = [
     region: "Füssen / Allgäu",
     category: "Bike-friendly hotel",
     offer: "Concept: late bike check-out + welcome drink",
+    creditCost: 25,
     url: "https://www.hotel-hechten.com/en/active/cycling-fussen-bavaria.html",
   },
   {
@@ -287,6 +316,7 @@ const gemDeals = [
     region: "Füssen / Allgäu",
     category: "Stay & cycle",
     offer: "Concept: e-bike rental bundle",
+    creditCost: 35,
     url: "https://www.ameroncollection.com/en/neuschwanstein-alpsee-resort-spa/discover-the-allgaeu-alps/cycling",
   },
   {
@@ -294,6 +324,7 @@ const gemDeals = [
     region: "Bavaria",
     category: "E-bike stay",
     offer: "Concept: charging + regional snack",
+    creditCost: 20,
     url: "https://die-gams.info/en/aktiv/",
   },
   {
@@ -301,6 +332,7 @@ const gemDeals = [
     region: "Valle d’Aosta",
     category: "Bike hotel",
     offer: "Concept: 10% GemGo pilot rate",
+    creditCost: 30,
     url: "https://www.hotelcomtesdechallant.com/en/offers/discover-the-aosta-valley-by-e-bike",
   },
   {
@@ -308,6 +340,7 @@ const gemDeals = [
     region: "Valle d’Aosta",
     category: "Eco stay · Cogne",
     offer: "Concept: local breakfast upgrade",
+    creditCost: 25,
     url: "https://ecobnb.com/IT-ao/hotel/eco-wellness-notre-maison/c0rl9",
   },
   {
@@ -315,6 +348,7 @@ const gemDeals = [
     region: "Valle d’Aosta",
     category: "Bike hotel",
     offer: "Concept: secure bike storage + aperitivo",
+    creditCost: 20,
     url: "https://www.crabunhotel.it/en/bike-hotel",
   },
 ];
@@ -325,6 +359,10 @@ const isoDate = (date: Date) =>
   ).padStart(2, "0")}`;
 
 const today = () => isoDate(new Date());
+
+const createId = () =>
+  globalThis.crypto?.randomUUID?.() ??
+  `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 
 const addDays = (dateString: string, offset: number) => {
   const date = new Date(`${dateString}T12:00:00`);
@@ -507,6 +545,12 @@ export default function Home() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [mockLocationId, setMockLocationId] = useState<string | null>(null);
   const [notifications, setNotifications] = useState<GemNotification[]>([]);
+  const [pointHistory, setPointHistory] = useState<PointEvent[]>([]);
+  const [planSaved, setPlanSaved] = useState(false);
+  const [planUndo, setPlanUndo] = useState<PlanUndo | null>(null);
+  const [planNotice, setPlanNotice] = useState("");
+  const [whyPlanOpen, setWhyPlanOpen] = useState(false);
+  const [howOpen, setHowOpen] = useState(false);
   const [notificationPermission, setNotificationPermission] = useState<
     NotificationPermission | "unsupported"
   >("default");
@@ -525,6 +569,37 @@ export default function Home() {
           setNotifications(JSON.parse(storedNotifications));
         } catch {
           window.localStorage.removeItem("gemgo-notifications");
+        }
+      }
+      const storedHistory = window.localStorage.getItem("gemgo-point-history");
+      if (storedHistory) {
+        try {
+          setPointHistory(JSON.parse(storedHistory));
+        } catch {
+          window.localStorage.removeItem("gemgo-point-history");
+        }
+      } else if (stored && Number(stored) > 0) {
+        const openingEvent: PointEvent = {
+          id: createId(),
+          amount: Number(stored),
+          reason: "Existing GemXP balance imported from this device.",
+          createdAt: new Date().toISOString(),
+          balanceAfter: Number(stored),
+          status: "local",
+        };
+        setPointHistory([openingEvent]);
+        window.localStorage.setItem("gemgo-point-history", JSON.stringify([openingEvent]));
+      }
+      const storedPlan = window.localStorage.getItem("gemgo-saved-plan");
+      if (storedPlan) {
+        try {
+          const restoredPlan = JSON.parse(storedPlan) as PlanDay[];
+          if (Array.isArray(restoredPlan) && restoredPlan.length > 0) {
+            setPlan(restoredPlan);
+            setPlanSaved(true);
+          }
+        } catch {
+          window.localStorage.removeItem("gemgo-saved-plan");
         }
       }
       setNotificationPermission(
@@ -564,11 +639,6 @@ export default function Home() {
     };
   }, []);
 
-  const setPoints = (value: number) => {
-    setXp(value);
-    window.localStorage.setItem("gemgo-xp", String(value));
-  };
-
   const persistNotifications = (items: GemNotification[]) => {
     setNotifications(items);
     window.localStorage.setItem("gemgo-notifications", JSON.stringify(items));
@@ -576,13 +646,17 @@ export default function Home() {
 
   const notify = (title: string, body: string) => {
     const item: GemNotification = {
-      id: crypto.randomUUID(),
+      id: createId(),
       title,
       body,
       createdAt: new Date().toISOString(),
       read: false,
     };
-    persistNotifications([item, ...notifications].slice(0, 100));
+    setNotifications((current) => {
+      const next = [item, ...current].slice(0, 100);
+      window.localStorage.setItem("gemgo-notifications", JSON.stringify(next));
+      return next;
+    });
     if ("Notification" in window && Notification.permission === "granted") {
       const options = {
         body,
@@ -601,7 +675,24 @@ export default function Home() {
   };
 
   const addPoints = (amount: number, reason: string) => {
-    setPoints(xp + amount);
+    setXp((current) => {
+      const nextBalance = Math.max(0, current + amount);
+      window.localStorage.setItem("gemgo-xp", String(nextBalance));
+      const entry: PointEvent = {
+        id: createId(),
+        amount,
+        reason,
+        createdAt: new Date().toISOString(),
+        balanceAfter: nextBalance,
+        status: "local",
+      };
+      setPointHistory((history) => {
+        const nextHistory = [entry, ...history].slice(0, 200);
+        window.localStorage.setItem("gemgo-point-history", JSON.stringify(nextHistory));
+        return nextHistory;
+      });
+      return nextBalance;
+    });
     notify(
       amount >= 0 ? `You earned ${amount} GemXP` : `${Math.abs(amount)} GemXP used`,
       reason,
@@ -650,38 +741,43 @@ export default function Home() {
       region === "All"
         ? destinations
         : destinations.filter((destination) => destination.region === region);
-    return scoped;
-  }, [region]);
+    if (!mockLocation) return scoped;
+    return [...scoped].sort(
+      (a, b) =>
+        haversineKm(mockLocation.lat, mockLocation.lng, a.lat, a.lng) -
+        haversineKm(mockLocation.lat, mockLocation.lng, b.lat, b.lng),
+    );
+  }, [mockLocation, region]);
+
+  const nearbyLabel = mockLocation ? "Near you" : "Places in this area";
+  const crowdForExplore = (destination: Destination) =>
+    getCrowd(destination, startDate, 1, true).crowd;
 
   const gemDropAlternative = useMemo(() => {
+    const currentPlace = mockLocation ?? selected;
     return destinations
       .filter(
         (destination) =>
-          destination.id !== selected.id &&
-          destination.region === selected.region &&
-          destination.popularity < selected.popularity,
+          destination.id !== currentPlace.id &&
+          destination.region === currentPlace.region &&
+          destination.popularity < currentPlace.popularity,
       )
       .sort(
         (a, b) =>
-          haversineKm(selected.lat, selected.lng, a.lat, a.lng) -
-          haversineKm(selected.lat, selected.lng, b.lat, b.lng),
+          haversineKm(currentPlace.lat, currentPlace.lng, a.lat, a.lng) -
+          haversineKm(currentPlace.lat, currentPlace.lng, b.lat, b.lng),
       )[0];
-  }, [selected]);
+  }, [mockLocation, selected]);
 
   const reportCrowd = () => {
-    if (!isAtSelectedPlace) {
-      setDropMessage(
-        `Location check required. Set your demo location to ${selected.name} in Settings, or select the place where your demo location is active.`,
-      );
-      return;
-    }
-    const reportKey = `gemgo-crowd-${selected.id}-${today()}`;
+    if (!mockLocation) return;
+    const reportKey = `gemgo-crowd-${mockLocation.id}-${today()}`;
     if (!window.localStorage.getItem(reportKey)) {
       window.localStorage.setItem(reportKey, String(crowdReport));
-      addPoints(10, `Crowd report saved for ${selected.name}.`);
+      addPoints(10, `Crowd report saved for ${mockLocation.name}.`);
     }
     setDropMessage(
-      `Demo-location report saved locally for ${selected.name}. +10 GemXP. ${
+      `Your report for ${mockLocation.name} was saved on this device. +10 GemXP. ${
         gemDropAlternative
           ? `${gemDropAlternative.name} is the calmer nearby GemDrop.`
           : "No lower-crowd alternative is available in this pilot area yet."
@@ -689,13 +785,7 @@ export default function Home() {
     );
   };
 
-  const unlockDeal = (dealName: string) => {
-    if (xp < 100) {
-      setUnlockedDeal(null);
-      window.alert(`You need ${100 - xp} more GemXP to preview this reward.`);
-      return;
-    }
-    addPoints(-100, `${dealName} pilot deal unlocked.`);
+  const previewDeal = (dealName: string) => {
     setUnlockedDeal(dealName);
   };
 
@@ -795,29 +885,29 @@ export default function Home() {
           nextTransport,
         ),
     );
-    const chosen = ranked.slice(0, Math.min(ranked.length, nextDays * 2));
+    const usedDestinationIds = new Set<string>();
     const newPlan: PlanDay[] = Array.from({ length: nextDays }, (_, dayIndex) => {
       const date = addDays(parsed.startDate ?? startDate, dayIndex);
       const dayWeather = weather.find((item) => item.date === date);
-      const dayStops = chosen
-        .slice(dayIndex * 2, dayIndex * 2 + 2)
-        .map((destination, stopIndex) => {
-          const travelMinutes = Math.max(
-            8,
-            Math.round((destination.distanceKm / speedByMode[nextTransport]) * 60),
-          );
-          return {
-            ...destination,
-            ...getCrowd(
-              destination,
-              date,
-              stopIndex,
-              nextAvoidCrowds,
-              dayWeather,
-            ),
-            travelMinutes,
-          };
-        });
+      const dayStops: Stop[] = [];
+      for (const destination of ranked) {
+        if (usedDestinationIds.has(destination.id)) continue;
+        const crowd = getCrowd(
+          destination,
+          date,
+          dayStops.length,
+          nextAvoidCrowds,
+          dayWeather,
+        );
+        if (crowd.crowd === "Busy") continue;
+        const travelMinutes = Math.max(
+          8,
+          Math.round((destination.distanceKm / speedByMode[nextTransport]) * 60),
+        );
+        dayStops.push({ ...destination, ...crowd, travelMinutes });
+        usedDestinationIds.add(destination.id);
+        if (dayStops.length === 2) break;
+      }
       return {
         date,
         weather: dayWeather,
@@ -828,6 +918,9 @@ export default function Home() {
       };
     });
     setPlan(newPlan);
+    setPlanSaved(false);
+    setPlanUndo(null);
+    setPlanNotice("Busy predictions were excluded from this itinerary.");
     if (newPlan[0]?.stops[0]) setSelected(newPlan[0].stops[0]);
     setLoading(false);
     window.setTimeout(() => {
@@ -857,6 +950,74 @@ export default function Home() {
     setAvoidCrowds(true);
     setRegion(parsed.region);
     if (parsed.startDate) setStartDate(parsed.startDate);
+  };
+
+  const savePlan = () => {
+    if (plan.length === 0) return;
+    window.localStorage.setItem("gemgo-saved-plan", JSON.stringify(plan));
+    setPlanSaved(true);
+    setPlanNotice("Plan saved on this device.");
+  };
+
+  const addDestinationToPlan = (destination: Destination) => {
+    if (plan.some((day) => day.stops.some((stop) => stop.id === destination.id))) {
+      setPlanNotice(`${destination.name} is already in your plan.`);
+      return;
+    }
+    const previousPlan = plan;
+    const date = plan[0]?.date ?? startDate;
+    const crowd = getCrowd(destination, date, 0, true);
+    const stop: Stop = {
+      ...destination,
+      ...crowd,
+      suggestedTime: crowd.crowd === "Busy" ? "08:00" : crowd.suggestedTime,
+      travelMinutes: Math.max(
+        8,
+        Math.round((destination.distanceKm / speedByMode[transport]) * 60),
+      ),
+    };
+    const nextPlan =
+      plan.length === 0
+        ? [
+            {
+              date,
+              stops: [stop],
+              distanceKm: Math.round(destination.distanceKm * 1.35),
+            },
+          ]
+        : plan.map((day, index) => {
+            const targetIndex = plan.reduce(
+              (shortest, current, currentIndex) =>
+                current.stops.length < plan[shortest].stops.length
+                  ? currentIndex
+                  : shortest,
+              0,
+            );
+            if (index !== targetIndex) return day;
+            const stops = [...day.stops, stop];
+            return {
+              ...day,
+              stops,
+              distanceKm: Math.round(
+                stops.reduce((total, item) => total + item.distanceKm, 0) * 1.35,
+              ),
+            };
+          });
+    setPlan(nextPlan);
+    setPlanSaved(false);
+    setPlanUndo({
+      previousPlan,
+      message: `${destination.name} added to My Plan.`,
+    });
+    setPlanNotice(`${destination.name} added to My Plan.`);
+  };
+
+  const undoPlanChange = () => {
+    if (!planUndo) return;
+    setPlan(planUndo.previousPlan);
+    setPlanSaved(false);
+    setPlanNotice("Last plan change undone.");
+    setPlanUndo(null);
   };
 
   const verifyLocation = () => {
@@ -1008,6 +1169,32 @@ export default function Home() {
             Bavaria, Füssen and Valle d’Aosta.
           </p>
 
+          <div className={howOpen ? "how-preview open" : "how-preview"}>
+            <button
+              type="button"
+              className="how-preview-toggle"
+              aria-expanded={howOpen}
+              onClick={() => setHowOpen((value) => !value)}
+            >
+              <span>
+                <Info aria-hidden="true" size={18} />
+                How GemGo works
+              </span>
+              {howOpen ? (
+                <ChevronUp aria-hidden="true" size={18} />
+              ) : (
+                <ChevronDown aria-hidden="true" size={18} />
+              )}
+            </button>
+            {howOpen && (
+              <div className="how-preview-steps">
+                <span><Search aria-hidden="true" size={16} />Describe your trip</span>
+                <span><CloudSun aria-hidden="true" size={16} />Compare weather and crowds</span>
+                <span><Route aria-hidden="true" size={16} />Get a quieter plan</span>
+              </div>
+            )}
+          </div>
+
           <form onSubmit={buildPlan} className="planner-form">
             <label htmlFor="trip-prompt">What would you like to do?</label>
             <div className="prompt-row">
@@ -1152,8 +1339,8 @@ export default function Home() {
             </a>
           </div>
           <p className="trust-note">
-            No sign-up. Crowd levels are transparent estimates, never exact
-            visitor counts.
+            No sign-up to plan or collect GemXP. An account is only needed later
+            to convert eligible XP into reward-ready GemCredits.
           </p>
         </div>
 
@@ -1189,7 +1376,12 @@ export default function Home() {
             />
           ) : (
             <div className="map-list">
-              <p className="eyebrow">Nearby places</p>
+              <p className="eyebrow">{nearbyLabel}</p>
+              <p className="map-list-context">
+                {mockLocation
+                  ? `Ordered by distance from ${mockLocation.name}.`
+                  : `Showing destinations in ${region === "All" ? "all pilot areas" : region}. Enable location to sort by distance.`}
+              </p>
               {visibleDestinations.map((destination) => (
                 <button
                   key={destination.id}
@@ -1203,7 +1395,14 @@ export default function Home() {
                     <small>{destination.kind}</small>
                   </span>
                   <span className="inline-icon">
-                    {destination.distanceKm} km
+                    {mockLocation
+                      ? `${haversineKm(
+                          mockLocation.lat,
+                          mockLocation.lng,
+                          destination.lat,
+                          destination.lng,
+                        ).toFixed(1)} km`
+                      : destination.region}
                     <ArrowRight aria-hidden="true" size={15} />
                   </span>
                 </button>
@@ -1233,20 +1432,91 @@ export default function Home() {
             </h2>
           </div>
           {plan.length > 0 && (
-            <div className="source-badges">
-              <span className={weatherSource === "live" ? "live" : ""}>
-                {weatherSource === "live" && (
-                  <Circle aria-hidden="true" size={8} fill="currentColor" />
-                )}
-                {weatherSource === "live" ? "Live weather" : "Weather unavailable"}
-              </span>
-              <span>
-                <Sparkles aria-hidden="true" size={14} />
-                Crowd: predicted
-              </span>
+            <div className="plan-tools">
+              <div className="source-badges">
+                <span className={weatherSource === "live" ? "live" : ""}>
+                  {weatherSource === "live" && (
+                    <Circle aria-hidden="true" size={8} fill="currentColor" />
+                  )}
+                  {weatherSource === "live" ? "Live weather" : "Weather unavailable"}
+                </span>
+                <span>
+                  <Sparkles aria-hidden="true" size={14} />
+                  Crowd: predicted
+                </span>
+              </div>
+              <div className="plan-actions">
+                <button
+                  type="button"
+                  className="outline-button compact"
+                  aria-expanded={whyPlanOpen}
+                  onClick={() => setWhyPlanOpen((value) => !value)}
+                >
+                  <Info aria-hidden="true" size={16} />
+                  Why this plan?
+                </button>
+                <button
+                  type="button"
+                  className={planSaved ? "save-plan-button saved" : "save-plan-button"}
+                  onClick={savePlan}
+                >
+                  {planSaved ? (
+                    <CheckCircle2 aria-hidden="true" size={16} />
+                  ) : (
+                    <Save aria-hidden="true" size={16} />
+                  )}
+                  {planSaved ? "Saved" : "Save plan"}
+                </button>
+              </div>
             </div>
           )}
         </div>
+
+        {plan.length > 0 && whyPlanOpen && (
+          <div className="why-plan-panel">
+            <div>
+              <Sparkles aria-hidden="true" size={19} />
+              <strong>Preference match</strong>
+              <span>
+                {interests.length
+                  ? `Prioritised ${interests.join(", ").toLowerCase()}.`
+                  : "Balanced across the selected pilot area."}
+              </span>
+            </div>
+            <div>
+              <UserRoundCheck aria-hidden="true" size={19} />
+              <strong>Busy places removed</strong>
+              <span>Automatic suggestions marked Busy are excluded, not merely ranked lower.</span>
+            </div>
+            <div>
+              <CloudSun aria-hidden="true" size={19} />
+              <strong>Conditions checked</strong>
+              <span>
+                {weatherSource === "live"
+                  ? "Forecast, date and weekday affect the schedule."
+                  : "Date and weekday are used; live weather was unavailable."}
+              </span>
+            </div>
+            <div>
+              <Navigation aria-hidden="true" size={19} />
+              <strong>Route fit</strong>
+              <span>{transportLabels[transport]} travel and off-peak times shape each day.</span>
+            </div>
+          </div>
+        )}
+
+        {planNotice && (
+          <div className="plan-notice" role="status">
+            <CheckCircle2 aria-hidden="true" size={17} />
+            <span>{planNotice}</span>
+            {planUndo && (
+              <button type="button" onClick={undoPlanChange}>
+                <Undo2 aria-hidden="true" size={15} />
+                Undo
+              </button>
+            )}
+          </div>
+        )}
 
         {plan.length > 0 ? (
           <div className="plan-grid">
@@ -1339,23 +1609,35 @@ export default function Home() {
               <span>{destination.kind}</span>
               <small>{destination.region}</small>
               <h3>{destination.name}</h3>
+              <div className={`explore-crowd crowd-${crowdForExplore(destination).toLowerCase()}`}>
+                <span>{crowdForExplore(destination)}</span>
+                <small>
+                  GemGo estimate for {formatDate(startDate)} · medium confidence
+                </small>
+              </div>
               <p>{destination.description}</p>
               <div className="destination-tags">
                 {destination.tags.slice(0, 3).map((tag, tagIndex) => (
                   <small key={`${destination.id}-${tag}-${tagIndex}`}>{tag}</small>
                 ))}
               </div>
-              <button
-                onClick={() => {
-                  setSelected(destination);
-                  document
-                    .querySelector(".map-panel")
-                    ?.scrollIntoView({ behavior: "smooth" });
-                }}
-              >
-                View on map
-                <ArrowRight aria-hidden="true" size={15} />
-              </button>
+              <div className="destination-actions">
+                <button onClick={() => addDestinationToPlan(destination)}>
+                  <BookmarkPlus aria-hidden="true" size={15} />
+                  Add to plan
+                </button>
+                <button
+                  onClick={() => {
+                    setSelected(destination);
+                    document
+                      .querySelector(".map-panel")
+                      ?.scrollIntoView({ behavior: "smooth" });
+                  }}
+                >
+                  View on map
+                  <ArrowRight aria-hidden="true" size={15} />
+                </button>
+              </div>
             </article>
           ))}
         </div>
@@ -1393,6 +1675,15 @@ export default function Home() {
               medium confidence—not invented real-time counts.
             </p>
           </article>
+          <article>
+            <span>04</span>
+            <h3>Earn now, redeem later</h3>
+            <p>
+              GemXP records participation without sign-up. If you later want
+              real rewards, an account links eligible verified XP and converts
+              it into spendable GemCredits.
+            </p>
+          </article>
         </div>
       </section>
 
@@ -1409,13 +1700,9 @@ export default function Home() {
         </div>
         <div className="feature-grid">
           {mockLocation && <article className="drop-control-card">
-            <div className={`location-status ${isAtSelectedPlace ? "matched" : ""}`}>
+            <div className="location-status matched">
               <span>Your current location</span>
               <strong>{mockLocation.name}</strong>
-              <button onClick={() => setSettingsOpen(true)}>
-                <Settings aria-hidden="true" size={14} />
-                Settings
-              </button>
             </div>
             <label className="crowd-slider">
               <span>How crowded does it feel? {crowdReport}/5</span>
@@ -1443,8 +1730,8 @@ export default function Home() {
                 <div className="drop-stats">
                   <span>
                     {haversineKm(
-                      selected.lat,
-                      selected.lng,
+                      (mockLocation ?? selected).lat,
+                      (mockLocation ?? selected).lng,
                       gemDropAlternative.lat,
                       gemDropAlternative.lng,
                     ).toFixed(1)}{" "}
@@ -1468,17 +1755,33 @@ export default function Home() {
 
       <section className="gems-section page-section points-only" id="gems">
         <div className="gems-copy">
-          <p className="eyebrow">GemPoints pilot</p>
-          <h2>Reward better travel without pretending a photo proves the journey.</h2>
+          <p className="eyebrow">GemXP + GemCredits</p>
+          <h2>Progress first. Real rewards only when you choose them.</h2>
           <p>
-            The MVP separates a location check-in from a photo contribution.
-            GPS can support presence; it cannot prove whether you arrived by
-            bike, bus or car.
+            Planning and earning GemXP never require an account. An account is
+            requested only when you decide to convert eligible, verified XP
+            into GemCredits for real rewards.
           </p>
-          <div className="xp-total">
-            <span>Your local pilot balance</span>
-            <strong>{xp} GemXP</strong>
-            <small>Stored only on this device · no monetary value</small>
+          <div className="balance-grid">
+            <article className="balance-card xp-balance">
+              <Gem aria-hidden="true" size={20} />
+              <span>Your progress</span>
+              <strong>{xp} GemXP</strong>
+              <small>Starts immediately · local to this device · not spendable</small>
+            </article>
+            <article className="balance-card credit-balance">
+              <WalletCards aria-hidden="true" size={20} />
+              <span>Reward-ready balance</span>
+              <strong>0 GemCredits</strong>
+              <small>Account-linked · only verified XP can become credits</small>
+            </article>
+          </div>
+          <div className="conversion-flow" aria-label="How XP becomes GemCredits">
+            <div><span>1</span><strong>Earn GemXP</strong><small>No registration needed</small></div>
+            <ArrowRight aria-hidden="true" size={16} />
+            <div><span>2</span><strong>Verify & link</strong><small>Only when you want rewards</small></div>
+            <ArrowRight aria-hidden="true" size={16} />
+            <div><span>3</span><strong>Get GemCredits</strong><small>Redeem with real partners</small></div>
           </div>
           <div className="earn-list">
             <span><strong>+60</strong> verified recommended visit</span>
@@ -1526,6 +1829,45 @@ export default function Home() {
             </div>
           )}
         </div>
+        <div className="points-history">
+          <div className="points-history-heading">
+            <div>
+              <History aria-hidden="true" size={20} />
+              <div>
+                <h3>GemXP history</h3>
+                <p>Every local movement includes its reason, time and resulting balance.</p>
+              </div>
+            </div>
+            <span>{pointHistory.length} {pointHistory.length === 1 ? "entry" : "entries"}</span>
+          </div>
+          {pointHistory.length === 0 ? (
+            <div className="empty-history">
+              <Clock3 aria-hidden="true" size={26} />
+              <p>Your first check-in, crowd report or visit photo will appear here.</p>
+            </div>
+          ) : (
+            <ol>
+              {pointHistory.map((entry) => (
+                <li key={entry.id}>
+                  <span className={entry.amount >= 0 ? "point-amount positive" : "point-amount negative"}>
+                    {entry.amount >= 0 ? "+" : ""}
+                    {entry.amount} XP
+                  </span>
+                  <span className="point-reason">
+                    <strong>{entry.reason}</strong>
+                    <time>
+                      {new Intl.DateTimeFormat("en", {
+                        dateStyle: "medium",
+                        timeStyle: "short",
+                      }).format(new Date(entry.createdAt))}
+                    </time>
+                  </span>
+                  <span className="point-balance">{entry.balanceAfter} XP balance</span>
+                </li>
+              ))}
+            </ol>
+          )}
+        </div>
       </section>
 
       <section className="feature-section deals-section page-section deals-only" id="deals">
@@ -1535,8 +1877,9 @@ export default function Home() {
             <h2>Real local businesses, concept partnerships for now.</h2>
           </div>
           <p>
-            Each preview costs 100 GemXP. Business names and links are real;
-            discount terms are mock pilot proposals, not active offers.
+            GemXP is never spent directly. Future verified XP becomes
+            GemCredits, which can unlock partner rewards. Business names and
+            links are real; these terms are mock pilot proposals.
           </p>
         </div>
         <div className="deal-filters" aria-label="Filter GemDeals">
@@ -1563,11 +1906,11 @@ export default function Home() {
                 <p>
                   {unlockedDeal === deal.name
                     ? deal.offer
-                    : "Unlock the pilot collaboration preview with GemXP."}
+                    : `A future reward concept for ${deal.creditCost} GemCredits.`}
                 </p>
                 <div className="deal-actions">
-                  <button onClick={() => unlockDeal(deal.name)}>
-                    {unlockedDeal === deal.name ? "Unlocked" : "Unlock · 100 XP"}
+                  <button onClick={() => previewDeal(deal.name)}>
+                    {unlockedDeal === deal.name ? "Concept shown" : "Preview concept"}
                   </button>
                   <a href={deal.url} target="_blank" rel="noreferrer">
                     Real business
