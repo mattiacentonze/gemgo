@@ -29,5 +29,10 @@ test("renders development preview metadata", async () => {
     response.headers.get("content-type") ?? "",
     /^text\/html\b/i,
   );
-  assert.match(await response.text(), developmentPreviewMeta);
+  const html = await response.text();
+  assert.match(html, developmentPreviewMeta);
+  assert.match(html, /How GemGo works/i);
+  assert.match(html, /Add to plan/i);
+  assert.match(html, /GemCredits/i);
+  assert.match(html, /GemXP history/i);
 });
