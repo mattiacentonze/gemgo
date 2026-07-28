@@ -15,10 +15,15 @@ Live MVP: [gemgo-mvp.aloneeagle.chatgpt.site](https://gemgo-mvp.aloneeagle.chatg
 - strict exclusion of automatically predicted `Busy` stops
 - explainable recommendations, Explore-to-plan additions, undo and local plan saving
 - live Open-Meteo forecasts
-- interactive OpenStreetMap map with zoom-aware marker clustering
+- interactive OpenStreetMap map with zoom-aware marker clustering only when
+  more than five markers are too close
 - proportional cluster circles colored by their dominant crowd category
-- cropped green, orange and red GemGo logo markers with first-tap popups
-- optional crowd layer
+- compact green, orange and red GemGo logo markers with first-tap, horizontal
+  popups
+- optional map-anchored crowd veil with blended, compact influence areas
+- deduplicated destination tags
+- smooth plan handoff, two-second action toasts, contextual undo and optional
+  subtle action sounds
 - SPA navigation for Explore, GemDrop, GemPoints, GemDeals and notifications
 - real or explicitly simulated location checks for MVP presentations
 - device-local GemXP ledger, notification history, check-ins and photo previews
@@ -54,8 +59,8 @@ checking the rendered HTML.
 
 ```text
 app/
-  components/DestinationMap.tsx  Leaflet clusters, logo markers and popups
-  data/destinations.json         shared GemGo pilot destination dataset
+  components/DestinationMap.tsx  Leaflet clusters, logo markers, veil and popups
+  data/destinations.json         public-safe place names and coordinates
   page.tsx                       client-side application and feature flows
   globals.css                    responsive visual system
 public/
@@ -88,10 +93,9 @@ See [docs/DATA_SOURCES.md](docs/DATA_SOURCES.md) for the complete inventory.
 
 ## Product TODOs
 
-Product suggestions are reviewed from the shared Google Doc before being
-implemented. Items are not deleted: after a decision and the corresponding
-work, they are struck through so collaborators retain the history. See
-[docs/TODO_WORKFLOW.md](docs/TODO_WORKFLOW.md).
+Product suggestions are reviewed in a private backlog before implementation.
+Private links and source text are never copied into this public repository.
+See [docs/TODO_WORKFLOW.md](docs/TODO_WORKFLOW.md).
 
 ## Deployment
 
