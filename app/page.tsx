@@ -1,6 +1,13 @@
 "use client";
 
-import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from "react";
+import {
+  ChangeEvent,
+  FormEvent,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -31,6 +38,8 @@ import {
   Sparkles,
   Undo2,
   UserRoundCheck,
+  Volume2,
+  VolumeX,
   WalletCards,
   X,
 } from "lucide-react";
@@ -100,6 +109,13 @@ type PointEvent = {
 type PlanUndo = {
   previousPlan: PlanDay[];
   message: string;
+};
+
+type ActionToast = {
+  id: string;
+  message: string;
+  tone: "success" | "info" | "error";
+  undo?: () => void;
 };
 
 const fussenDestinations = [
@@ -217,11 +233,6 @@ type AlpineSource = {
   latitude: number;
   longitude: number;
   destination_type: string;
-  popularity_score: number;
-  hidden_gem_score: number;
-  sustainability_score: number;
-  description: string;
-  tags: string[];
 };
 
 const sourceDistanceKm = (
@@ -241,13 +252,45 @@ const sourceDistanceKm = (
   return 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 };
 
+const normalizedTags = (tags: string[]) =>
+  Array.from(
+    new Set(
+      tags.map((tag) => {
+        if (/lake|water|swim/i.test(tag)) return "Lakes";
+        if (/culture|heritage|castle|village/i.test(tag)) return "Culture";
+        if (/view|photo|scenic/i.test(tag)) return "Views";
+        if (/nature|forest|park|wildlife|hiking/i.test(tag)) return "Nature";
+        return tag;
+      }),
+    ),
+  );
+
+const publicDemoTags = (place: AlpineSource) => {
+  const kind = place.destination_type.toLowerCase();
+  const tags = [
+    /lake|reservoir/.test(kind) ? "Lakes" : "",
+    /castle|cultural|historic|archaeological|heritage|monastery/.test(kind)
+      ? "Culture"
+      : "",
+    /view|route|mountain|pass|hill/.test(kind) ? "Views" : "",
+    /nature|valley|wetland|trail|reserve/.test(kind) ? "Nature" : "",
+  ].filter(Boolean);
+  return tags.length > 0 ? tags : ["Local places"];
+};
+
+const publicDemoPopularity = (place: AlpineSource) => {
+  const idNumber = Number(place.id.match(/\d+/)?.[0] ?? 1);
+  const kind = place.destination_type.toLowerCase();
+  const base = 2 + (idNumber % 3);
+  return Math.min(5, base + (/castle|fortified/.test(kind) ? 1 : 0));
+};
+
 const alpineDestinations: Destination[] = (
   alpineData.destinations as AlpineSource[]
 ).map((place) => ({
   id: place.id,
   name: place.name,
   kind: place.destination_type,
-  description: place.description,
   lat: place.latitude,
   lng: place.longitude,
   distanceKm: Math.max(
@@ -262,18 +305,13 @@ const alpineDestinations: Destination[] = (
     ),
   ),
   visitMinutes: 90,
-  popularity: Math.max(1, Math.round(place.popularity_score * 5)),
+  popularity: publicDemoPopularity(place),
   difficulty:
-    place.tags.some((tag) => /mountain|hiking|alpine|climb/i.test(tag))
+    /mountain|trail|pass|hill|valley/i.test(place.destination_type)
       ? "Moderate"
       : "Easy",
-  tags: place.tags.map((tag) => {
-    if (/lake|water|swim/i.test(tag)) return "Lakes";
-    if (/culture|heritage|castle|village/i.test(tag)) return "Culture";
-    if (/view|photo|scenic/i.test(tag)) return "Views";
-    if (/nature|forest|park|wildlife|hiking/i.test(tag)) return "Nature";
-    return tag;
-  }),
+  tags: normalizedTags(publicDemoTags(place)),
+  description: `Explore ${place.name}, a ${place.destination_type.toLowerCase()} in ${place.region}, with crowd-aware timing and lower-impact route options.`,
   region: place.region === "Bavaria" ? "Bavaria" : "Valle d’Aosta",
 }));
 
@@ -551,6 +589,11 @@ export default function Home() {
   const [planNotice, setPlanNotice] = useState("");
   const [whyPlanOpen, setWhyPlanOpen] = useState(false);
   const [howOpen, setHowOpen] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(true);
+  const [toast, setToast] = useState<ActionToast | null>(null);
+  const [justAddedId, setJustAddedId] = useState<string | null>(null);
+  const toastTimerRef = useRef<number | null>(null);
+  const highlightTimerRef = useRef<number | null>(null);
   const [notificationPermission, setNotificationPermission] = useState<
     NotificationPermission | "unsupported"
   >("default");
@@ -563,6 +606,7 @@ export default function Home() {
       if (storedLocation && destinations.some((item) => item.id === storedLocation)) {
         setMockLocationId(storedLocation);
       }
+      setSoundEnabled(window.localStorage.getItem("gemgo-sound") !== "off");
       const storedNotifications = window.localStorage.getItem("gemgo-notifications");
       if (storedNotifications) {
         try {
@@ -639,9 +683,101 @@ export default function Home() {
     };
   }, []);
 
+  useEffect(
+    () => () => {
+      if (toastTimerRef.current) window.clearTimeout(toastTimerRef.current);
+      if (highlightTimerRef.current) {
+        window.clearTimeout(highlightTimerRef.current);
+      }
+    },
+    [],
+  );
+
   const persistNotifications = (items: GemNotification[]) => {
     setNotifications(items);
     window.localStorage.setItem("gemgo-notifications", JSON.stringify(items));
+  };
+
+  const playActionSound = (tone: ActionToast["tone"]) => {
+    if (!soundEnabled) return;
+    try {
+      const AudioContextClass =
+        window.AudioContext ??
+        (
+          window as typeof window & {
+            webkitAudioContext?: typeof AudioContext;
+          }
+        ).webkitAudioContext;
+      if (!AudioContextClass) return;
+      const context = new AudioContextClass();
+      const gain = context.createGain();
+      const now = context.currentTime;
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.exponentialRampToValueAtTime(0.035, now + 0.012);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.2);
+      gain.connect(context.destination);
+
+      const frequencies =
+        tone === "success" ? [660, 880] : tone === "error" ? [330, 245] : [520];
+      frequencies.forEach((frequency, index) => {
+        const oscillator = context.createOscillator();
+        oscillator.type = "sine";
+        oscillator.frequency.setValueAtTime(frequency, now + index * 0.045);
+        oscillator.connect(gain);
+        oscillator.start(now + index * 0.045);
+        oscillator.stop(now + 0.19);
+      });
+      window.setTimeout(() => context.close().catch(() => {}), 260);
+    } catch {
+      // Audio feedback is optional and must never block an action.
+    }
+  };
+
+  const showToast = (
+    message: string,
+    tone: ActionToast["tone"] = "info",
+    undo?: () => void,
+  ) => {
+    if (toastTimerRef.current) window.clearTimeout(toastTimerRef.current);
+    setToast({ id: createId(), message, tone, undo });
+    playActionSound(tone);
+    toastTimerRef.current = window.setTimeout(() => {
+      setToast(null);
+      toastTimerRef.current = null;
+    }, 2000);
+  };
+
+  const setSoundPreference = (enabled: boolean) => {
+    setSoundEnabled(enabled);
+    window.localStorage.setItem("gemgo-sound", enabled ? "on" : "off");
+    if (enabled) {
+      window.setTimeout(() => {
+        try {
+          const AudioContextClass =
+            window.AudioContext ??
+            (
+              window as typeof window & {
+                webkitAudioContext?: typeof AudioContext;
+              }
+            ).webkitAudioContext;
+          if (!AudioContextClass) return;
+          const context = new AudioContextClass();
+          const oscillator = context.createOscillator();
+          const gain = context.createGain();
+          oscillator.frequency.value = 720;
+          gain.gain.setValueAtTime(0.025, context.currentTime);
+          gain.gain.exponentialRampToValueAtTime(
+            0.0001,
+            context.currentTime + 0.13,
+          );
+          oscillator.connect(gain);
+          gain.connect(context.destination);
+          oscillator.start();
+          oscillator.stop(context.currentTime + 0.13);
+          window.setTimeout(() => context.close().catch(() => {}), 180);
+        } catch {}
+      }, 0);
+    }
   };
 
   const notify = (title: string, body: string) => {
@@ -697,6 +833,10 @@ export default function Home() {
       amount >= 0 ? `You earned ${amount} GemXP` : `${Math.abs(amount)} GemXP used`,
       reason,
     );
+    showToast(
+      amount >= 0 ? `+${amount} GemXP` : `${amount} GemXP`,
+      amount >= 0 ? "success" : "info",
+    );
   };
 
   const requestNotifications = async () => {
@@ -728,9 +868,13 @@ export default function Home() {
     if (id) {
       window.localStorage.setItem("gemgo-demo-location", id);
       const destination = destinations.find((item) => item.id === id);
-      if (destination) setSelected(destination);
+      if (destination) {
+        setSelected(destination);
+        showToast(`Location set to ${destination.name}`, "success");
+      }
     } else {
       window.localStorage.removeItem("gemgo-demo-location");
+      showToast("Real device location restored", "info");
     }
   };
 
@@ -787,6 +931,7 @@ export default function Home() {
 
   const previewDeal = (dealName: string) => {
     setUnlockedDeal(dealName);
+    showToast(`${dealName} concept opened`, "info");
   };
 
   const routeLink = (destination: Destination) => {
@@ -957,6 +1102,7 @@ export default function Home() {
     window.localStorage.setItem("gemgo-saved-plan", JSON.stringify(plan));
     setPlanSaved(true);
     setPlanNotice("Plan saved on this device.");
+    showToast("Plan saved on this device", "success");
   };
 
   const addDestinationToPlan = (destination: Destination) => {
@@ -1010,6 +1156,27 @@ export default function Home() {
       message: `${destination.name} added to My Plan.`,
     });
     setPlanNotice(`${destination.name} added to My Plan.`);
+    setJustAddedId(destination.id);
+    if (highlightTimerRef.current) {
+      window.clearTimeout(highlightTimerRef.current);
+    }
+    highlightTimerRef.current = window.setTimeout(() => {
+      setJustAddedId(null);
+      highlightTimerRef.current = null;
+    }, 950);
+    showToast(`${destination.name} added to Your plan`, "success", () => {
+      setPlan(previousPlan);
+      setPlanSaved(false);
+      setPlanUndo(null);
+      setPlanNotice("Last plan change undone.");
+      setJustAddedId(null);
+    });
+    window.setTimeout(() => {
+      document.getElementById("trip-plan")?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }, 70);
   };
 
   const undoPlanChange = () => {
@@ -1018,6 +1185,7 @@ export default function Home() {
     setPlanSaved(false);
     setPlanNotice("Last plan change undone.");
     setPlanUndo(null);
+    showToast("Plan change undone", "info");
   };
 
   const verifyLocation = () => {
@@ -1111,6 +1279,7 @@ export default function Home() {
       if (navigator.share) await navigator.share(shareData);
       else await navigator.clipboard.writeText(window.location.href);
       setShareLabel(navigator.share ? "Shared" : "Link copied");
+      showToast(navigator.share ? "GemGo shared" : "Link copied", "success");
       window.setTimeout(() => setShareLabel("Share MVP"), 1800);
     } catch {
       setShareLabel("Share MVP");
@@ -1158,6 +1327,38 @@ export default function Home() {
           </button>
         </div>
       </header>
+
+      {toast && (
+        <div
+          className={`action-toast toast-${toast.tone}`}
+          role="status"
+          aria-live="polite"
+          key={toast.id}
+        >
+          {toast.tone === "success" ? (
+            <CheckCircle2 aria-hidden="true" size={17} />
+          ) : (
+            <Info aria-hidden="true" size={17} />
+          )}
+          <span>{toast.message}</span>
+          {toast.undo && (
+            <button
+              type="button"
+              onClick={() => {
+                toast.undo?.();
+                if (toastTimerRef.current) {
+                  window.clearTimeout(toastTimerRef.current);
+                  toastTimerRef.current = null;
+                }
+                setToast(null);
+              }}
+            >
+              <Undo2 aria-hidden="true" size={14} />
+              Undo
+            </button>
+          )}
+        </div>
+      )}
 
       <section className="hero home-only" id="top">
         <div className="planner-panel">
@@ -1361,7 +1562,14 @@ export default function Home() {
             <button
               className={showCrowdLayer ? "active crowd-toggle" : "crowd-toggle"}
               aria-pressed={showCrowdLayer}
-              onClick={() => setShowCrowdLayer((value) => !value)}
+              onClick={() => {
+                const next = !showCrowdLayer;
+                setShowCrowdLayer(next);
+                showToast(
+                  next ? "Crowd veil enabled" : "Crowd veil hidden",
+                  "info",
+                );
+              }}
             >
               Crowds
             </button>
@@ -1521,7 +1729,15 @@ export default function Home() {
         {plan.length > 0 ? (
           <div className="plan-grid">
             {plan.map((day, index) => (
-              <article className="day-card" key={day.date}>
+              <article
+                className={
+                  justAddedId &&
+                  day.stops.some((stop) => stop.id === justAddedId)
+                    ? "day-card just-updated"
+                    : "day-card"
+                }
+                key={day.date}
+              >
                 <div className="day-header">
                   <div>
                     <span>Day {index + 1}</span>
@@ -1592,9 +1808,9 @@ export default function Home() {
             <h2>Local places, not a generic bucket list.</h2>
           </div>
           <p>
-            {destinations.length} pilot destinations from the shared GemGo
-            dataset, including Bavaria, Valle d’Aosta and Füssen. Select one to
-            inspect it on the map.
+            {destinations.length} public-safe pilot destinations across
+            Bavaria, Valle d’Aosta and Füssen. Select one to inspect it on the
+            map.
           </p>
         </div>
         <div className="destination-grid">
@@ -1617,9 +1833,11 @@ export default function Home() {
               </div>
               <p>{destination.description}</p>
               <div className="destination-tags">
-                {destination.tags.slice(0, 3).map((tag, tagIndex) => (
-                  <small key={`${destination.id}-${tag}-${tagIndex}`}>{tag}</small>
-                ))}
+                {Array.from(new Set(destination.tags))
+                  .slice(0, 3)
+                  .map((tag) => (
+                    <small key={`${destination.id}-${tag}`}>{tag}</small>
+                  ))}
               </div>
               <div className="destination-actions">
                 <button onClick={() => addDestinationToPlan(destination)}>
@@ -2028,7 +2246,7 @@ export default function Home() {
             onMouseDown={(event) => event.stopPropagation()}
           >
             <div className="settings-heading">
-              <div><p className="eyebrow">MVP presentation mode</p><h2 id="settings-title">Location settings</h2></div>
+              <div><p className="eyebrow">MVP presentation mode</p><h2 id="settings-title">App settings</h2></div>
               <button aria-label="Close settings" onClick={() => setSettingsOpen(false)}>
                 <X aria-hidden="true" size={21} />
               </button>
@@ -2051,6 +2269,31 @@ export default function Home() {
                 ))}
               </select>
             </label>
+            <div className="sound-setting">
+              <span className="sound-setting-icon">
+                {soundEnabled ? (
+                  <Volume2 aria-hidden="true" size={20} />
+                ) : (
+                  <VolumeX aria-hidden="true" size={20} />
+                )}
+              </span>
+              <span>
+                <strong>Action sounds</strong>
+                <small>Short, subtle feedback for rewards and confirmations.</small>
+              </span>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={soundEnabled}
+                className={soundEnabled ? "sound-switch on" : "sound-switch"}
+                onClick={() => setSoundPreference(!soundEnabled)}
+              >
+                <span />
+                <span className="sr-only">
+                  {soundEnabled ? "Disable action sounds" : "Enable action sounds"}
+                </span>
+              </button>
+            </div>
             {mockLocation && (
               <div className="demo-location-card">
                 <span>Demo location active</span>
