@@ -12,11 +12,14 @@ Live MVP: [gemgo-mvp.aloneeagle.chatgpt.site](https://gemgo-mvp.aloneeagle.chatg
 - 58 pilot destinations across Füssen / Allgäu, Bavaria and Valle d’Aosta
 - natural-language preference parsing with filter reset and negation support
 - one-to-seven-day trip plans
+- strict exclusion of automatically predicted `Busy` stops
+- explainable recommendations, Explore-to-plan additions, undo and local plan saving
 - live Open-Meteo forecasts
 - interactive OpenStreetMap map and optional crowd layer
 - SPA navigation for Explore, GemDrop, GemPoints, GemDeals and notifications
 - real or explicitly simulated location checks for MVP presentations
-- device-local points, notification history, check-ins and photo previews
+- device-local GemXP ledger, notification history, check-ins and photo previews
+- a separate GemCredits concept for future account-linked, redeemable rewards
 - installable PWA with opt-in device notifications
 - interface icons from `lucide-react`
 
@@ -74,7 +77,9 @@ GemGo deliberately distinguishes live, estimated and mocked information:
   and time, not live visitor counts;
 - GemDeals name real businesses, but offers are concept proposals until a
   partnership is signed;
-- points, notifications and simulated GPS state are local to the device.
+- GemXP, notifications, saved plans and simulated GPS state are local to the
+  device;
+- GemCredits are intentionally not issued in the MVP.
 
 See [docs/DATA_SOURCES.md](docs/DATA_SOURCES.md) for the complete inventory.
 
