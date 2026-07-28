@@ -18,8 +18,8 @@ Live MVP: [gemgo-mvp.aloneeagle.chatgpt.site](https://gemgo-mvp.aloneeagle.chatg
 - interactive OpenStreetMap map with zoom-aware marker clustering only when
   more than five markers are too close
 - proportional cluster circles colored by their dominant crowd category
-- compact green, orange and red GemGo logo markers with first-tap, horizontal
-  popups
+- compact white map pins with centered, self-contained green, orange and red
+  GemGo logo assets and first-tap horizontal popups
 - optional map-anchored crowd veil with blended, compact influence areas
 - deduplicated destination tags
 - smooth plan handoff, two-second action toasts, contextual undo and optional
@@ -59,12 +59,13 @@ checking the rendered HTML.
 
 ```text
 app/
-  components/DestinationMap.tsx  Leaflet clusters, logo markers, veil and popups
+  components/DestinationMap.tsx  Leaflet clusters, logo pins, veil and popups
   data/destinations.json         public-safe place names and coordinates
   page.tsx                       client-side application and feature flows
   globals.css                    responsive visual system
 public/
   assets/gemgo-logo.png          GemGo brand asset
+  assets/gemgo-logo-*.svg        self-contained crowd-level marker logos
   manifest.webmanifest           PWA manifest
   sw.js                          service worker and notification click handling
 docs/
