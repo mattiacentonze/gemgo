@@ -1291,7 +1291,7 @@ export default function Home() {
       <header className="site-header">
         <Link className="brand" href="/" onClick={(event) => { event.preventDefault(); navigate("home"); }} aria-label="GemGo home">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img className="brand-logo" src="/assets/gemgo-logo.png" alt="" aria-hidden="true" />
+          <img className="brand-logo" src="/assets/gemgo-logo-green.svg?v=2" alt="" aria-hidden="true" />
           <span>GemGo</span>
         </Link>
         <nav aria-label="Main navigation">
@@ -1320,7 +1320,7 @@ export default function Home() {
           </button>
           <button
             className="settings-button"
-            aria-label="Open location settings"
+            aria-label="Open app settings"
             onClick={() => setSettingsOpen(true)}
           >
             <Settings aria-hidden="true" size={20} strokeWidth={2.2} />
@@ -2225,11 +2225,19 @@ export default function Home() {
       </nav>
 
       <footer>
-        <a className="brand" href="#top">
+        <Link
+          className="brand footer-brand"
+          href="/"
+          onClick={(event) => {
+            event.preventDefault();
+            navigate("home");
+          }}
+          aria-label="GemGo home"
+        >
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img className="brand-logo" src="/assets/gemgo-logo.png" alt="" aria-hidden="true" />
+          <img className="brand-logo" src="/assets/gemgo-logo-green.svg?v=2" alt="" aria-hidden="true" />
           <span>GemGo</span>
-        </a>
+        </Link>
         <p>Public MVP · Bavaria · Füssen / Allgäu · Valle d’Aosta.</p>
         <button onClick={shareSite}>
           {shareLabel}
