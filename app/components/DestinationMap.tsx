@@ -146,6 +146,21 @@ export default function DestinationMap({
   }, [destinations]);
 
   useEffect(() => {
+    const element = elementRef.current;
+    const map = mapRef.current;
+    if (!element || !map || typeof ResizeObserver === "undefined") return;
+
+    const observer = new ResizeObserver((entries) => {
+      const size = entries[0]?.contentRect;
+      if (!size || size.width === 0 || size.height === 0) return;
+      map.invalidateSize({ animate: false });
+    });
+
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [mapReady]);
+
+  useEffect(() => {
     let disposed = false;
 
     const renderMarkers = async () => {
