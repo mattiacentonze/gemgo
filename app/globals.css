@@ -194,6 +194,15 @@ a {
   border: 1px solid rgba(18, 61, 53, 0.16);
   border-radius: 50%;
   cursor: pointer;
+  flex: 0 0 auto;
+  padding: 0;
+  line-height: 0;
+}
+
+.notification-button svg,
+.settings-button svg {
+  display: block;
+  margin: 0;
 }
 
 .notification-button > span {
@@ -510,22 +519,54 @@ h1 {
 
 .gemgo-marker {
   position: relative;
-  display: grid;
-  place-items: center;
-  width: 34px;
-  height: 41px;
+  display: block;
+  width: 30px;
+  height: 36px;
   filter: drop-shadow(0 4px 4px rgba(11, 46, 40, 0.3));
-  transform-origin: 50% 93%;
+  transform-origin: 50% 97%;
   transition: filter 160ms ease, transform 160ms ease;
 }
 
+.gemgo-marker::before {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  left: 1px;
+  width: 28px;
+  height: 28px;
+  background: #fffefa;
+  border: 2px solid var(--marker-color);
+  border-radius: 50%;
+}
+
+.gemgo-marker::after {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  top: 21px;
+  left: 10px;
+  width: 10px;
+  height: 10px;
+  background: #fffefa;
+  border-right: 2px solid var(--marker-color);
+  border-bottom: 2px solid var(--marker-color);
+  border-radius: 1px;
+  transform: rotate(45deg);
+}
+
 .gemgo-marker img {
+  position: absolute;
+  z-index: 2;
+  top: 4px;
+  left: 50%;
   display: block;
-  width: 34px;
-  height: 41px;
+  width: 14px;
+  height: 17px;
   object-fit: contain;
   object-position: 50% 50%;
   pointer-events: none;
+  transform: translateX(-50%);
 }
 
 .gemgo-marker.is-selected {
@@ -2552,8 +2593,10 @@ footer button {
   place-items: center;
   background: white;
   border: 1px solid rgba(18, 61, 53, 0.2);
-  border-radius: 12px;
+  border-radius: 50%;
   cursor: pointer;
+  padding: 0;
+  line-height: 0;
 }
 
 .location-status {
@@ -2635,12 +2678,18 @@ footer button {
 .settings-heading > button {
   width: 40px;
   height: 40px;
+  padding: 0;
   background: var(--cream);
   border: 0;
   border-radius: 50%;
   cursor: pointer;
   display: grid;
   place-items: center;
+  line-height: 0;
+}
+
+.settings-heading > button svg {
+  display: block;
 }
 
 .settings-sheet > p {
