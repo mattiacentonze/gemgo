@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 682" role="img" aria-labelledby="title">
+  <title id="title">GemGo logo — orange crowd level</title>
+  <defs>
+    <filter id="orange-palette" color-interpolation-filters="sRGB">
+      <feColorMatrix
+        type="matrix"
+        values="
+          0.18 1.08 0.04 0 0
+          0.05 0.48 0.03 0 0
+          0.01 0.08 0.03 0 0
+          0    0    0    1 0"
+      />
+    </filter>
+  </defs>
+  <image
+    href="gemgo-logo.png"
+    width="1024"
+    height="682"
+    preserveAspectRatio="xMidYMid meet"
+    filter="url(#orange-palette)"
+  />
+</svg>
