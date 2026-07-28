@@ -500,30 +500,59 @@ h1 {
   position: relative;
   display: grid;
   place-items: center;
-  width: 46px;
-  height: 46px;
-  color: var(--marker-color);
-  background: white;
-  border: 3px solid var(--marker-color);
-  border-radius: 50% 50% 50% 10px;
-  box-shadow: 0 5px 14px rgba(11, 46, 40, 0.26);
-  transform: rotate(-45deg);
-  transition: transform 160ms ease;
+  width: 44px;
+  height: 52px;
+  filter: drop-shadow(0 5px 5px rgba(11, 46, 40, 0.32));
+  transform-origin: 50% 92%;
+  transition: filter 160ms ease, transform 160ms ease;
 }
 
 .gemgo-marker img {
   display: block;
-  width: 38px;
-  height: 38px;
+  width: 44px;
+  height: 52px;
   object-fit: contain;
-  transform: rotate(45deg);
   pointer-events: none;
 }
 
 .gemgo-marker.is-selected {
   z-index: 2;
-  transform: rotate(-45deg) scale(1.2);
-  border-color: var(--coral);
+  filter:
+    drop-shadow(0 0 0 white)
+    drop-shadow(0 0 3px white)
+    drop-shadow(0 7px 6px rgba(11, 46, 40, 0.36));
+  transform: scale(1.2) translateY(-2px);
+}
+
+.gemgo-cluster-shell {
+  display: grid;
+  place-items: center;
+  background: transparent;
+  border: 0;
+}
+
+.gemgo-cluster {
+  display: grid;
+  place-items: center;
+  width: var(--cluster-size);
+  height: var(--cluster-size);
+  color: #123d35;
+  background: var(--cluster-background);
+  border: 4px solid var(--cluster-color);
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 3px rgba(255, 255, 255, 0.92),
+    0 7px 17px rgba(11, 46, 40, 0.27);
+  font-size: clamp(0.82rem, calc(var(--cluster-size) / 3), 1.2rem);
+  font-weight: 900;
+  line-height: 1;
+  transition: filter 150ms ease, transform 150ms ease;
+}
+
+.gemgo-cluster-shell:hover .gemgo-cluster,
+.gemgo-cluster-shell:focus .gemgo-cluster {
+  filter: brightness(1.02);
+  transform: scale(1.07);
 }
 
 .page-section,

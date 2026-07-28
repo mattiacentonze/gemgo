@@ -11,8 +11,9 @@ without a full document reload.
 
 - `app/page.tsx`: application state, natural-language parsing, planning,
   location gates, points, notifications and SPA routing.
-- `app/components/DestinationMap.tsx`: Leaflet lifecycle, markers, popups and
-  optional crowd circles.
+- `app/components/DestinationMap.tsx`: Leaflet lifecycle, zoom-aware marker
+  clustering, dominant crowd-category styling, logo markers, first-tap popups
+  and optional crowd circles.
 - `app/data/destinations.json`: shared structured destination records.
 - `public/sw.js`: service-worker registration target and notification-click
   behaviour.

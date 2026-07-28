@@ -15,7 +15,10 @@ Live MVP: [gemgo-mvp.aloneeagle.chatgpt.site](https://gemgo-mvp.aloneeagle.chatg
 - strict exclusion of automatically predicted `Busy` stops
 - explainable recommendations, Explore-to-plan additions, undo and local plan saving
 - live Open-Meteo forecasts
-- interactive OpenStreetMap map and optional crowd layer
+- interactive OpenStreetMap map with zoom-aware marker clustering
+- proportional cluster circles colored by their dominant crowd category
+- cropped green, orange and red GemGo logo markers with first-tap popups
+- optional crowd layer
 - SPA navigation for Explore, GemDrop, GemPoints, GemDeals and notifications
 - real or explicitly simulated location checks for MVP presentations
 - device-local GemXP ledger, notification history, check-ins and photo previews
@@ -51,7 +54,7 @@ checking the rendered HTML.
 
 ```text
 app/
-  components/DestinationMap.tsx  Leaflet map and crowd markers
+  components/DestinationMap.tsx  Leaflet clusters, logo markers and popups
   data/destinations.json         shared GemGo pilot destination dataset
   page.tsx                       client-side application and feature flows
   globals.css                    responsive visual system
