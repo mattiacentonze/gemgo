@@ -25,7 +25,8 @@ technical behaviour.
 ## Current public capabilities
 
 - Explore destinations can be added to My Plan and the change can be undone.
-- Plans can be saved locally.
+- Multiple plans can be saved locally, migrated from the former single-plan
+  storage and opened, renamed, duplicated or deleted.
 - Recommendations expose their main reasons.
 - Explore cards show crowd category, date, source and confidence.
 - `Busy` predictions are excluded from automatic plans.
@@ -34,3 +35,11 @@ technical behaviour.
 - GemXP has a detailed local ledger.
 - Red status treatment is reserved for errors and busy crowd conditions.
 - No email is required to plan or earn local GemXP.
+- Planned Explore cards remain visible with an `In your plan` state and may be
+  hidden through an explicit filter.
+- Desktop and mobile navigation use one fluid active indicator.
+- The interface offers persisted `EN`, `IT`, `DE` and `FR` language selection
+  without country flags.
+- Clustering intentionally remains limited to groups above five nearby pins.
+- Registration reminders are contextual, capped and snoozable; daily prompts
+  are intentionally rejected.
