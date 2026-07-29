@@ -15,6 +15,7 @@ import {
   Bell,
   BellOff,
   BookmarkPlus,
+  CalendarDays,
   Check,
   CheckCircle2,
   ChevronDown,
@@ -22,13 +23,18 @@ import {
   Circle,
   Clock3,
   CloudSun,
+  Copy,
   ExternalLink,
+  FolderOpen,
   Gem,
+  Globe2,
   History,
   Info,
   LoaderCircle,
+  LogIn,
   MapPin,
   Navigation,
+  Pencil,
   Route,
   Save,
   Search,
@@ -36,7 +42,9 @@ import {
   Settings,
   Share2,
   Sparkles,
+  Trash2,
   Undo2,
+  UserPlus,
   UserRoundCheck,
   Volume2,
   VolumeX,
@@ -87,7 +95,344 @@ type PlanDay = {
   distanceKm: number;
 };
 
-type AppPage = "home" | "gemdrop" | "points" | "gemdeals" | "notifications";
+type AppPage =
+  | "home"
+  | "saved"
+  | "gemdrop"
+  | "points"
+  | "gemdeals"
+  | "notifications";
+
+type Locale = "en" | "it" | "de" | "fr";
+
+type CopyKey =
+  | "explore"
+  | "saved"
+  | "gemdrop"
+  | "points"
+  | "deals"
+  | "savePlan"
+  | "savedState"
+  | "inPlan"
+  | "addToPlan"
+  | "viewMap"
+  | "hidePlanned"
+  | "showPlanned"
+  | "savedEyebrow"
+  | "savedTitle"
+  | "savedIntro"
+  | "noSavedTitle"
+  | "noSavedBody"
+  | "openPlan"
+  | "duplicate"
+  | "delete"
+  | "rename"
+  | "places"
+  | "days"
+  | "language"
+  | "languageHelp"
+  | "accountTitle"
+  | "accountBody"
+  | "accountCta"
+  | "notNow"
+  | "comingSoon"
+  | "accountDetails"
+  | "accountBenefitOne"
+  | "accountBenefitTwo"
+  | "accountBenefitThree"
+  | "close"
+  | "settings"
+  | "sound"
+  | "apply";
+
+const localeCodes: Record<Locale, string> = {
+  en: "en-GB",
+  it: "it-IT",
+  de: "de-DE",
+  fr: "fr-FR",
+};
+
+const copy: Record<Locale, Record<CopyKey, string>> = {
+  en: {
+    explore: "Explore",
+    saved: "Saved",
+    gemdrop: "GemDrop",
+    points: "Points",
+    deals: "Deals",
+    savePlan: "Save plan",
+    savedState: "Saved",
+    inPlan: "In your plan",
+    addToPlan: "Add to plan",
+    viewMap: "View on map",
+    hidePlanned: "Hide planned",
+    showPlanned: "Show planned",
+    savedEyebrow: "Saved Plans",
+    savedTitle: "Your trips, ready when you are.",
+    savedIntro:
+      "Open, rename, duplicate or remove plans saved on this device.",
+    noSavedTitle: "No saved plans yet",
+    noSavedBody:
+      "Build a quieter route in Explore, then save it here for later.",
+    openPlan: "Open plan",
+    duplicate: "Duplicate",
+    delete: "Delete",
+    rename: "Rename",
+    places: "places",
+    days: "days",
+    language: "Language",
+    languageHelp: "Interface language and local date formats.",
+    accountTitle: "Keep this trip beyond this device?",
+    accountBody:
+      "An account will sync saved plans and link eligible GemXP only when you choose real rewards.",
+    accountCta: "See account benefits",
+    notNow: "Not now",
+    comingSoon: "Optional account sync is coming soon",
+    accountDetails:
+      "GemGo stays useful without registration. When account sync launches, you will choose whether to move local plans and eligible GemXP.",
+    accountBenefitOne: "Sync Saved Plans across devices",
+    accountBenefitTwo: "Recover progress if you change phone",
+    accountBenefitThree: "Convert only verified GemXP into GemCredits",
+    close: "Close",
+    settings: "App settings",
+    sound: "Action sounds",
+    apply: "Apply and continue",
+  },
+  it: {
+    explore: "Esplora",
+    saved: "Salvati",
+    gemdrop: "GemDrop",
+    points: "Punti",
+    deals: "Offerte",
+    savePlan: "Salva piano",
+    savedState: "Salvato",
+    inPlan: "Nel tuo piano",
+    addToPlan: "Aggiungi al piano",
+    viewMap: "Vedi sulla mappa",
+    hidePlanned: "Nascondi pianificati",
+    showPlanned: "Mostra pianificati",
+    savedEyebrow: "Piani salvati",
+    savedTitle: "I tuoi viaggi, pronti quando vuoi.",
+    savedIntro:
+      "Apri, rinomina, duplica o rimuovi i piani salvati su questo dispositivo.",
+    noSavedTitle: "Nessun piano salvato",
+    noSavedBody:
+      "Crea un percorso meno affollato in Esplora e salvalo qui.",
+    openPlan: "Apri piano",
+    duplicate: "Duplica",
+    delete: "Elimina",
+    rename: "Rinomina",
+    places: "luoghi",
+    days: "giorni",
+    language: "Lingua",
+    languageHelp: "Lingua dell’interfaccia e formati locali delle date.",
+    accountTitle: "Vuoi conservare il viaggio oltre questo dispositivo?",
+    accountBody:
+      "Un account sincronizzerà i piani e collegherà i GemXP idonei solo quando vorrai premi reali.",
+    accountCta: "Scopri i vantaggi",
+    notNow: "Non ora",
+    comingSoon: "La sincronizzazione facoltativa arriverà presto",
+    accountDetails:
+      "GemGo resta utile senza registrazione. Quando la sincronizzazione sarà disponibile, sceglierai se trasferire piani locali e GemXP idonei.",
+    accountBenefitOne: "Sincronizza i piani tra dispositivi",
+    accountBenefitTwo: "Recupera i progressi cambiando telefono",
+    accountBenefitThree: "Converti solo GemXP verificati in GemCredits",
+    close: "Chiudi",
+    settings: "Impostazioni app",
+    sound: "Suoni delle azioni",
+    apply: "Applica e continua",
+  },
+  de: {
+    explore: "Entdecken",
+    saved: "Gespeichert",
+    gemdrop: "GemDrop",
+    points: "Punkte",
+    deals: "Angebote",
+    savePlan: "Plan speichern",
+    savedState: "Gespeichert",
+    inPlan: "In deinem Plan",
+    addToPlan: "Zum Plan",
+    viewMap: "Auf Karte",
+    hidePlanned: "Geplante ausblenden",
+    showPlanned: "Geplante zeigen",
+    savedEyebrow: "Gespeicherte Pläne",
+    savedTitle: "Deine Reisen, jederzeit bereit.",
+    savedIntro:
+      "Öffne, benenne, dupliziere oder lösche lokal gespeicherte Pläne.",
+    noSavedTitle: "Noch keine gespeicherten Pläne",
+    noSavedBody:
+      "Erstelle unter Entdecken eine ruhigere Route und speichere sie hier.",
+    openPlan: "Plan öffnen",
+    duplicate: "Duplizieren",
+    delete: "Löschen",
+    rename: "Umbenennen",
+    places: "Orte",
+    days: "Tage",
+    language: "Sprache",
+    languageHelp: "Sprache der Oberfläche und lokale Datumsformate.",
+    accountTitle: "Diese Reise geräteübergreifend behalten?",
+    accountBody:
+      "Ein Konto synchronisiert Pläne und verknüpft geeignete GemXP erst, wenn du echte Prämien möchtest.",
+    accountCta: "Kontovorteile ansehen",
+    notNow: "Nicht jetzt",
+    comingSoon: "Optionale Kontosynchronisierung kommt bald",
+    accountDetails:
+      "GemGo bleibt ohne Registrierung nützlich. Später entscheidest du selbst, ob lokale Pläne und geeignete GemXP übertragen werden.",
+    accountBenefitOne: "Pläne geräteübergreifend synchronisieren",
+    accountBenefitTwo: "Fortschritt beim Handywechsel wiederherstellen",
+    accountBenefitThree: "Nur verifizierte GemXP in GemCredits umwandeln",
+    close: "Schließen",
+    settings: "App-Einstellungen",
+    sound: "Aktionssounds",
+    apply: "Übernehmen",
+  },
+  fr: {
+    explore: "Explorer",
+    saved: "Enregistrés",
+    gemdrop: "GemDrop",
+    points: "Points",
+    deals: "Offres",
+    savePlan: "Enregistrer",
+    savedState: "Enregistré",
+    inPlan: "Dans votre parcours",
+    addToPlan: "Ajouter au parcours",
+    viewMap: "Voir sur la carte",
+    hidePlanned: "Masquer les lieux prévus",
+    showPlanned: "Afficher les lieux prévus",
+    savedEyebrow: "Parcours enregistrés",
+    savedTitle: "Vos voyages, prêts quand vous l’êtes.",
+    savedIntro:
+      "Ouvrez, renommez, dupliquez ou supprimez les parcours enregistrés sur cet appareil.",
+    noSavedTitle: "Aucun parcours enregistré",
+    noSavedBody:
+      "Créez un itinéraire plus calme dans Explorer, puis enregistrez-le ici.",
+    openPlan: "Ouvrir",
+    duplicate: "Dupliquer",
+    delete: "Supprimer",
+    rename: "Renommer",
+    places: "lieux",
+    days: "jours",
+    language: "Langue",
+    languageHelp: "Langue de l’interface et formats de date locaux.",
+    accountTitle: "Conserver ce voyage sur plusieurs appareils ?",
+    accountBody:
+      "Un compte synchronisera vos parcours et reliera les GemXP éligibles seulement si vous souhaitez de vraies récompenses.",
+    accountCta: "Voir les avantages",
+    notNow: "Plus tard",
+    comingSoon: "La synchronisation facultative arrive bientôt",
+    accountDetails:
+      "GemGo reste utile sans inscription. Vous choisirez plus tard de transférer ou non vos parcours locaux et GemXP éligibles.",
+    accountBenefitOne: "Synchroniser les parcours entre appareils",
+    accountBenefitTwo: "Récupérer les progrès après un changement de téléphone",
+    accountBenefitThree: "Convertir uniquement les GemXP vérifiés en GemCredits",
+    close: "Fermer",
+    settings: "Paramètres de l’app",
+    sound: "Sons des actions",
+    apply: "Appliquer",
+  },
+};
+
+const localized = {
+  en: {
+    settingsEyebrow: "MVP presentation mode",
+    settingsIntro:
+      "Choose a simulated location to test only the features that normally require GPS. The app always labels this as demo data.",
+    simulatedLocation: "Simulated location",
+    realGps: "Use real device GPS",
+    soundHelp: "Short, subtle feedback for rewards and confirmations.",
+    heroEyebrow: "Plan less. Experience more.",
+    heroTitle: "More Alps. Fewer queues.",
+    heroBody:
+      "Describe the trip naturally. GemGo resets every preference, checks the forecast and prioritises less-crowded times across Bavaria, Füssen and Valle d’Aosta.",
+    howWorks: "How GemGo works",
+    promptLabel: "What would you like to do?",
+    promptHelp: "Mention days, transport, interests and crowd preference.",
+    buildTrip: "Build my trip",
+    exploreDestinations: "Explore destinations",
+    noSignup:
+      "No sign-up to plan or collect GemXP. An account is only needed later to convert eligible XP into reward-ready GemCredits.",
+    yourPlan: "Your plan",
+    whyPlan: "Why this plan?",
+    planEmpty: "Build a trip to see your itinerary.",
+    exploreTitle: "Local places, not a generic bucket list.",
+    howEyebrow: "How it works",
+    howTitle: "Natural to use. Honest about the data.",
+  },
+  it: {
+    settingsEyebrow: "Modalità presentazione MVP",
+    settingsIntro:
+      "Scegli una posizione simulata soltanto per provare le funzioni che normalmente richiedono il GPS. L’app la indica sempre come dato demo.",
+    simulatedLocation: "Posizione simulata",
+    realGps: "Usa il GPS reale del dispositivo",
+    soundHelp: "Feedback brevi e discreti per premi e conferme.",
+    heroEyebrow: "Meno pianificazione. Più esperienza.",
+    heroTitle: "Più Alpi. Meno code.",
+    heroBody:
+      "Descrivi il viaggio in modo naturale. GemGo reimposta le preferenze, controlla il meteo e privilegia gli orari meno affollati in Baviera, a Füssen e in Valle d’Aosta.",
+    howWorks: "Come funziona GemGo",
+    promptLabel: "Che cosa vorresti fare?",
+    promptHelp: "Indica giorni, trasporto, interessi e preferenze sull’affollamento.",
+    buildTrip: "Crea il mio viaggio",
+    exploreDestinations: "Esplora le destinazioni",
+    noSignup:
+      "Non serve registrarsi per pianificare o raccogliere GemXP. L’account servirà solo per convertire gli XP idonei in GemCredits utilizzabili.",
+    yourPlan: "Il tuo piano",
+    whyPlan: "Perché questo piano?",
+    planEmpty: "Crea un viaggio per vedere l’itinerario.",
+    exploreTitle: "Luoghi del territorio, non la solita lista generica.",
+    howEyebrow: "Come funziona",
+    howTitle: "Semplice da usare. Trasparente sui dati.",
+  },
+  de: {
+    settingsEyebrow: "MVP-Präsentationsmodus",
+    settingsIntro:
+      "Wähle einen simulierten Standort nur zum Testen von Funktionen, die normalerweise GPS benötigen. Er wird immer als Demo gekennzeichnet.",
+    simulatedLocation: "Simulierter Standort",
+    realGps: "Echtes Geräte-GPS verwenden",
+    soundHelp: "Kurze, dezente Rückmeldung für Prämien und Bestätigungen.",
+    heroEyebrow: "Weniger planen. Mehr erleben.",
+    heroTitle: "Mehr Alpen. Weniger Warteschlangen.",
+    heroBody:
+      "Beschreibe die Reise frei. GemGo setzt Präferenzen neu, prüft das Wetter und bevorzugt ruhigere Zeiten in Bayern, Füssen und im Aostatal.",
+    howWorks: "So funktioniert GemGo",
+    promptLabel: "Was möchtest du unternehmen?",
+    promptHelp: "Nenne Tage, Verkehrsmittel, Interessen und Besucherpräferenz.",
+    buildTrip: "Meine Reise erstellen",
+    exploreDestinations: "Ziele entdecken",
+    noSignup:
+      "Planen und GemXP sammeln geht ohne Registrierung. Ein Konto wird erst für die Umwandlung geeigneter XP in GemCredits benötigt.",
+    yourPlan: "Dein Plan",
+    whyPlan: "Warum dieser Plan?",
+    planEmpty: "Erstelle eine Reise, um den Ablauf zu sehen.",
+    exploreTitle: "Lokale Orte statt allgemeiner Bestenliste.",
+    howEyebrow: "So funktioniert es",
+    howTitle: "Einfach zu nutzen. Ehrlich bei den Daten.",
+  },
+  fr: {
+    settingsEyebrow: "Mode présentation du MVP",
+    settingsIntro:
+      "Choisissez une position simulée uniquement pour tester les fonctions qui nécessitent normalement le GPS. Elle reste toujours signalée comme donnée de démonstration.",
+    simulatedLocation: "Position simulée",
+    realGps: "Utiliser le GPS réel de l’appareil",
+    soundHelp: "Retours courts et discrets pour les récompenses et confirmations.",
+    heroEyebrow: "Moins planifier. Mieux profiter.",
+    heroTitle: "Plus d’Alpes. Moins de files.",
+    heroBody:
+      "Décrivez votre voyage naturellement. GemGo réinitialise les préférences, vérifie la météo et privilégie les horaires plus calmes en Bavière, à Füssen et dans la Vallée d’Aoste.",
+    howWorks: "Comment fonctionne GemGo",
+    promptLabel: "Que souhaitez-vous faire ?",
+    promptHelp: "Indiquez les jours, le transport, les centres d’intérêt et la préférence d’affluence.",
+    buildTrip: "Créer mon voyage",
+    exploreDestinations: "Explorer les destinations",
+    noSignup:
+      "Aucune inscription n’est nécessaire pour planifier ou gagner des GemXP. Le compte ne servira qu’à convertir les XP éligibles en GemCredits.",
+    yourPlan: "Votre parcours",
+    whyPlan: "Pourquoi ce parcours ?",
+    planEmpty: "Créez un voyage pour voir votre itinéraire.",
+    exploreTitle: "Des lieux locaux, pas une liste touristique générique.",
+    howEyebrow: "Comment ça marche",
+    howTitle: "Simple à utiliser. Transparent sur les données.",
+  },
+} satisfies Record<Locale, Record<string, string>>;
 
 type GemNotification = {
   id: string;
@@ -109,6 +454,17 @@ type PointEvent = {
 type PlanUndo = {
   previousPlan: PlanDay[];
   message: string;
+};
+
+type SavedPlan = {
+  id: string;
+  name: string;
+  createdAt: string;
+  updatedAt: string;
+  region: Region;
+  transport: Transport;
+  interests: string[];
+  plan: PlanDay[];
 };
 
 type ActionToast = {
@@ -408,8 +764,8 @@ const addDays = (dateString: string, offset: number) => {
   return isoDate(date);
 };
 
-const formatDate = (date: string) =>
-  new Intl.DateTimeFormat("en", {
+const formatDate = (date: string, locale = "en-GB") =>
+  new Intl.DateTimeFormat(locale, {
     weekday: "short",
     day: "numeric",
     month: "short",
@@ -585,18 +941,32 @@ export default function Home() {
   const [notifications, setNotifications] = useState<GemNotification[]>([]);
   const [pointHistory, setPointHistory] = useState<PointEvent[]>([]);
   const [planSaved, setPlanSaved] = useState(false);
+  const [savedPlans, setSavedPlans] = useState<SavedPlan[]>([]);
+  const [activeSavedPlanId, setActiveSavedPlanId] = useState<string | null>(null);
+  const [hidePlanned, setHidePlanned] = useState(false);
   const [planUndo, setPlanUndo] = useState<PlanUndo | null>(null);
   const [planNotice, setPlanNotice] = useState("");
   const [whyPlanOpen, setWhyPlanOpen] = useState(false);
   const [howOpen, setHowOpen] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
+  const [locale, setLocale] = useState<Locale>("en");
+  const [storageReady, setStorageReady] = useState(false);
+  const [accountPrompt, setAccountPrompt] = useState<
+    "hidden" | "prompt" | "details"
+  >("hidden");
   const [toast, setToast] = useState<ActionToast | null>(null);
   const [justAddedId, setJustAddedId] = useState<string | null>(null);
   const toastTimerRef = useRef<number | null>(null);
   const highlightTimerRef = useRef<number | null>(null);
+  const desktopNavRef = useRef<HTMLElement | null>(null);
+  const mobileNavRef = useRef<HTMLElement | null>(null);
+  const [desktopIndicator, setDesktopIndicator] = useState({ left: 0, width: 0 });
+  const [mobileIndicator, setMobileIndicator] = useState({ left: 0, width: 0 });
   const [notificationPermission, setNotificationPermission] = useState<
     NotificationPermission | "unsupported"
   >("default");
+  const t = (key: CopyKey) => copy[locale][key];
+  const l = localized[locale];
 
   useEffect(() => {
     const restoreStoredPoints = window.setTimeout(() => {
@@ -607,6 +977,10 @@ export default function Home() {
         setMockLocationId(storedLocation);
       }
       setSoundEnabled(window.localStorage.getItem("gemgo-sound") !== "off");
+      const storedLocale = window.localStorage.getItem("gemgo-locale");
+      if (storedLocale && ["en", "it", "de", "fr"].includes(storedLocale)) {
+        setLocale(storedLocale as Locale);
+      }
       const storedNotifications = window.localStorage.getItem("gemgo-notifications");
       if (storedNotifications) {
         try {
@@ -635,23 +1009,76 @@ export default function Home() {
         window.localStorage.setItem("gemgo-point-history", JSON.stringify([openingEvent]));
       }
       const storedPlan = window.localStorage.getItem("gemgo-saved-plan");
+      const storedSavedPlans = window.localStorage.getItem("gemgo-saved-plans");
+      let restoredSavedPlans: SavedPlan[] = [];
+      if (storedSavedPlans) {
+        try {
+          const parsedSavedPlans = JSON.parse(storedSavedPlans) as SavedPlan[];
+          if (Array.isArray(parsedSavedPlans)) {
+            restoredSavedPlans = parsedSavedPlans.filter(
+              (item) =>
+                item &&
+                typeof item.id === "string" &&
+                typeof item.name === "string" &&
+                Array.isArray(item.plan),
+            );
+          }
+        } catch {
+          window.localStorage.removeItem("gemgo-saved-plans");
+        }
+      }
       if (storedPlan) {
         try {
           const restoredPlan = JSON.parse(storedPlan) as PlanDay[];
           if (Array.isArray(restoredPlan) && restoredPlan.length > 0) {
             setPlan(restoredPlan);
             setPlanSaved(true);
+            const alreadyMigrated = restoredSavedPlans.some(
+              (item) => JSON.stringify(item.plan) === JSON.stringify(restoredPlan),
+            );
+            if (!alreadyMigrated) {
+              const now = new Date().toISOString();
+              const migrated: SavedPlan = {
+                id: createId(),
+                name: `${restoredPlan[0]?.stops[0]?.region ?? "Alps"} · ${formatDate(restoredPlan[0].date)}`,
+                createdAt: now,
+                updatedAt: now,
+                region:
+                  (restoredPlan[0]?.stops[0]?.region as Region | undefined) ??
+                  "All",
+                transport: "e-bike",
+                interests: [],
+                plan: restoredPlan,
+              };
+              restoredSavedPlans = [migrated, ...restoredSavedPlans];
+              setActiveSavedPlanId(migrated.id);
+              window.localStorage.setItem(
+                "gemgo-saved-plans",
+                JSON.stringify(restoredSavedPlans),
+              );
+            } else {
+              setActiveSavedPlanId(
+                restoredSavedPlans.find(
+                  (item) =>
+                    JSON.stringify(item.plan) === JSON.stringify(restoredPlan),
+                )?.id ?? null,
+              );
+            }
           }
         } catch {
           window.localStorage.removeItem("gemgo-saved-plan");
         }
       }
+      setSavedPlans(restoredSavedPlans);
+      setStorageReady(true);
       setNotificationPermission(
         "Notification" in window ? Notification.permission : "unsupported",
       );
       const path = window.location.pathname.replace(/\/+$/, "");
       setAppPage(
-        path === "/gemdrop"
+        path === "/saved"
+          ? "saved"
+          : path === "/gemdrop"
           ? "gemdrop"
           : path === "/points"
             ? "points"
@@ -665,7 +1092,9 @@ export default function Home() {
     const onPopState = () => {
       const path = window.location.pathname.replace(/\/+$/, "");
       setAppPage(
-        path === "/gemdrop"
+        path === "/saved"
+          ? "saved"
+          : path === "/gemdrop"
           ? "gemdrop"
           : path === "/points"
             ? "points"
@@ -692,6 +1121,46 @@ export default function Home() {
     },
     [],
   );
+
+  useEffect(() => {
+    if (!storageReady) return;
+    document.documentElement.lang = locale;
+    window.localStorage.setItem("gemgo-locale", locale);
+  }, [locale, storageReady]);
+
+  useEffect(() => {
+    const updateIndicator = (
+      nav: HTMLElement | null,
+      setter: (value: { left: number; width: number }) => void,
+    ) => {
+      if (!nav) return;
+      const active = nav.querySelector<HTMLElement>(
+        `[data-page="${appPage}"]`,
+      );
+      if (!active) {
+        setter({ left: 0, width: 0 });
+        return;
+      }
+      const navRect = nav.getBoundingClientRect();
+      const itemRect = active.getBoundingClientRect();
+      const compact = nav.classList.contains("mobile-tabbar");
+      const width = compact ? itemRect.width * 0.56 : itemRect.width;
+      setter({
+        left: itemRect.left - navRect.left + (itemRect.width - width) / 2,
+        width,
+      });
+    };
+    const update = () => {
+      updateIndicator(desktopNavRef.current, setDesktopIndicator);
+      updateIndicator(mobileNavRef.current, setMobileIndicator);
+    };
+    const frame = window.requestAnimationFrame(update);
+    window.addEventListener("resize", update);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      window.removeEventListener("resize", update);
+    };
+  }, [appPage, locale]);
 
   const persistNotifications = (items: GemNotification[]) => {
     setNotifications(items);
@@ -745,6 +1214,29 @@ export default function Home() {
       setToast(null);
       toastTimerRef.current = null;
     }, 2000);
+  };
+
+  const maybeShowAccountPrompt = (now: number) => {
+    const nextAllowed = Number(
+      window.localStorage.getItem("gemgo-account-prompt-next") ?? "0",
+    );
+    const impressions = Number(
+      window.localStorage.getItem("gemgo-account-prompt-count") ?? "0",
+    );
+    if (now < nextAllowed || impressions >= 2) return;
+    window.localStorage.setItem(
+      "gemgo-account-prompt-count",
+      String(impressions + 1),
+    );
+    window.setTimeout(() => setAccountPrompt("prompt"), 380);
+  };
+
+  const snoozeAccountPrompt = () => {
+    window.localStorage.setItem(
+      "gemgo-account-prompt-next",
+      String(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    );
+    setAccountPrompt("hidden");
   };
 
   const setSoundPreference = (enabled: boolean) => {
@@ -811,6 +1303,7 @@ export default function Home() {
   };
 
   const addPoints = (amount: number, reason: string) => {
+    const actionTime = new Date().getTime();
     setXp((current) => {
       const nextBalance = Math.max(0, current + amount);
       window.localStorage.setItem("gemgo-xp", String(nextBalance));
@@ -827,6 +1320,9 @@ export default function Home() {
         window.localStorage.setItem("gemgo-point-history", JSON.stringify(nextHistory));
         return nextHistory;
       });
+      if (current < 100 && nextBalance >= 100) {
+        window.setTimeout(() => maybeShowAccountPrompt(actionTime), 420);
+      }
       return nextBalance;
     });
     notify(
@@ -879,19 +1375,30 @@ export default function Home() {
   };
 
   const isAtSelectedPlace = mockLocationId === selected.id;
+  const plannedDestinationIds = useMemo(
+    () =>
+      new Set(
+        plan.flatMap((day) => day.stops.map((destination) => destination.id)),
+      ),
+    [plan],
+  );
 
   const visibleDestinations = useMemo(() => {
     const scoped =
       region === "All"
         ? destinations
         : destinations.filter((destination) => destination.region === region);
-    if (!mockLocation) return scoped;
-    return [...scoped].sort(
+    const ordered = !mockLocation
+      ? scoped
+      : [...scoped].sort(
       (a, b) =>
         haversineKm(mockLocation.lat, mockLocation.lng, a.lat, a.lng) -
         haversineKm(mockLocation.lat, mockLocation.lng, b.lat, b.lng),
-    );
-  }, [mockLocation, region]);
+      );
+    return hidePlanned
+      ? ordered.filter((destination) => !plannedDestinationIds.has(destination.id))
+      : ordered;
+  }, [hidePlanned, mockLocation, plannedDestinationIds, region]);
 
   const nearbyLabel = mockLocation ? "Near you" : "Places in this area";
   const crowdForExplore = (destination: Destination) =>
@@ -1064,6 +1571,7 @@ export default function Home() {
     });
     setPlan(newPlan);
     setPlanSaved(false);
+    setActiveSavedPlanId(null);
     setPlanUndo(null);
     setPlanNotice("Busy predictions were excluded from this itinerary.");
     if (newPlan[0]?.stops[0]) setSelected(newPlan[0].stops[0]);
@@ -1097,12 +1605,115 @@ export default function Home() {
     if (parsed.startDate) setStartDate(parsed.startDate);
   };
 
+  const persistSavedPlans = (items: SavedPlan[]) => {
+    setSavedPlans(items);
+    window.localStorage.setItem("gemgo-saved-plans", JSON.stringify(items));
+  };
+
   const savePlan = () => {
     if (plan.length === 0) return;
+    const now = new Date().toISOString();
+    const firstStop = plan.flatMap((day) => day.stops)[0];
+    const defaultName = `${firstStop?.region ?? region} · ${new Intl.DateTimeFormat(
+      localeCodes[locale],
+      { day: "numeric", month: "short" },
+    ).format(new Date(`${plan[0].date}T12:00:00`))}`;
+    let savedId = activeSavedPlanId;
+    let nextPlans: SavedPlan[];
+    if (activeSavedPlanId) {
+      nextPlans = savedPlans.map((item) =>
+        item.id === activeSavedPlanId
+          ? {
+              ...item,
+              updatedAt: now,
+              region,
+              transport,
+              interests,
+              plan,
+            }
+          : item,
+      );
+    } else {
+      const saved: SavedPlan = {
+        id: createId(),
+        name: defaultName,
+        createdAt: now,
+        updatedAt: now,
+        region,
+        transport,
+        interests,
+        plan,
+      };
+      savedId = saved.id;
+      nextPlans = [saved, ...savedPlans];
+    }
+    persistSavedPlans(nextPlans);
+    setActiveSavedPlanId(savedId);
     window.localStorage.setItem("gemgo-saved-plan", JSON.stringify(plan));
     setPlanSaved(true);
     setPlanNotice("Plan saved on this device.");
     showToast("Plan saved on this device", "success");
+    maybeShowAccountPrompt(new Date().getTime());
+  };
+
+  const openSavedPlan = (saved: SavedPlan) => {
+    setPlan(saved.plan);
+    setRegion(saved.region);
+    setTransport(saved.transport);
+    setInterests(saved.interests);
+    setActiveSavedPlanId(saved.id);
+    setPlanSaved(true);
+    window.localStorage.setItem("gemgo-saved-plan", JSON.stringify(saved.plan));
+    navigate("home");
+    window.setTimeout(() => {
+      document.getElementById("trip-plan")?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }, 90);
+    showToast(`${saved.name} opened`, "success");
+  };
+
+  const duplicateSavedPlan = (saved: SavedPlan) => {
+    const now = new Date().toISOString();
+    const duplicate: SavedPlan = {
+      ...saved,
+      id: createId(),
+      name: `${saved.name} · copy`,
+      createdAt: now,
+      updatedAt: now,
+    };
+    persistSavedPlans([duplicate, ...savedPlans]);
+    showToast(`${saved.name} duplicated`, "success", () => {
+      persistSavedPlans(savedPlans);
+    });
+  };
+
+  const deleteSavedPlan = (saved: SavedPlan) => {
+    const previous = savedPlans;
+    const next = savedPlans.filter((item) => item.id !== saved.id);
+    persistSavedPlans(next);
+    if (activeSavedPlanId === saved.id) {
+      setActiveSavedPlanId(null);
+      setPlanSaved(false);
+    }
+    showToast(`${saved.name} deleted`, "info", () => {
+      persistSavedPlans(previous);
+      setActiveSavedPlanId(saved.id);
+      setPlanSaved(true);
+    });
+  };
+
+  const renameSavedPlan = (id: string, name: string) => {
+    const cleanName = name.trim();
+    if (!cleanName) return;
+    persistSavedPlans(
+      savedPlans.map((item) =>
+        item.id === id
+          ? { ...item, name: cleanName, updatedAt: new Date().toISOString() }
+          : item,
+      ),
+    );
   };
 
   const addDestinationToPlan = (destination: Destination) => {
@@ -1294,11 +1905,21 @@ export default function Home() {
           <img className="brand-logo" src="/assets/gemgo-logo-green.svg?v=2" alt="" aria-hidden="true" />
           <span>GemGo</span>
         </Link>
-        <nav aria-label="Main navigation">
-          <Link className={appPage === "home" ? "active" : ""} href="/" onClick={(event) => { event.preventDefault(); navigate("home"); }}>Explore</Link>
-          <Link className={appPage === "gemdrop" ? "active" : ""} href="/gemdrop" onClick={(event) => { event.preventDefault(); navigate("gemdrop"); }}>GemDrop</Link>
-          <Link className={appPage === "points" ? "active" : ""} href="/points" onClick={(event) => { event.preventDefault(); navigate("points"); }}>GemPoints</Link>
-          <Link className={appPage === "gemdeals" ? "active" : ""} href="/gemdeals" onClick={(event) => { event.preventDefault(); navigate("gemdeals"); }}>GemDeals</Link>
+        <nav aria-label="Main navigation" ref={desktopNavRef}>
+          <span
+            className="nav-flow-indicator"
+            aria-hidden="true"
+            style={{
+              left: desktopIndicator.left,
+              width: desktopIndicator.width,
+              opacity: desktopIndicator.width ? 1 : 0,
+            }}
+          />
+          <Link data-page="home" className={appPage === "home" ? "active" : ""} href="/" onClick={(event) => { event.preventDefault(); navigate("home"); }}>{t("explore")}</Link>
+          <Link data-page="saved" className={appPage === "saved" ? "active" : ""} href="/saved" onClick={(event) => { event.preventDefault(); navigate("saved"); }}>{t("saved")}</Link>
+          <Link data-page="gemdrop" className={appPage === "gemdrop" ? "active" : ""} href="/gemdrop" onClick={(event) => { event.preventDefault(); navigate("gemdrop"); }}>{t("gemdrop")}</Link>
+          <Link data-page="points" className={appPage === "points" ? "active" : ""} href="/points" onClick={(event) => { event.preventDefault(); navigate("points"); }}>GemPoints</Link>
+          <Link data-page="gemdeals" className={appPage === "gemdeals" ? "active" : ""} href="/gemdeals" onClick={(event) => { event.preventDefault(); navigate("gemdeals"); }}>GemDeals</Link>
         </nav>
         <div className="header-actions">
           <button className="xp-pill" aria-label={`${xp} GemXP. Open points.`} onClick={() => navigate("points")}>
@@ -1362,12 +1983,10 @@ export default function Home() {
 
       <section className="hero home-only" id="top">
         <div className="planner-panel">
-          <p className="eyebrow">Plan less. Experience more.</p>
-          <h1>More Alps. Fewer queues.</h1>
+          <p className="eyebrow">{l.heroEyebrow}</p>
+          <h1>{l.heroTitle}</h1>
           <p className="hero-copy">
-            Describe the trip naturally. GemGo resets every preference,
-            checks the forecast and prioritises less-crowded times across
-            Bavaria, Füssen and Valle d’Aosta.
+            {l.heroBody}
           </p>
 
           <div className={howOpen ? "how-preview open" : "how-preview"}>
@@ -1379,7 +1998,7 @@ export default function Home() {
             >
               <span>
                 <Info aria-hidden="true" size={18} />
-                How GemGo works
+                {l.howWorks}
               </span>
               {howOpen ? (
                 <ChevronUp aria-hidden="true" size={18} />
@@ -1397,7 +2016,7 @@ export default function Home() {
           </div>
 
           <form onSubmit={buildPlan} className="planner-form">
-            <label htmlFor="trip-prompt">What would you like to do?</label>
+            <label htmlFor="trip-prompt">{l.promptLabel}</label>
             <div className="prompt-row">
               <textarea
                 id="trip-prompt"
@@ -1420,7 +2039,7 @@ export default function Home() {
               </button>
             </div>
             <span id="prompt-hint" className="sr-only">
-              Mention days, transport, interests and crowd preference.
+              {l.promptHelp}
             </span>
           </form>
 
@@ -1532,16 +2151,15 @@ export default function Home() {
               onClick={() => buildPlan()}
               disabled={loading}
             >
-              {loading ? "Building your trip…" : "Build my trip"}
+              {loading ? "Building your trip…" : l.buildTrip}
               <ArrowRight aria-hidden="true" size={19} />
             </button>
             <a href="#explore" className="text-link">
-              Explore destinations
+              {l.exploreDestinations}
             </a>
           </div>
           <p className="trust-note">
-            No sign-up to plan or collect GemXP. An account is only needed later
-            to convert eligible XP into reward-ready GemCredits.
+            {l.noSignup}
           </p>
         </div>
 
@@ -1632,11 +2250,11 @@ export default function Home() {
       <section className="plan-section home-only" id="trip-plan" aria-live="polite">
         <div className="section-heading">
           <div>
-            <p className="eyebrow">Your plan</p>
+            <p className="eyebrow">{l.yourPlan}</p>
             <h2>
               {plan.length
                 ? `${plan.length} ${plan.length === 1 ? "day" : "days"}, balanced for you.`
-                : "Build a trip to see your itinerary."}
+                : l.planEmpty}
             </h2>
           </div>
           {plan.length > 0 && (
@@ -1661,7 +2279,7 @@ export default function Home() {
                   onClick={() => setWhyPlanOpen((value) => !value)}
                 >
                   <Info aria-hidden="true" size={16} />
-                  Why this plan?
+                  {l.whyPlan}
                 </button>
                 <button
                   type="button"
@@ -1673,7 +2291,15 @@ export default function Home() {
                   ) : (
                     <Save aria-hidden="true" size={16} />
                   )}
-                  {planSaved ? "Saved" : "Save plan"}
+                  {planSaved ? t("savedState") : t("savePlan")}
+                </button>
+                <button
+                  type="button"
+                  className="outline-button compact"
+                  onClick={() => navigate("saved")}
+                >
+                  <FolderOpen aria-hidden="true" size={16} />
+                  {t("saved")}
                 </button>
               </div>
             </div>
@@ -1741,7 +2367,7 @@ export default function Home() {
                 <div className="day-header">
                   <div>
                     <span>Day {index + 1}</span>
-                    <h3>{formatDate(day.date)}</h3>
+                    <h3>{formatDate(day.date, localeCodes[locale])}</h3>
                   </div>
                   <div className="weather">
                     <strong>{weatherLabel(day.weather?.code)}</strong>
@@ -1805,19 +2431,42 @@ export default function Home() {
         <div className="section-heading">
           <div>
             <p className="eyebrow">Explore</p>
-            <h2>Local places, not a generic bucket list.</h2>
+            <h2>{l.exploreTitle}</h2>
           </div>
-          <p>
-            {destinations.length} public-safe pilot destinations across
-            Bavaria, Valle d’Aosta and Füssen. Select one to inspect it on the
-            map.
-          </p>
+          <div className="explore-heading-tools">
+            <p>
+              {destinations.length} public-safe pilot destinations across
+              Bavaria, Valle d’Aosta and Füssen. Select one to inspect it on the
+              map.
+            </p>
+            {plannedDestinationIds.size > 0 && (
+              <button
+                className={hidePlanned ? "planned-filter active" : "planned-filter"}
+                aria-pressed={hidePlanned}
+                onClick={() => setHidePlanned((value) => !value)}
+              >
+                {hidePlanned ? (
+                  <FolderOpen aria-hidden="true" size={15} />
+                ) : (
+                  <Check aria-hidden="true" size={15} />
+                )}
+                {hidePlanned ? t("showPlanned") : t("hidePlanned")}
+                <span>{plannedDestinationIds.size}</span>
+              </button>
+            )}
+          </div>
         </div>
-        <div className="destination-grid">
+        {visibleDestinations.length === 0 ? (
+          <div className="empty-explore-filter">
+            <CheckCircle2 aria-hidden="true" size={26} />
+            <p>All places in this area are already in your plan.</p>
+            <button onClick={() => setHidePlanned(false)}>{t("showPlanned")}</button>
+          </div>
+        ) : <div className="destination-grid">
           {visibleDestinations.map((destination) => (
             <article
               key={destination.id}
-              className={selected.id === destination.id ? "destination-card selected" : "destination-card"}
+              className={`${selected.id === destination.id ? "destination-card selected" : "destination-card"}${plannedDestinationIds.has(destination.id) ? " in-plan" : ""}`}
             >
               <div className="destination-index">
                 {String(visibleDestinations.indexOf(destination) + 1).padStart(2, "0")}
@@ -1828,7 +2477,7 @@ export default function Home() {
               <div className={`explore-crowd crowd-${crowdForExplore(destination).toLowerCase()}`}>
                 <span>{crowdForExplore(destination)}</span>
                 <small>
-                  GemGo estimate for {formatDate(startDate)} · medium confidence
+                  GemGo estimate for {formatDate(startDate, localeCodes[locale])} · medium confidence
                 </small>
               </div>
               <p>{destination.description}</p>
@@ -1840,9 +2489,23 @@ export default function Home() {
                   ))}
               </div>
               <div className="destination-actions">
-                <button onClick={() => addDestinationToPlan(destination)}>
-                  <BookmarkPlus aria-hidden="true" size={15} />
-                  Add to plan
+                <button
+                  className={
+                    plannedDestinationIds.has(destination.id)
+                      ? "already-planned"
+                      : ""
+                  }
+                  disabled={plannedDestinationIds.has(destination.id)}
+                  onClick={() => addDestinationToPlan(destination)}
+                >
+                  {plannedDestinationIds.has(destination.id) ? (
+                    <CheckCircle2 aria-hidden="true" size={15} />
+                  ) : (
+                    <BookmarkPlus aria-hidden="true" size={15} />
+                  )}
+                  {plannedDestinationIds.has(destination.id)
+                    ? t("inPlan")
+                    : t("addToPlan")}
                 </button>
                 <button
                   onClick={() => {
@@ -1852,20 +2515,20 @@ export default function Home() {
                       ?.scrollIntoView({ behavior: "smooth" });
                   }}
                 >
-                  View on map
+                  {t("viewMap")}
                   <ArrowRight aria-hidden="true" size={15} />
                 </button>
               </div>
             </article>
           ))}
-        </div>
+        </div>}
       </section>
 
       <section className="how-section home-only" id="how">
         <div className="section-heading">
           <div>
-            <p className="eyebrow">How it works</p>
-            <h2>Natural to use. Honest about the data.</h2>
+            <p className="eyebrow">{l.howEyebrow}</p>
+            <h2>{l.howTitle}</h2>
           </div>
         </div>
         <div className="how-grid">
@@ -1903,6 +2566,128 @@ export default function Home() {
             </p>
           </article>
         </div>
+      </section>
+
+      <section
+        className="saved-plans-section page-section saved-only"
+        aria-labelledby="saved-plans-title"
+      >
+        <div className="saved-plans-heading">
+          <div>
+            <p className="eyebrow">{t("savedEyebrow")}</p>
+            <h1 id="saved-plans-title">{t("savedTitle")}</h1>
+            <p>{t("savedIntro")}</p>
+          </div>
+          <button className="primary-button small" onClick={() => navigate("home")}>
+            <Search aria-hidden="true" size={16} />
+            {t("explore")}
+          </button>
+        </div>
+        {savedPlans.length === 0 ? (
+          <div className="empty-saved-plans">
+            <FolderOpen aria-hidden="true" size={32} />
+            <h2>{t("noSavedTitle")}</h2>
+            <p>{t("noSavedBody")}</p>
+            <button className="primary-button small" onClick={() => navigate("home")}>
+              <ArrowRight aria-hidden="true" size={16} />
+              {t("explore")}
+            </button>
+          </div>
+        ) : (
+          <div className="saved-plans-grid">
+            {savedPlans.map((saved) => {
+              const stopCount = saved.plan.reduce(
+                (total, day) => total + day.stops.length,
+                0,
+              );
+              const start = saved.plan[0]?.date;
+              const end = saved.plan.at(-1)?.date;
+              return (
+                <article
+                  key={saved.id}
+                  className={
+                    activeSavedPlanId === saved.id
+                      ? "saved-plan-card current"
+                      : "saved-plan-card"
+                  }
+                >
+                  <div className="saved-plan-topline">
+                    <span>{saved.region}</span>
+                    {activeSavedPlanId === saved.id && (
+                      <small>
+                        <CheckCircle2 aria-hidden="true" size={13} />
+                        {t("savedState")}
+                      </small>
+                    )}
+                  </div>
+                  <label className="saved-plan-name">
+                    <Pencil aria-hidden="true" size={15} />
+                    <span className="sr-only">{t("rename")}</span>
+                    <input
+                      key={`${saved.id}-${saved.name}`}
+                      defaultValue={saved.name}
+                      maxLength={64}
+                      onBlur={(event) =>
+                        renameSavedPlan(saved.id, event.currentTarget.value)
+                      }
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter") event.currentTarget.blur();
+                      }}
+                    />
+                  </label>
+                  <div className="saved-plan-meta">
+                    <span>
+                      <CalendarDays aria-hidden="true" size={15} />
+                      {start
+                        ? new Intl.DateTimeFormat(localeCodes[locale], {
+                            day: "numeric",
+                            month: "short",
+                            year: "numeric",
+                          }).format(new Date(`${start}T12:00:00`))
+                        : "—"}
+                      {end && end !== start
+                        ? ` – ${new Intl.DateTimeFormat(localeCodes[locale], {
+                            day: "numeric",
+                            month: "short",
+                          }).format(new Date(`${end}T12:00:00`))}`
+                        : ""}
+                    </span>
+                    <span>
+                      <Route aria-hidden="true" size={15} />
+                      {saved.plan.length} {t("days")} · {stopCount} {t("places")}
+                    </span>
+                  </div>
+                  <div className="saved-plan-tags">
+                    <span>{transportLabels[saved.transport]}</span>
+                    {saved.interests.slice(0, 2).map((interest) => (
+                      <span key={`${saved.id}-${interest}`}>{interest}</span>
+                    ))}
+                  </div>
+                  <div className="saved-plan-actions">
+                    <button
+                      className="saved-plan-open"
+                      onClick={() => openSavedPlan(saved)}
+                    >
+                      <FolderOpen aria-hidden="true" size={15} />
+                      {t("openPlan")}
+                    </button>
+                    <button onClick={() => duplicateSavedPlan(saved)}>
+                      <Copy aria-hidden="true" size={15} />
+                      {t("duplicate")}
+                    </button>
+                    <button
+                      className="destructive"
+                      onClick={() => deleteSavedPlan(saved)}
+                    >
+                      <Trash2 aria-hidden="true" size={15} />
+                      {t("delete")}
+                    </button>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        )}
       </section>
 
       <section className="feature-section gemdrop-section page-section gemdrop-only" id="gemdrop">
@@ -2074,7 +2859,7 @@ export default function Home() {
                   <span className="point-reason">
                     <strong>{entry.reason}</strong>
                     <time>
-                      {new Intl.DateTimeFormat("en", {
+                      {new Intl.DateTimeFormat(localeCodes[locale], {
                         dateStyle: "medium",
                         timeStyle: "short",
                       }).format(new Date(entry.createdAt))}
@@ -2192,7 +2977,7 @@ export default function Home() {
                     <strong>{item.title}</strong>
                     <small>{item.body}</small>
                     <time>
-                      {new Intl.DateTimeFormat("en", {
+                      {new Intl.DateTimeFormat(localeCodes[locale], {
                         dateStyle: "medium",
                         timeStyle: "short",
                       }).format(new Date(item.createdAt))}
@@ -2217,11 +3002,74 @@ export default function Home() {
         </div>
       </section>
 
-      <nav className="mobile-tabbar" aria-label="GemGo sections">
-        <Link className={appPage === "home" ? "active" : ""} href="/" onClick={(event) => { event.preventDefault(); navigate("home"); }}><Search aria-hidden="true" size={19} />Explore</Link>
-        <Link className={appPage === "gemdrop" ? "active" : ""} href="/gemdrop" onClick={(event) => { event.preventDefault(); navigate("gemdrop"); }}><MapPin aria-hidden="true" size={19} />GemDrop</Link>
-        <Link className={appPage === "points" ? "active" : ""} href="/points" onClick={(event) => { event.preventDefault(); navigate("points"); }}><Gem aria-hidden="true" size={19} />Points</Link>
-        <Link className={appPage === "gemdeals" ? "active" : ""} href="/gemdeals" onClick={(event) => { event.preventDefault(); navigate("gemdeals"); }}><BadgePercent aria-hidden="true" size={19} />Deals</Link>
+      {accountPrompt !== "hidden" && (
+        <aside
+          className={
+            accountPrompt === "details"
+              ? "account-prompt account-details"
+              : "account-prompt"
+          }
+          aria-live="polite"
+          aria-label={t("accountTitle")}
+        >
+          <button
+            className="account-prompt-close"
+            aria-label={t("close")}
+            onClick={snoozeAccountPrompt}
+          >
+            <X aria-hidden="true" size={17} />
+          </button>
+          <span className="account-prompt-icon">
+            {accountPrompt === "details" ? (
+              <UserPlus aria-hidden="true" size={21} />
+            ) : (
+              <LogIn aria-hidden="true" size={21} />
+            )}
+          </span>
+          {accountPrompt === "prompt" ? (
+            <>
+              <strong>{t("accountTitle")}</strong>
+              <p>{t("accountBody")}</p>
+              <div>
+                <button onClick={() => setAccountPrompt("details")}>
+                  {t("accountCta")}
+                </button>
+                <button onClick={snoozeAccountPrompt}>{t("notNow")}</button>
+              </div>
+            </>
+          ) : (
+            <>
+              <small>{t("comingSoon")}</small>
+              <strong>{t("accountTitle")}</strong>
+              <p>{t("accountDetails")}</p>
+              <ul>
+                <li><Check aria-hidden="true" size={14} />{t("accountBenefitOne")}</li>
+                <li><Check aria-hidden="true" size={14} />{t("accountBenefitTwo")}</li>
+                <li><Check aria-hidden="true" size={14} />{t("accountBenefitThree")}</li>
+              </ul>
+              <button className="account-details-done" onClick={snoozeAccountPrompt}>
+                {t("notNow")}
+              </button>
+            </>
+          )}
+        </aside>
+      )}
+
+      <nav className="mobile-tabbar" aria-label="GemGo sections" ref={mobileNavRef}>
+        <span
+          className="nav-flow-indicator"
+          aria-hidden="true"
+          style={{
+            left: mobileIndicator.left,
+            width: mobileIndicator.width,
+            opacity: mobileIndicator.width ? 1 : 0,
+          }}
+        />
+        <Link data-page="home" className={appPage === "home" ? "active" : ""} href="/" onClick={(event) => { event.preventDefault(); navigate("home"); }}><Search aria-hidden="true" size={19} />{t("explore")}</Link>
+        <Link data-page="saved" className={appPage === "saved" ? "active" : ""} href="/saved" onClick={(event) => { event.preventDefault(); navigate("saved"); }}><FolderOpen aria-hidden="true" size={19} />{t("saved")}</Link>
+        <Link data-page="gemdrop" className={appPage === "gemdrop" ? "active" : ""} href="/gemdrop" onClick={(event) => { event.preventDefault(); navigate("gemdrop"); }}><MapPin aria-hidden="true" size={19} />GemDrop</Link>
+        <Link data-page="points" className={appPage === "points" ? "active" : ""} href="/points" onClick={(event) => { event.preventDefault(); navigate("points"); }}><Gem aria-hidden="true" size={19} />{t("points")}</Link>
+        <Link data-page="gemdeals" className={appPage === "gemdeals" ? "active" : ""} href="/gemdeals" onClick={(event) => { event.preventDefault(); navigate("gemdeals"); }}><BadgePercent aria-hidden="true" size={19} />{t("deals")}</Link>
       </nav>
 
       <footer>
@@ -2254,27 +3102,42 @@ export default function Home() {
             onMouseDown={(event) => event.stopPropagation()}
           >
             <div className="settings-heading">
-              <div><p className="eyebrow">MVP presentation mode</p><h2 id="settings-title">App settings</h2></div>
-              <button aria-label="Close settings" onClick={() => setSettingsOpen(false)}>
+              <div><p className="eyebrow">{l.settingsEyebrow}</p><h2 id="settings-title">{t("settings")}</h2></div>
+              <button aria-label={t("close")} onClick={() => setSettingsOpen(false)}>
                 <X aria-hidden="true" size={21} />
               </button>
             </div>
             <p>
-              Choose a simulated location to test only the features that normally require GPS.
-              The app always labels this as demo data.
+              {l.settingsIntro}
             </p>
             <label>
-              <span>Simulated location</span>
+              <span>{l.simulatedLocation}</span>
               <select
                 value={mockLocationId ?? ""}
                 onChange={(event) => setDemoLocation(event.target.value || null)}
               >
-                <option value="">Use real device GPS</option>
+                <option value="">{l.realGps}</option>
                 {destinations.map((destination) => (
                   <option key={destination.id} value={destination.id}>
                     {destination.name} · {destination.region}
                   </option>
                 ))}
+              </select>
+            </label>
+            <label className="language-setting">
+              <span>
+                <Globe2 aria-hidden="true" size={18} />
+                {t("language")}
+              </span>
+              <small>{t("languageHelp")}</small>
+              <select
+                value={locale}
+                onChange={(event) => setLocale(event.target.value as Locale)}
+              >
+                <option value="en">English · EN</option>
+                <option value="it">Italiano · IT</option>
+                <option value="de">Deutsch · DE</option>
+                <option value="fr">Français · FR</option>
               </select>
             </label>
             <div className="sound-setting">
@@ -2286,8 +3149,8 @@ export default function Home() {
                 )}
               </span>
               <span>
-                <strong>Action sounds</strong>
-                <small>Short, subtle feedback for rewards and confirmations.</small>
+                <strong>{t("sound")}</strong>
+                <small>{l.soundHelp}</small>
               </span>
               <button
                 type="button"
@@ -2310,7 +3173,7 @@ export default function Home() {
               </div>
             )}
             <button className="primary-button small" onClick={() => setSettingsOpen(false)}>
-              Apply and continue
+              {t("apply")}
             </button>
           </section>
         </div>
