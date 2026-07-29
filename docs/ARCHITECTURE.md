@@ -28,10 +28,13 @@ Transient state is held in React. The MVP persists only presentation data in
 
 - GemXP balance
 - append-only-style local GemXP history with reason, timestamp and resulting balance
-- one saved itinerary
+- a collection of saved itineraries, including name, dates, route preferences
+  and migration from the former single-plan key
 - simulated location
 - notification history and read state
 - action-sound preference
+- interface locale (`EN`, `IT`, `DE` or `FR`)
+- bounded account-prompt impression and seven-day snooze timestamps
 - one-time crowd-report and photo reward keys
 
 Map clusters are rendered only when more than five destination markers occupy
@@ -43,7 +46,10 @@ field tied to projected destination coordinates; it is not a screen-fixed
 gradient and does not claim administrative-boundary precision.
 
 There is no shared account database yet. Consequently, state does not follow a
-user across devices and is not suitable for monetary rewards.
+user across devices and is not suitable for monetary rewards. The account
+prompt is a capability explainer, not a simulated registration flow: it appears
+only after a saved plan or GemXP milestone, never as a daily system
+notification, and is capped at two impressions with a seven-day snooze.
 
 ## Reward vocabulary
 
@@ -62,8 +68,19 @@ conditions. A destination whose date-aware result is `Busy` is excluded from
 automatic plans. A user can still explicitly add a place from Explore; this is
 treated as an intentional choice and receives an off-peak suggested time.
 
-The “Why this plan?” panel exposes the main ranking inputs. The current plan can
-be saved locally and restored on the same device.
+The “Why this plan?” panel exposes the main ranking inputs. Saved Plans can be
+opened, renamed, duplicated and deleted locally. Explore keeps planned places
+visible and labelled by default; users may explicitly hide them.
+
+## Navigation and localisation
+
+Desktop and mobile navigation share a single measured active indicator that
+translates and resizes between routes. The mobile bar remains fixed to the
+viewport and is covered by responsive visual tests.
+
+The interface locale is stored locally and controls navigation, core planning
+copy, settings, Saved Plans and date/time formatting. Destination names remain
+proper nouns. Country flags are not used as language selectors.
 
 ## Location trust model
 
