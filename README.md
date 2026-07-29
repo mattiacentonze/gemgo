@@ -13,7 +13,10 @@ Live MVP: [gemgo-mvp.aloneeagle.chatgpt.site](https://gemgo-mvp.aloneeagle.chatg
 - natural-language preference parsing with filter reset and negation support
 - one-to-seven-day trip plans
 - strict exclusion of automatically predicted `Busy` stops
-- explainable recommendations, Explore-to-plan additions, undo and local plan saving
+- explainable recommendations, Explore-to-plan additions and contextual undo
+- multi-plan local Saved Plans with legacy-plan migration, rename, open,
+  duplicate and delete actions
+- planned-place state in Explore plus an explicit `Hide planned` filter
 - live Open-Meteo forecasts
 - interactive OpenStreetMap map with zoom-aware marker clustering only when
   more than five markers are too close
@@ -24,10 +27,15 @@ Live MVP: [gemgo-mvp.aloneeagle.chatgpt.site](https://gemgo-mvp.aloneeagle.chatg
 - deduplicated destination tags
 - smooth plan handoff, two-second action toasts, contextual undo and optional
   subtle action sounds
-- SPA navigation for Explore, GemDrop, GemPoints, GemDeals and notifications
+- SPA navigation for Explore, Saved, GemDrop, GemPoints, GemDeals and
+  notifications, with one shared animated active indicator
+- persisted `EN`, `IT`, `DE` and `FR` interface language selection using a
+  language icon rather than country flags, plus locale-aware dates
 - real or explicitly simulated location checks for MVP presentations
 - device-local GemXP ledger, notification history, check-ins and photo previews
 - a separate GemCredits concept for future account-linked, redeemable rewards
+- a contextual, dismissible account-benefit prompt after a saved plan or GemXP
+  milestone; it is shown at most twice and can be snoozed for seven days
 - installable PWA with opt-in device notifications
 - interface icons from `lucide-react`
 
@@ -86,8 +94,8 @@ GemGo deliberately distinguishes live, estimated and mocked information:
   and time, not live visitor counts;
 - GemDeals name real businesses, but offers are concept proposals until a
   partnership is signed;
-- GemXP, notifications, saved plans and simulated GPS state are local to the
-  device;
+- GemXP, notifications, all saved plans, language preference and simulated GPS
+  state are local to the device;
 - GemCredits are intentionally not issued in the MVP.
 
 See [docs/DATA_SOURCES.md](docs/DATA_SOURCES.md) for the complete inventory.
