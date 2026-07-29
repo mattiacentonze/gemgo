@@ -77,3 +77,48 @@ test("public docs do not expose the private backlog", () => {
   const workflow = read("docs/TODO_WORKFLOW.md");
   assert.doesNotMatch(workflow, /docs\.google|drive\.google|shared Google Doc/i);
 });
+
+test("saved plans migrate the legacy plan and expose complete local controls", () => {
+  const page = read("app/page.tsx");
+  const route = read("app/saved/page.tsx");
+  assert.match(page, /gemgo-saved-plans/);
+  assert.match(page, /gemgo-saved-plan/);
+  assert.match(page, /openSavedPlan/);
+  assert.match(page, /duplicateSavedPlan/);
+  assert.match(page, /deleteSavedPlan/);
+  assert.match(page, /renameSavedPlan/);
+  assert.match(route, /export \{ default \} from "\.\.\/page"/);
+});
+
+test("planned destinations stay visible by default and can be filtered explicitly", () => {
+  const page = read("app/page.tsx");
+  assert.match(page, /plannedDestinationIds/);
+  assert.match(page, /hidePlanned/);
+  assert.match(page, /already-planned/);
+  assert.match(page, /In your plan/);
+});
+
+test("navigation uses one measured indicator and keeps the mobile bar fixed", () => {
+  const page = read("app/page.tsx");
+  const css = read("app/globals.css");
+  assert.match(page, /nav-flow-indicator/);
+  assert.match(page, /getBoundingClientRect/);
+  assert.match(css, /\.nav-flow-indicator/);
+  assert.match(
+    css,
+    /@media \(max-width: 820px\)[\s\S]*\.mobile-tabbar \{[\s\S]*position: fixed/,
+  );
+});
+
+test("language and account prompts are contextual and persisted without flags", () => {
+  const page = read("app/page.tsx");
+  assert.match(page, /type Locale = "en" \| "it" \| "de" \| "fr"/);
+  assert.match(page, /Globe2/);
+  assert.doesNotMatch(page, /🇬🇧|🇮🇹|🇩🇪|🇫🇷/);
+  assert.match(page, /gemgo-account-prompt-next/);
+  assert.match(page, /7 \* 24 \* 60 \* 60 \* 1000/);
+  assert.match(page, /impressions >= 2/);
+  assert.match(page, /Optional account sync is coming soon/);
+  assert.match(page, /if \(!storageReady\) return/);
+  assert.match(page, /\[locale, storageReady\]/);
+});
