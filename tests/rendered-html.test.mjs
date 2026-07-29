@@ -35,4 +35,5 @@ test("renders development preview metadata", async () => {
   assert.match(html, /Add to plan/i);
   assert.match(html, /GemCredits/i);
   assert.match(html, /GemXP history/i);
+  assert.match(html, /Saved Plans/i);
 });
