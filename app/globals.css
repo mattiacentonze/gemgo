@@ -652,7 +652,6 @@ h1 {
 .page-gemdeals .deals-only,
 .page-notifications .notifications-only {
   min-height: calc(100svh - 76px);
-  padding-top: 118px;
 }
 
 .page-points .points-only {
@@ -660,6 +659,7 @@ h1 {
 }
 
 .notifications-section {
+  align-content: start;
   padding: 105px clamp(24px, 7vw, 110px);
   background: var(--cream);
 }
@@ -2121,11 +2121,10 @@ footer button {
 }
 
 .prompt-suggestions {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
   margin-top: 10px;
-  overflow-x: auto;
-  scrollbar-width: none;
 }
 
 .how-preview {
@@ -2175,13 +2174,8 @@ footer button {
   font-weight: 700;
 }
 
-.prompt-suggestions::-webkit-scrollbar {
-  display: none;
-}
-
 .prompt-suggestions button {
-  flex: 0 0 auto;
-  max-width: 280px;
+  width: 100%;
   padding: 9px 12px;
   color: var(--forest);
   font-size: 12px;
@@ -2191,6 +2185,52 @@ footer button {
   border: 1px solid rgba(18, 61, 53, 0.15);
   border-radius: 14px;
   cursor: pointer;
+}
+
+.interpretation {
+  display: grid;
+  gap: 8px;
+  padding: 12px 14px;
+  background: rgba(221, 235, 229, 0.54);
+  border: 1px solid rgba(18, 61, 53, 0.1);
+  border-radius: 16px;
+}
+
+.interpretation > strong {
+  font-size: 12px;
+  letter-spacing: 0.02em;
+}
+
+.interpretation > small {
+  color: var(--slate);
+  line-height: 1.4;
+}
+
+.interpretation-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.interpretation-chips button {
+  min-height: 32px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  color: var(--forest);
+  background: var(--paper);
+  border: 1px solid rgba(18, 61, 53, 0.16);
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 680;
+  cursor: pointer;
+}
+
+.interpretation-chips button[aria-pressed="false"] {
+  color: var(--slate);
+  background: transparent;
+  text-decoration: line-through;
 }
 
 .baseline-chip {
@@ -3086,6 +3126,31 @@ footer button {
   .points-history-heading {
     align-items: flex-start;
     flex-direction: column;
+  }
+}
+
+@media (max-width: 480px) {
+  .prompt-suggestions {
+    grid-template-columns: 1fr;
+  }
+
+  .interpretation {
+    padding: 10px;
+  }
+
+  .interpretation-chips {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 3px;
+    scrollbar-width: none;
+  }
+
+  .interpretation-chips::-webkit-scrollbar {
+    display: none;
+  }
+
+  .interpretation-chips button {
+    flex: 0 0 auto;
   }
 }
 
