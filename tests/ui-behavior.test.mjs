@@ -42,7 +42,7 @@ test("shared UI geometry keeps controls and cards aligned", () => {
   const page = read("app/page.tsx");
   const css = read("app/globals.css");
   assert.match(page, /gemgo-logo-green\.svg\?v=2/);
-  assert.match(page, /aria-label="Open app settings"/);
+  assert.match(page, /aria-label=\{t\("global\.openSettings"\)\}/);
   assert.match(css, /\.quick-settings \{[\s\S]*repeat\(2, minmax\(0, 1fr\)\)/);
   assert.match(
     css,
@@ -87,6 +87,10 @@ test("saved plans migrate the legacy plan and expose complete local controls", (
   assert.match(page, /duplicateSavedPlan/);
   assert.match(page, /deleteSavedPlan/);
   assert.match(page, /renameSavedPlan/);
+  assert.match(page, /automaticPlanName/);
+  assert.match(page, /customName/);
+  assert.match(page, /isLegacyAutomaticPlanName/);
+  assert.doesNotMatch(page, /name: defaultName/);
   assert.match(route, /export \{ default \} from "\.\.\/page"/);
 });
 
@@ -95,7 +99,7 @@ test("planned destinations stay visible by default and can be filtered explicitl
   assert.match(page, /plannedDestinationIds/);
   assert.match(page, /hidePlanned/);
   assert.match(page, /already-planned/);
-  assert.match(page, /In your plan/);
+  assert.match(page, /explore\.inPlan/);
 });
 
 test("navigation uses one measured indicator and keeps the mobile bar fixed", () => {
@@ -112,13 +116,36 @@ test("navigation uses one measured indicator and keeps the mobile bar fixed", ()
 
 test("language and account prompts are contextual and persisted without flags", () => {
   const page = read("app/page.tsx");
-  assert.match(page, /type Locale = "en" \| "it" \| "de" \| "fr"/);
+  const domain = read("app/domain.ts");
+  const catalogues = read("app/i18n/catalogs.mjs");
+  assert.match(domain, /\["en", "it", "de", "fr", "sl"\]/);
+  assert.match(catalogues, /Slovenščina · SL/);
   assert.match(page, /Globe2/);
-  assert.doesNotMatch(page, /🇬🇧|🇮🇹|🇩🇪|🇫🇷/);
+  assert.doesNotMatch(page, /🇬🇧|🇮🇹|🇩🇪|🇫🇷|🇸🇮/);
   assert.match(page, /gemgo-account-prompt-next/);
   assert.match(page, /7 \* 24 \* 60 \* 60 \* 1000/);
   assert.match(page, /impressions >= 2/);
-  assert.match(page, /Optional account sync is coming soon/);
+  assert.match(catalogues, /Optional account sync is coming soon/);
   assert.match(page, /if \(!storageReady\) return/);
   assert.match(page, /\[locale, storageReady\]/);
+});
+
+test("canonical codes and structured history are independent from language", () => {
+  const page = read("app/page.tsx");
+  const domain = read("app/domain.ts");
+  assert.match(domain, /public_transport/);
+  assert.match(domain, /quiet/);
+  assert.match(page, /reasonType/);
+  assert.match(page, /bodyType/);
+  assert.doesNotMatch(page, /const interestOptions = \["Lakes"/);
+  assert.doesNotMatch(page, /transportLabels/);
+});
+
+test("map receives the active locale and translates generated popup HTML", () => {
+  const page = read("app/page.tsx");
+  const map = read("app/components/DestinationMap.tsx");
+  assert.match(page, /locale=\{locale\}/);
+  assert.match(map, /map\.directions/);
+  assert.match(map, /map\.legendNote/);
+  assert.match(map, /data\.description/);
 });
