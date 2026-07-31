@@ -53,25 +53,41 @@ import {
 } from "lucide-react";
 import alpineData from "./data/destinations.json";
 import DestinationMap from "./components/DestinationMap";
+import {
+  canonicalCrowd,
+  canonicalInterest,
+  canonicalRegion,
+  canonicalTransport,
+  inferPlaceKind,
+  localeCodes,
+  locales,
+  primaryInterestCodes,
+  publicTagsForKind,
+  regionCodes,
+  transportCodes,
+  type CrowdCode,
+  type Destination,
+  type DifficultyCode,
+  type InterestCode,
+  type Locale,
+  type RegionCode,
+  type TransportCode,
+} from "./domain";
+import {
+  languageOptions,
+  msg,
+  plural,
+  promptSuggestions,
+} from "./i18n/catalogs.mjs";
+import {
+  isValidParseResult,
+  parsePrompt,
+} from "./lib/prompt-parser.mjs";
 
-type Transport = "walking" | "cycling" | "e-bike" | "driving" | "public";
-type Difficulty = "Easy" | "Moderate";
-type Region = "All" | "Füssen / Allgäu" | "Bavaria" | "Valle d’Aosta";
-
-export type Destination = {
-  id: string;
-  name: string;
-  kind: string;
-  description: string;
-  lat: number;
-  lng: number;
-  distanceKm: number;
-  visitMinutes: number;
-  popularity: number;
-  difficulty: Difficulty;
-  tags: string[];
-  region: string;
-};
+type Transport = TransportCode;
+type Difficulty = DifficultyCode;
+type Region = RegionCode;
+type PromptParseResult = ReturnType<typeof parsePrompt>;
 
 type WeatherDay = {
   date: string;
@@ -82,7 +98,7 @@ type WeatherDay = {
 };
 
 type Stop = Destination & {
-  crowd: "Low" | "Moderate" | "Busy";
+  crowd: CrowdCode;
   crowdScore: number;
   suggestedTime: string;
   travelMinutes: number;
@@ -103,341 +119,15 @@ type AppPage =
   | "gemdeals"
   | "notifications";
 
-type Locale = "en" | "it" | "de" | "fr";
-
-type CopyKey =
-  | "explore"
-  | "saved"
-  | "gemdrop"
-  | "points"
-  | "deals"
-  | "savePlan"
-  | "savedState"
-  | "inPlan"
-  | "addToPlan"
-  | "viewMap"
-  | "hidePlanned"
-  | "showPlanned"
-  | "savedEyebrow"
-  | "savedTitle"
-  | "savedIntro"
-  | "noSavedTitle"
-  | "noSavedBody"
-  | "openPlan"
-  | "duplicate"
-  | "delete"
-  | "rename"
-  | "places"
-  | "days"
-  | "language"
-  | "languageHelp"
-  | "accountTitle"
-  | "accountBody"
-  | "accountCta"
-  | "notNow"
-  | "comingSoon"
-  | "accountDetails"
-  | "accountBenefitOne"
-  | "accountBenefitTwo"
-  | "accountBenefitThree"
-  | "close"
-  | "settings"
-  | "sound"
-  | "apply";
-
-const localeCodes: Record<Locale, string> = {
-  en: "en-GB",
-  it: "it-IT",
-  de: "de-DE",
-  fr: "fr-FR",
-};
-
-const copy: Record<Locale, Record<CopyKey, string>> = {
-  en: {
-    explore: "Explore",
-    saved: "Saved",
-    gemdrop: "GemDrop",
-    points: "Points",
-    deals: "Deals",
-    savePlan: "Save plan",
-    savedState: "Saved",
-    inPlan: "In your plan",
-    addToPlan: "Add to plan",
-    viewMap: "View on map",
-    hidePlanned: "Hide planned",
-    showPlanned: "Show planned",
-    savedEyebrow: "Saved Plans",
-    savedTitle: "Your trips, ready when you are.",
-    savedIntro:
-      "Open, rename, duplicate or remove plans saved on this device.",
-    noSavedTitle: "No saved plans yet",
-    noSavedBody:
-      "Build a quieter route in Explore, then save it here for later.",
-    openPlan: "Open plan",
-    duplicate: "Duplicate",
-    delete: "Delete",
-    rename: "Rename",
-    places: "places",
-    days: "days",
-    language: "Language",
-    languageHelp: "Interface language and local date formats.",
-    accountTitle: "Keep this trip beyond this device?",
-    accountBody:
-      "An account will sync saved plans and link eligible GemXP only when you choose real rewards.",
-    accountCta: "See account benefits",
-    notNow: "Not now",
-    comingSoon: "Optional account sync is coming soon",
-    accountDetails:
-      "GemGo stays useful without registration. When account sync launches, you will choose whether to move local plans and eligible GemXP.",
-    accountBenefitOne: "Sync Saved Plans across devices",
-    accountBenefitTwo: "Recover progress if you change phone",
-    accountBenefitThree: "Convert only verified GemXP into GemCredits",
-    close: "Close",
-    settings: "App settings",
-    sound: "Action sounds",
-    apply: "Apply and continue",
-  },
-  it: {
-    explore: "Esplora",
-    saved: "Salvati",
-    gemdrop: "GemDrop",
-    points: "Punti",
-    deals: "Offerte",
-    savePlan: "Salva piano",
-    savedState: "Salvato",
-    inPlan: "Nel tuo piano",
-    addToPlan: "Aggiungi al piano",
-    viewMap: "Vedi sulla mappa",
-    hidePlanned: "Nascondi pianificati",
-    showPlanned: "Mostra pianificati",
-    savedEyebrow: "Piani salvati",
-    savedTitle: "I tuoi viaggi, pronti quando vuoi.",
-    savedIntro:
-      "Apri, rinomina, duplica o rimuovi i piani salvati su questo dispositivo.",
-    noSavedTitle: "Nessun piano salvato",
-    noSavedBody:
-      "Crea un percorso meno affollato in Esplora e salvalo qui.",
-    openPlan: "Apri piano",
-    duplicate: "Duplica",
-    delete: "Elimina",
-    rename: "Rinomina",
-    places: "luoghi",
-    days: "giorni",
-    language: "Lingua",
-    languageHelp: "Lingua dell’interfaccia e formati locali delle date.",
-    accountTitle: "Vuoi conservare il viaggio oltre questo dispositivo?",
-    accountBody:
-      "Un account sincronizzerà i piani e collegherà i GemXP idonei solo quando vorrai premi reali.",
-    accountCta: "Scopri i vantaggi",
-    notNow: "Non ora",
-    comingSoon: "La sincronizzazione facoltativa arriverà presto",
-    accountDetails:
-      "GemGo resta utile senza registrazione. Quando la sincronizzazione sarà disponibile, sceglierai se trasferire piani locali e GemXP idonei.",
-    accountBenefitOne: "Sincronizza i piani tra dispositivi",
-    accountBenefitTwo: "Recupera i progressi cambiando telefono",
-    accountBenefitThree: "Converti solo GemXP verificati in GemCredits",
-    close: "Chiudi",
-    settings: "Impostazioni app",
-    sound: "Suoni delle azioni",
-    apply: "Applica e continua",
-  },
-  de: {
-    explore: "Entdecken",
-    saved: "Gespeichert",
-    gemdrop: "GemDrop",
-    points: "Punkte",
-    deals: "Angebote",
-    savePlan: "Plan speichern",
-    savedState: "Gespeichert",
-    inPlan: "In deinem Plan",
-    addToPlan: "Zum Plan",
-    viewMap: "Auf Karte",
-    hidePlanned: "Geplante ausblenden",
-    showPlanned: "Geplante zeigen",
-    savedEyebrow: "Gespeicherte Pläne",
-    savedTitle: "Deine Reisen, jederzeit bereit.",
-    savedIntro:
-      "Öffne, benenne, dupliziere oder lösche lokal gespeicherte Pläne.",
-    noSavedTitle: "Noch keine gespeicherten Pläne",
-    noSavedBody:
-      "Erstelle unter Entdecken eine ruhigere Route und speichere sie hier.",
-    openPlan: "Plan öffnen",
-    duplicate: "Duplizieren",
-    delete: "Löschen",
-    rename: "Umbenennen",
-    places: "Orte",
-    days: "Tage",
-    language: "Sprache",
-    languageHelp: "Sprache der Oberfläche und lokale Datumsformate.",
-    accountTitle: "Diese Reise geräteübergreifend behalten?",
-    accountBody:
-      "Ein Konto synchronisiert Pläne und verknüpft geeignete GemXP erst, wenn du echte Prämien möchtest.",
-    accountCta: "Kontovorteile ansehen",
-    notNow: "Nicht jetzt",
-    comingSoon: "Optionale Kontosynchronisierung kommt bald",
-    accountDetails:
-      "GemGo bleibt ohne Registrierung nützlich. Später entscheidest du selbst, ob lokale Pläne und geeignete GemXP übertragen werden.",
-    accountBenefitOne: "Pläne geräteübergreifend synchronisieren",
-    accountBenefitTwo: "Fortschritt beim Handywechsel wiederherstellen",
-    accountBenefitThree: "Nur verifizierte GemXP in GemCredits umwandeln",
-    close: "Schließen",
-    settings: "App-Einstellungen",
-    sound: "Aktionssounds",
-    apply: "Übernehmen",
-  },
-  fr: {
-    explore: "Explorer",
-    saved: "Enregistrés",
-    gemdrop: "GemDrop",
-    points: "Points",
-    deals: "Offres",
-    savePlan: "Enregistrer",
-    savedState: "Enregistré",
-    inPlan: "Dans votre parcours",
-    addToPlan: "Ajouter au parcours",
-    viewMap: "Voir sur la carte",
-    hidePlanned: "Masquer les lieux prévus",
-    showPlanned: "Afficher les lieux prévus",
-    savedEyebrow: "Parcours enregistrés",
-    savedTitle: "Vos voyages, prêts quand vous l’êtes.",
-    savedIntro:
-      "Ouvrez, renommez, dupliquez ou supprimez les parcours enregistrés sur cet appareil.",
-    noSavedTitle: "Aucun parcours enregistré",
-    noSavedBody:
-      "Créez un itinéraire plus calme dans Explorer, puis enregistrez-le ici.",
-    openPlan: "Ouvrir",
-    duplicate: "Dupliquer",
-    delete: "Supprimer",
-    rename: "Renommer",
-    places: "lieux",
-    days: "jours",
-    language: "Langue",
-    languageHelp: "Langue de l’interface et formats de date locaux.",
-    accountTitle: "Conserver ce voyage sur plusieurs appareils ?",
-    accountBody:
-      "Un compte synchronisera vos parcours et reliera les GemXP éligibles seulement si vous souhaitez de vraies récompenses.",
-    accountCta: "Voir les avantages",
-    notNow: "Plus tard",
-    comingSoon: "La synchronisation facultative arrive bientôt",
-    accountDetails:
-      "GemGo reste utile sans inscription. Vous choisirez plus tard de transférer ou non vos parcours locaux et GemXP éligibles.",
-    accountBenefitOne: "Synchroniser les parcours entre appareils",
-    accountBenefitTwo: "Récupérer les progrès après un changement de téléphone",
-    accountBenefitThree: "Convertir uniquement les GemXP vérifiés en GemCredits",
-    close: "Fermer",
-    settings: "Paramètres de l’app",
-    sound: "Sons des actions",
-    apply: "Appliquer",
-  },
-};
-
-const localized = {
-  en: {
-    settingsEyebrow: "MVP presentation mode",
-    settingsIntro:
-      "Choose a simulated location to test only the features that normally require GPS. The app always labels this as demo data.",
-    simulatedLocation: "Simulated location",
-    realGps: "Use real device GPS",
-    soundHelp: "Short, subtle feedback for rewards and confirmations.",
-    heroEyebrow: "Plan less. Experience more.",
-    heroTitle: "More Alps. Fewer queues.",
-    heroBody:
-      "Describe the trip naturally. GemGo resets every preference, checks the forecast and prioritises less-crowded times across Bavaria, Füssen and Valle d’Aosta.",
-    howWorks: "How GemGo works",
-    promptLabel: "What would you like to do?",
-    promptHelp: "Mention days, transport, interests and crowd preference.",
-    buildTrip: "Build my trip",
-    exploreDestinations: "Explore destinations",
-    noSignup:
-      "No sign-up to plan or collect GemXP. An account is only needed later to convert eligible XP into reward-ready GemCredits.",
-    yourPlan: "Your plan",
-    whyPlan: "Why this plan?",
-    planEmpty: "Build a trip to see your itinerary.",
-    exploreTitle: "Local places, not a generic bucket list.",
-    howEyebrow: "How it works",
-    howTitle: "Natural to use. Honest about the data.",
-  },
-  it: {
-    settingsEyebrow: "Modalità presentazione MVP",
-    settingsIntro:
-      "Scegli una posizione simulata soltanto per provare le funzioni che normalmente richiedono il GPS. L’app la indica sempre come dato demo.",
-    simulatedLocation: "Posizione simulata",
-    realGps: "Usa il GPS reale del dispositivo",
-    soundHelp: "Feedback brevi e discreti per premi e conferme.",
-    heroEyebrow: "Meno pianificazione. Più esperienza.",
-    heroTitle: "Più Alpi. Meno code.",
-    heroBody:
-      "Descrivi il viaggio in modo naturale. GemGo reimposta le preferenze, controlla il meteo e privilegia gli orari meno affollati in Baviera, a Füssen e in Valle d’Aosta.",
-    howWorks: "Come funziona GemGo",
-    promptLabel: "Che cosa vorresti fare?",
-    promptHelp: "Indica giorni, trasporto, interessi e preferenze sull’affollamento.",
-    buildTrip: "Crea il mio viaggio",
-    exploreDestinations: "Esplora le destinazioni",
-    noSignup:
-      "Non serve registrarsi per pianificare o raccogliere GemXP. L’account servirà solo per convertire gli XP idonei in GemCredits utilizzabili.",
-    yourPlan: "Il tuo piano",
-    whyPlan: "Perché questo piano?",
-    planEmpty: "Crea un viaggio per vedere l’itinerario.",
-    exploreTitle: "Luoghi del territorio, non la solita lista generica.",
-    howEyebrow: "Come funziona",
-    howTitle: "Semplice da usare. Trasparente sui dati.",
-  },
-  de: {
-    settingsEyebrow: "MVP-Präsentationsmodus",
-    settingsIntro:
-      "Wähle einen simulierten Standort nur zum Testen von Funktionen, die normalerweise GPS benötigen. Er wird immer als Demo gekennzeichnet.",
-    simulatedLocation: "Simulierter Standort",
-    realGps: "Echtes Geräte-GPS verwenden",
-    soundHelp: "Kurze, dezente Rückmeldung für Prämien und Bestätigungen.",
-    heroEyebrow: "Weniger planen. Mehr erleben.",
-    heroTitle: "Mehr Alpen. Weniger Warteschlangen.",
-    heroBody:
-      "Beschreibe die Reise frei. GemGo setzt Präferenzen neu, prüft das Wetter und bevorzugt ruhigere Zeiten in Bayern, Füssen und im Aostatal.",
-    howWorks: "So funktioniert GemGo",
-    promptLabel: "Was möchtest du unternehmen?",
-    promptHelp: "Nenne Tage, Verkehrsmittel, Interessen und Besucherpräferenz.",
-    buildTrip: "Meine Reise erstellen",
-    exploreDestinations: "Ziele entdecken",
-    noSignup:
-      "Planen und GemXP sammeln geht ohne Registrierung. Ein Konto wird erst für die Umwandlung geeigneter XP in GemCredits benötigt.",
-    yourPlan: "Dein Plan",
-    whyPlan: "Warum dieser Plan?",
-    planEmpty: "Erstelle eine Reise, um den Ablauf zu sehen.",
-    exploreTitle: "Lokale Orte statt allgemeiner Bestenliste.",
-    howEyebrow: "So funktioniert es",
-    howTitle: "Einfach zu nutzen. Ehrlich bei den Daten.",
-  },
-  fr: {
-    settingsEyebrow: "Mode présentation du MVP",
-    settingsIntro:
-      "Choisissez une position simulée uniquement pour tester les fonctions qui nécessitent normalement le GPS. Elle reste toujours signalée comme donnée de démonstration.",
-    simulatedLocation: "Position simulée",
-    realGps: "Utiliser le GPS réel de l’appareil",
-    soundHelp: "Retours courts et discrets pour les récompenses et confirmations.",
-    heroEyebrow: "Moins planifier. Mieux profiter.",
-    heroTitle: "Plus d’Alpes. Moins de files.",
-    heroBody:
-      "Décrivez votre voyage naturellement. GemGo réinitialise les préférences, vérifie la météo et privilégie les horaires plus calmes en Bavière, à Füssen et dans la Vallée d’Aoste.",
-    howWorks: "Comment fonctionne GemGo",
-    promptLabel: "Que souhaitez-vous faire ?",
-    promptHelp: "Indiquez les jours, le transport, les centres d’intérêt et la préférence d’affluence.",
-    buildTrip: "Créer mon voyage",
-    exploreDestinations: "Explorer les destinations",
-    noSignup:
-      "Aucune inscription n’est nécessaire pour planifier ou gagner des GemXP. Le compte ne servira qu’à convertir les XP éligibles en GemCredits.",
-    yourPlan: "Votre parcours",
-    whyPlan: "Pourquoi ce parcours ?",
-    planEmpty: "Créez un voyage pour voir votre itinéraire.",
-    exploreTitle: "Des lieux locaux, pas une liste touristique générique.",
-    howEyebrow: "Comment ça marche",
-    howTitle: "Simple à utiliser. Transparent sur les données.",
-  },
-} satisfies Record<Locale, Record<string, string>>;
 
 type GemNotification = {
   id: string;
-  title: string;
-  body: string;
+  type: string;
+  params?: Record<string, string | number>;
+  bodyType?: string;
+  bodyParams?: Record<string, string | number>;
+  title?: string;
+  body?: string;
   createdAt: string;
   read: boolean;
 };
@@ -445,7 +135,9 @@ type GemNotification = {
 type PointEvent = {
   id: string;
   amount: number;
-  reason: string;
+  reasonType: string;
+  reasonParams?: Record<string, string | number>;
+  reason?: string;
   createdAt: string;
   balanceAfter: number;
   status: "local" | "verified";
@@ -453,17 +145,18 @@ type PointEvent = {
 
 type PlanUndo = {
   previousPlan: PlanDay[];
-  message: string;
 };
 
 type SavedPlan = {
   id: string;
-  name: string;
+  customName?: string;
+  copyNumber?: number;
+  name?: string;
   createdAt: string;
   updatedAt: string;
   region: Region;
   transport: Transport;
-  interests: string[];
+  interests: InterestCode[];
   plan: PlanDay[];
 };
 
@@ -474,110 +167,107 @@ type ActionToast = {
   undo?: () => void;
 };
 
+type LocalizedState = {
+  key: string;
+  params?: Record<string, string | number>;
+};
+
 const fussenDestinations = [
   {
     id: "hopfensee",
     name: "Hopfensee",
-    kind: "Lakeside loop",
-    description: "A gentle lake circuit with wide Alpine views and easy access from Füssen.",
+    kind: "lake" as const,
     lat: 47.6072,
     lng: 10.6728,
     distanceKm: 10,
     visitMinutes: 100,
     popularity: 3,
-    difficulty: "Easy",
-    tags: ["Lakes", "Quiet places", "Cycling", "Sunset"],
+    difficulty: "easy" as const,
+    tags: ["lakes", "quiet", "cycling", "sunset"] as InterestCode[],
   },
   {
     id: "weissensee",
     name: "Weißensee",
-    kind: "Quiet lake",
-    description: "A calmer swimming lake with a relaxed shore path and mountain backdrop.",
+    kind: "lake" as const,
     lat: 47.5755,
     lng: 10.6243,
     distanceKm: 7,
     visitMinutes: 90,
     popularity: 2,
-    difficulty: "Easy",
-    tags: ["Lakes", "Quiet places", "Swimming", "Nature"],
+    difficulty: "easy" as const,
+    tags: ["lakes", "quiet", "swimming", "nature"] as InterestCode[],
   },
   {
     id: "alatsee",
     name: "Alatsee",
-    kind: "Forest lake",
-    description: "A compact high lake hidden in the forest, best reached before the midday peak.",
+    kind: "lake" as const,
     lat: 47.5529,
     lng: 10.6367,
     distanceKm: 8,
     visitMinutes: 80,
     popularity: 3,
-    difficulty: "Moderate",
-    tags: ["Lakes", "Quiet places", "Hiking", "Nature"],
+    difficulty: "moderate" as const,
+    tags: ["lakes", "quiet", "hiking", "nature"] as InterestCode[],
   },
   {
     id: "forggensee",
     name: "Forggensee",
-    kind: "Big-lake panorama",
-    description: "Open-water views, long cycling stretches and many places to pause by the shore.",
+    kind: "viewpoint" as const,
     lat: 47.6057,
     lng: 10.731,
     distanceKm: 13,
     visitMinutes: 110,
     popularity: 3,
-    difficulty: "Easy",
-    tags: ["Lakes", "Cycling", "Picnic", "Nature"],
+    difficulty: "easy" as const,
+    tags: ["lakes", "cycling", "picnic", "nature"] as InterestCode[],
   },
   {
     id: "neuschwanstein",
     name: "Neuschwanstein",
-    kind: "Castle viewpoint",
-    description: "The iconic castle landscape, scheduled early to avoid its busiest hours.",
+    kind: "culture" as const,
     lat: 47.5576,
     lng: 10.7498,
     distanceKm: 6,
     visitMinutes: 120,
     popularity: 5,
-    difficulty: "Moderate",
-    tags: ["Culture", "Views", "Castles", "Iconic"],
+    difficulty: "moderate" as const,
+    tags: ["culture", "views", "castles"] as InterestCode[],
   },
   {
     id: "lechfall",
     name: "Lechfall",
-    kind: "River gorge",
-    description: "A dramatic turquoise river stop just outside town, ideal for a short walk.",
+    kind: "nature" as const,
     lat: 47.5666,
     lng: 10.6895,
     distanceKm: 2,
     visitMinutes: 55,
     popularity: 4,
-    difficulty: "Easy",
-    tags: ["Water", "Walking", "Nature", "Views"],
+    difficulty: "easy" as const,
+    tags: ["water", "hiking", "nature", "views"] as InterestCode[],
   },
   {
     id: "kalvarienberg",
     name: "Kalvarienberg",
-    kind: "Panoramic walk",
-    description: "A short uphill walk rewarded by a wide view over Füssen and the lakes.",
+    kind: "viewpoint" as const,
     lat: 47.5654,
     lng: 10.7004,
     distanceKm: 3,
     visitMinutes: 70,
     popularity: 2,
-    difficulty: "Moderate",
-    tags: ["Views", "Quiet places", "Walking", "Nature"],
+    difficulty: "moderate" as const,
+    tags: ["views", "quiet", "hiking", "nature"] as InterestCode[],
   },
   {
     id: "faulenbacher-tal",
     name: "Faulenbacher Valley",
-    kind: "Slow nature trail",
-    description: "A low-key valley of small lakes and forest paths directly from Füssen.",
+    kind: "route" as const,
     lat: 47.5605,
     lng: 10.6827,
     distanceKm: 4,
     visitMinutes: 90,
     popularity: 2,
-    difficulty: "Easy",
-    tags: ["Quiet places", "Walking", "Nature", "Lakes"],
+    difficulty: "easy" as const,
+    tags: ["quiet", "hiking", "nature", "lakes"] as InterestCode[],
   },
 ];
 
@@ -608,32 +298,6 @@ const sourceDistanceKm = (
   return 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 };
 
-const normalizedTags = (tags: string[]) =>
-  Array.from(
-    new Set(
-      tags.map((tag) => {
-        if (/lake|water|swim/i.test(tag)) return "Lakes";
-        if (/culture|heritage|castle|village/i.test(tag)) return "Culture";
-        if (/view|photo|scenic/i.test(tag)) return "Views";
-        if (/nature|forest|park|wildlife|hiking/i.test(tag)) return "Nature";
-        return tag;
-      }),
-    ),
-  );
-
-const publicDemoTags = (place: AlpineSource) => {
-  const kind = place.destination_type.toLowerCase();
-  const tags = [
-    /lake|reservoir/.test(kind) ? "Lakes" : "",
-    /castle|cultural|historic|archaeological|heritage|monastery/.test(kind)
-      ? "Culture"
-      : "",
-    /view|route|mountain|pass|hill/.test(kind) ? "Views" : "",
-    /nature|valley|wetland|trail|reserve/.test(kind) ? "Nature" : "",
-  ].filter(Boolean);
-  return tags.length > 0 ? tags : ["Local places"];
-};
-
 const publicDemoPopularity = (place: AlpineSource) => {
   const idNumber = Number(place.id.match(/\d+/)?.[0] ?? 1);
   const kind = place.destination_type.toLowerCase();
@@ -646,7 +310,8 @@ const alpineDestinations: Destination[] = (
 ).map((place) => ({
   id: place.id,
   name: place.name,
-  kind: place.destination_type,
+  kind: inferPlaceKind(place.destination_type),
+  sourceKind: place.destination_type,
   lat: place.latitude,
   lng: place.longitude,
   distanceKm: Math.max(
@@ -664,84 +329,205 @@ const alpineDestinations: Destination[] = (
   popularity: publicDemoPopularity(place),
   difficulty:
     /mountain|trail|pass|hill|valley/i.test(place.destination_type)
-      ? "Moderate"
-      : "Easy",
-  tags: normalizedTags(publicDemoTags(place)),
-  description: `Explore ${place.name}, a ${place.destination_type.toLowerCase()} in ${place.region}, with crowd-aware timing and lower-impact route options.`,
-  region: place.region === "Bavaria" ? "Bavaria" : "Valle d’Aosta",
+      ? "moderate"
+      : "easy",
+  tags: publicTagsForKind(place.destination_type),
+  region: place.region === "Bavaria" ? "bavaria" : "aosta",
 }));
 
 const destinations: Destination[] = [
   ...fussenDestinations.map((place) => ({
     ...place,
-    region: "Füssen / Allgäu",
+    region: "fussen_allgau" as const,
   })),
   ...alpineDestinations,
 ];
 
-const interestOptions = ["Lakes", "Quiet places", "Culture", "Views", "Nature"];
-const transportLabels: Record<Transport, string> = {
-  walking: "Walking",
-  cycling: "Bike",
-  "e-bike": "E-bike",
-  driving: "Car",
-  public: "Public transport",
+const migratePlan = (value: unknown): PlanDay[] => {
+  if (!Array.isArray(value)) return [];
+  return value
+    .filter((day) => day && typeof day === "object")
+    .map((rawDay) => {
+      const day = rawDay as Partial<PlanDay> & { stops?: unknown[] };
+      const stops = Array.isArray(day.stops)
+        ? day.stops.flatMap((rawStop) => {
+            if (!rawStop || typeof rawStop !== "object") return [];
+            const legacy = rawStop as Partial<Stop> & { id?: unknown };
+            const canonical = destinations.find(
+              (destination) => destination.id === legacy.id,
+            );
+            if (!canonical) return [];
+            return [
+              {
+                ...canonical,
+                crowd: canonicalCrowd(legacy.crowd),
+                crowdScore:
+                  typeof legacy.crowdScore === "number"
+                    ? legacy.crowdScore
+                    : canonical.popularity,
+                suggestedTime:
+                  typeof legacy.suggestedTime === "string"
+                    ? legacy.suggestedTime
+                    : "09:00",
+                travelMinutes:
+                  typeof legacy.travelMinutes === "number"
+                    ? legacy.travelMinutes
+                    : 15,
+              } satisfies Stop,
+            ];
+          })
+        : [];
+      return {
+        date: typeof day.date === "string" ? day.date : today(),
+        stops,
+        weather: day.weather,
+        distanceKm:
+          typeof day.distanceKm === "number" ? day.distanceKm : 0,
+      };
+    });
 };
+
+const migratePointEvent = (value: unknown): PointEvent | null => {
+  if (!value || typeof value !== "object") return null;
+  const legacy = value as Partial<PointEvent>;
+  if (
+    typeof legacy.id !== "string" ||
+    typeof legacy.amount !== "number" ||
+    typeof legacy.createdAt !== "string"
+  ) {
+    return null;
+  }
+  let reasonType = legacy.reasonType;
+  let reasonParams = legacy.reasonParams;
+  const reason = typeof legacy.reason === "string" ? legacy.reason : "";
+  const placeMatch = reason.match(
+    /(?:for|at|to)\s+(.+?)(?:\.|$)/i,
+  );
+  if (!reasonType) {
+    if (/balance imported/i.test(reason)) reasonType = "event.imported";
+    else if (/crowd report/i.test(reason)) reasonType = "event.crowdReport";
+    else if (/demo check-in/i.test(reason)) reasonType = "event.demoCheckin";
+    else if (/GPS check-in/i.test(reason)) reasonType = "event.gpsCheckin";
+    else if (/visit photo/i.test(reason)) reasonType = "event.visitPhoto";
+    else reasonType = "event.imported";
+    if (placeMatch) reasonParams = { place: placeMatch[1] };
+  }
+  return {
+    id: legacy.id,
+    amount: legacy.amount,
+    reasonType,
+    reasonParams,
+    createdAt: legacy.createdAt,
+    balanceAfter:
+      typeof legacy.balanceAfter === "number" ? legacy.balanceAfter : 0,
+    status: legacy.status === "verified" ? "verified" : "local",
+  };
+};
+
+const migrateNotification = (value: unknown): GemNotification | null => {
+  if (!value || typeof value !== "object") return null;
+  const legacy = value as Partial<GemNotification>;
+  if (typeof legacy.id !== "string" || typeof legacy.createdAt !== "string") {
+    return null;
+  }
+  let type = legacy.type;
+  let params = legacy.params;
+  let bodyType = legacy.bodyType;
+  let bodyParams = legacy.bodyParams;
+  const title = typeof legacy.title === "string" ? legacy.title : "";
+  const body = typeof legacy.body === "string" ? legacy.body : "";
+  if (!type) {
+    const earned = title.match(/You earned (\d+) GemXP/i);
+    const used = title.match(/(\d+) GemXP used/i);
+    if (earned) {
+      type = "notifications.earned";
+      params = { count: Number(earned[1]) };
+    } else if (used) {
+      type = "notifications.used";
+      params = { count: Number(used[1]) };
+    } else {
+      type = "notifications.onTitle";
+    }
+  }
+  if (!bodyType) {
+    const migratedReason = migratePointEvent({
+      id: legacy.id,
+      amount: 0,
+      reason: body,
+      createdAt: legacy.createdAt,
+      balanceAfter: 0,
+      status: "local",
+    });
+    bodyType = migratedReason?.reasonType ?? "notifications.onBody";
+    bodyParams = migratedReason?.reasonParams;
+  }
+  return {
+    id: legacy.id,
+    type,
+    params,
+    bodyType,
+    bodyParams,
+    createdAt: legacy.createdAt,
+    read: Boolean(legacy.read),
+  };
+};
+
+const interestOptions = primaryInterestCodes;
 
 const speedByMode: Record<Transport, number> = {
   walking: 4.5,
   cycling: 15,
-  "e-bike": 19,
+  e_bike: 19,
   driving: 35,
-  public: 18,
+  public_transport: 18,
 };
 
 const gemDeals = [
   {
     name: "Hotel Hechten",
-    region: "Füssen / Allgäu",
-    category: "Bike-friendly hotel",
-    offer: "Concept: late bike check-out + welcome drink",
+    region: "fussen_allgau" as const,
+    category: "deals.category.bikeHotel",
+    offer: "deals.offer.lateCheckout",
     creditCost: 25,
     url: "https://www.hotel-hechten.com/en/active/cycling-fussen-bavaria.html",
   },
   {
     name: "AMERON Neuschwanstein",
-    region: "Füssen / Allgäu",
-    category: "Stay & cycle",
-    offer: "Concept: e-bike rental bundle",
+    region: "fussen_allgau" as const,
+    category: "deals.category.stayCycle",
+    offer: "deals.offer.rental",
     creditCost: 35,
     url: "https://www.ameroncollection.com/en/neuschwanstein-alpsee-resort-spa/discover-the-allgaeu-alps/cycling",
   },
   {
     name: "DIE GAMS",
-    region: "Bavaria",
-    category: "E-bike stay",
-    offer: "Concept: charging + regional snack",
+    region: "bavaria" as const,
+    category: "deals.category.ebikeStay",
+    offer: "deals.offer.charging",
     creditCost: 20,
     url: "https://die-gams.info/en/aktiv/",
   },
   {
     name: "Hotel Comtes de Challant",
-    region: "Valle d’Aosta",
-    category: "Bike hotel",
-    offer: "Concept: 10% GemGo pilot rate",
+    region: "aosta" as const,
+    category: "deals.category.bikeHotel",
+    offer: "deals.offer.rate",
     creditCost: 30,
     url: "https://www.hotelcomtesdechallant.com/en/offers/discover-the-aosta-valley-by-e-bike",
   },
   {
     name: "Eco Wellness Notre Maison",
-    region: "Valle d’Aosta",
-    category: "Eco stay · Cogne",
-    offer: "Concept: local breakfast upgrade",
+    region: "aosta" as const,
+    category: "deals.category.ecoStay",
+    offer: "deals.offer.breakfast",
     creditCost: 25,
     url: "https://ecobnb.com/IT-ao/hotel/eco-wellness-notre-maison/c0rl9",
   },
   {
     name: "Crabun Hotel",
-    region: "Valle d’Aosta",
-    category: "Bike hotel",
-    offer: "Concept: secure bike storage + aperitivo",
+    region: "aosta" as const,
+    category: "deals.category.bikeHotel",
+    offer: "deals.offer.storage",
     creditCost: 20,
     url: "https://www.crabunhotel.it/en/bike-hotel",
   },
@@ -771,6 +557,31 @@ const formatDate = (date: string, locale = "en-GB") =>
     month: "short",
   }).format(new Date(`${date}T12:00:00`));
 
+const automaticPlanName = (
+  locale: Locale,
+  region: Region,
+  date: string,
+) =>
+  `${msg(locale, `data.region.${region}`)} · ${new Intl.DateTimeFormat(
+    localeCodes[locale],
+    { day: "numeric", month: "short" },
+  ).format(new Date(`${date}T12:00:00`))}`;
+
+const isLegacyAutomaticPlanName = (
+  name: string,
+  region: Region,
+  date: string,
+) =>
+  locales.some(
+    (candidate) =>
+      name === automaticPlanName(candidate, region, date) ||
+      name ===
+        `${msg(candidate, `data.region.${region}`)} · ${formatDate(
+          date,
+          localeCodes[candidate],
+        )}`,
+  );
+
 const haversineKm = (lat1: number, lng1: number, lat2: number, lng2: number) => {
   const toRad = (value: number) => (value * Math.PI) / 180;
   const dLat = toRad(lat2 - lat1);
@@ -780,78 +591,6 @@ const haversineKm = (lat1: number, lng1: number, lat2: number, lng2: number) => 
     Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
   return 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 };
-
-const weatherLabel = (code?: number) => {
-  if (code === undefined) return "Forecast unavailable";
-  if (code === 0) return "Clear";
-  if (code <= 3) return "Partly cloudy";
-  if (code <= 57) return "Misty";
-  if (code <= 67) return "Rain";
-  if (code <= 77) return "Snow";
-  if (code <= 82) return "Showers";
-  return "Storm risk";
-};
-
-function parsePrompt(prompt: string) {
-  const text = prompt.toLowerCase();
-  const wordDays: Record<string, number> = {
-    one: 1,
-    two: 2,
-    three: 3,
-    four: 4,
-    five: 5,
-    six: 6,
-    seven: 7,
-  };
-  let parsedDays = 1;
-  const digitMatch = text.match(/\b([1-7])\s*days?\b/);
-  const wordMatch = Object.entries(wordDays).find(([word]) =>
-    text.includes(`${word} day`),
-  );
-  if (digitMatch) parsedDays = Number(digitMatch[1]);
-  else if (wordMatch) parsedDays = wordMatch[1];
-
-  let parsedTransport: Transport = "public";
-  if (text.includes("e-bike") || text.includes("ebike")) parsedTransport = "e-bike";
-  else if (text.includes("bike") || text.includes("cycling")) parsedTransport = "cycling";
-  else if (text.includes("walk") || text.includes("hiking")) parsedTransport = "walking";
-  else if (text.includes("bus") || text.includes("train")) parsedTransport = "public";
-  else if (text.includes("car") || text.includes("driving")) parsedTransport = "driving";
-
-  const parsedInterests = new Set<string>();
-  if (text.includes("lake") || text.includes("swim")) parsedInterests.add("Lakes");
-  const rejectsQuiet =
-    /(?:don['’]?t|do not|not|avoid|no)\s+(?:want\s+)?(?:any\s+)?quiet/.test(text) ||
-    /quiet\s+places?\s+(?:are\s+)?not/.test(text);
-  if (
-    !rejectsQuiet &&
-    (text.includes("quiet") || text.includes("hidden") || text.includes("peaceful"))
-  ) {
-    parsedInterests.add("Quiet places");
-  }
-  if (text.includes("castle") || text.includes("culture")) parsedInterests.add("Culture");
-  if (text.includes("view") || text.includes("panorama")) parsedInterests.add("Views");
-  if (text.includes("nature") || text.includes("forest")) parsedInterests.add("Nature");
-
-  let region: Region = "All";
-  if (text.includes("aosta") || text.includes("cervinia") || text.includes("courmayeur")) {
-    region = "Valle d’Aosta";
-  } else if (text.includes("füssen") || text.includes("fussen") || text.includes("allgäu")) {
-    region = "Füssen / Allgäu";
-  } else if (text.includes("bavaria") || text.includes("bayern")) {
-    region = "Bavaria";
-  }
-
-  return {
-    days: parsedDays,
-    transport: parsedTransport,
-    interests: [...parsedInterests],
-    easy: text.includes("easy") || text.includes("gentle"),
-    avoidCrowds: true,
-    region,
-    startDate: text.includes("tomorrow") ? addDays(today(), 1) : undefined,
-  };
-}
 
 function getCrowd(
   destination: Destination,
@@ -866,7 +605,8 @@ function getCrowd(
   if ((weather?.rain ?? 0) > 55) score -= 1;
   if (avoidCrowds && stopIndex === 0) score -= 1;
   score = Math.max(1, Math.min(7, score));
-  const crowd = score <= 2 ? "Low" : score <= 4 ? "Moderate" : "Busy";
+  const crowd: CrowdCode =
+    score <= 2 ? "low" : score <= 4 ? "moderate" : "busy";
   const suggestedTime =
     destination.popularity >= 4 || avoidCrowds
       ? stopIndex === 0
@@ -880,7 +620,7 @@ function getCrowd(
 
 function scoreDestination(
   destination: Destination,
-  interests: string[],
+  interests: InterestCode[],
   difficulty: Difficulty,
   avoidCrowds: boolean,
   transport: Transport,
@@ -889,11 +629,11 @@ function scoreDestination(
   interests.forEach((interest) => {
     if (destination.tags.includes(interest)) score += 4;
   });
-  if (difficulty === "Easy" && destination.difficulty === "Easy") score += 3;
+  if (difficulty === "easy" && destination.difficulty === "easy") score += 3;
   if (avoidCrowds) score += 6 - destination.popularity;
   if (transport === "walking") score -= destination.distanceKm * 0.3;
-  if (transport === "cycling" || transport === "e-bike") {
-    if (destination.tags.includes("Cycling")) score += 2;
+  if (transport === "cycling" || transport === "e_bike") {
+    if (destination.tags.includes("cycling")) score += 2;
     score -= destination.distanceKm * 0.05;
   }
   return score;
@@ -901,15 +641,13 @@ function scoreDestination(
 
 export default function Home() {
   const [appPage, setAppPage] = useState<AppPage>("home");
-  const [prompt, setPrompt] = useState(
-    "Three days in Valle d’Aosta by e-bike, with lakes and panoramic villages.",
-  );
+  const [prompt, setPrompt] = useState("");
   const [days, setDays] = useState(3);
-  const [transport, setTransport] = useState<Transport>("e-bike");
-  const [interests, setInterests] = useState(["Lakes", "Views"]);
-  const [difficulty, setDifficulty] = useState<Difficulty>("Easy");
+  const [transport, setTransport] = useState<Transport>("e_bike");
+  const [interests, setInterests] = useState<InterestCode[]>(["lakes", "views"]);
+  const [difficulty, setDifficulty] = useState<Difficulty>("easy");
   const [avoidCrowds, setAvoidCrowds] = useState(true);
-  const [region, setRegion] = useState<Region>("Valle d’Aosta");
+  const [region, setRegion] = useState<Region>("aosta");
   const [startDate, setStartDate] = useState(today);
   const [controlsOverridePrompt, setControlsOverridePrompt] = useState(false);
   const [plan, setPlan] = useState<PlanDay[]>([]);
@@ -921,20 +659,20 @@ export default function Home() {
     "unavailable",
   );
   const [xp, setXp] = useState(0);
-  const [checkInMessage, setCheckInMessage] = useState(
-    "Select a place, then verify your position when you arrive.",
-  );
+  const [checkInMessage, setCheckInMessage] = useState<LocalizedState>({
+    key: "points.checkinInitial",
+  });
   const [checkInKind, setCheckInKind] = useState<"none" | "verified" | "demo">(
     "none",
   );
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [photoName, setPhotoName] = useState("");
-  const [shareLabel, setShareLabel] = useState("Share MVP");
+  const [shareLabel, setShareLabel] = useState("global.share");
   const [crowdReport, setCrowdReport] = useState(4);
-  const [dropMessage, setDropMessage] = useState(
-    "Report what you see to reveal a calmer nearby alternative.",
-  );
-  const [dealRegion, setDealRegion] = useState<Region>("All");
+  const [dropMessage, setDropMessage] = useState<LocalizedState>({
+    key: "gemdrop.initial",
+  });
+  const [dealRegion, setDealRegion] = useState<Region>("all");
   const [unlockedDeal, setUnlockedDeal] = useState<string | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [mockLocationId, setMockLocationId] = useState<string | null>(null);
@@ -945,7 +683,7 @@ export default function Home() {
   const [activeSavedPlanId, setActiveSavedPlanId] = useState<string | null>(null);
   const [hidePlanned, setHidePlanned] = useState(false);
   const [planUndo, setPlanUndo] = useState<PlanUndo | null>(null);
-  const [planNotice, setPlanNotice] = useState("");
+  const [planNotice, setPlanNotice] = useState<LocalizedState | null>(null);
   const [whyPlanOpen, setWhyPlanOpen] = useState(false);
   const [howOpen, setHowOpen] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
@@ -965,8 +703,36 @@ export default function Home() {
   const [notificationPermission, setNotificationPermission] = useState<
     NotificationPermission | "unsupported"
   >("default");
-  const t = (key: CopyKey) => copy[locale][key];
-  const l = localized[locale];
+  const t = (key: string, params?: Record<string, string | number>) =>
+    msg(locale, key, params);
+  const transportLabel = (value: Transport) =>
+    t(`data.transport.${value}`);
+  const interestLabel = (value: InterestCode) =>
+    t(`data.interest.${value}`);
+  const regionLabel = (value: Region) => t(`data.region.${value}`);
+  const crowdLabel = (value: CrowdCode) => t(`data.crowd.${value}`);
+  const kindLabel = (destination: Destination) =>
+    t(`data.kind.${destination.kind}`);
+  const destinationDescription = (destination: Destination) =>
+    t("data.description", {
+      name: destination.name,
+      kind: kindLabel(destination).toLocaleLowerCase(locale),
+      region: regionLabel(destination.region),
+    });
+  const currentPromptParse = useMemo(
+    () => parsePrompt(prompt, { now: new Date() }),
+    [prompt],
+  );
+  const promptRecognized =
+    currentPromptParse.days !== undefined ||
+    currentPromptParse.startDate !== undefined ||
+    currentPromptParse.region !== undefined ||
+    currentPromptParse.transport !== undefined ||
+    currentPromptParse.interests.length > 0 ||
+    currentPromptParse.excludedInterests.length > 0 ||
+    currentPromptParse.excludedTransports.length > 0 ||
+    currentPromptParse.difficulty !== undefined ||
+    currentPromptParse.avoidCrowds !== undefined;
 
   useEffect(() => {
     const restoreStoredPoints = window.setTimeout(() => {
@@ -978,13 +744,20 @@ export default function Home() {
       }
       setSoundEnabled(window.localStorage.getItem("gemgo-sound") !== "off");
       const storedLocale = window.localStorage.getItem("gemgo-locale");
-      if (storedLocale && ["en", "it", "de", "fr"].includes(storedLocale)) {
+      if (storedLocale && locales.includes(storedLocale as Locale)) {
         setLocale(storedLocale as Locale);
       }
       const storedNotifications = window.localStorage.getItem("gemgo-notifications");
       if (storedNotifications) {
         try {
-          setNotifications(JSON.parse(storedNotifications));
+          const migrated = (JSON.parse(storedNotifications) as unknown[])
+            .map(migrateNotification)
+            .filter((item): item is GemNotification => Boolean(item));
+          setNotifications(migrated);
+          window.localStorage.setItem(
+            "gemgo-notifications",
+            JSON.stringify(migrated),
+          );
         } catch {
           window.localStorage.removeItem("gemgo-notifications");
         }
@@ -992,7 +765,14 @@ export default function Home() {
       const storedHistory = window.localStorage.getItem("gemgo-point-history");
       if (storedHistory) {
         try {
-          setPointHistory(JSON.parse(storedHistory));
+          const migrated = (JSON.parse(storedHistory) as unknown[])
+            .map(migratePointEvent)
+            .filter((item): item is PointEvent => Boolean(item));
+          setPointHistory(migrated);
+          window.localStorage.setItem(
+            "gemgo-point-history",
+            JSON.stringify(migrated),
+          );
         } catch {
           window.localStorage.removeItem("gemgo-point-history");
         }
@@ -1000,7 +780,7 @@ export default function Home() {
         const openingEvent: PointEvent = {
           id: createId(),
           amount: Number(stored),
-          reason: "Existing GemXP balance imported from this device.",
+          reasonType: "event.imported",
           createdAt: new Date().toISOString(),
           balanceAfter: Number(stored),
           status: "local",
@@ -1015,12 +795,48 @@ export default function Home() {
         try {
           const parsedSavedPlans = JSON.parse(storedSavedPlans) as SavedPlan[];
           if (Array.isArray(parsedSavedPlans)) {
-            restoredSavedPlans = parsedSavedPlans.filter(
-              (item) =>
-                item &&
-                typeof item.id === "string" &&
-                typeof item.name === "string" &&
-                Array.isArray(item.plan),
+            restoredSavedPlans = parsedSavedPlans.flatMap((item) => {
+              if (
+                !item ||
+                typeof item.id !== "string"
+              ) {
+                return [];
+              }
+              const migratedRegion = canonicalRegion(item.region);
+              const migratedPlan = migratePlan(item.plan);
+              const legacyName =
+                typeof item.name === "string" ? item.name.trim() : "";
+              const customName =
+                typeof item.customName === "string" && item.customName.trim()
+                  ? item.customName.trim()
+                  : legacyName &&
+                      migratedPlan[0]?.date &&
+                      !isLegacyAutomaticPlanName(
+                        legacyName,
+                        migratedRegion,
+                        migratedPlan[0].date,
+                      )
+                    ? legacyName
+                    : undefined;
+              return [{
+                ...item,
+                name: undefined,
+                customName,
+                copyNumber:
+                  typeof item.copyNumber === "number" && item.copyNumber > 0
+                    ? Math.floor(item.copyNumber)
+                    : undefined,
+                region: migratedRegion,
+                transport: canonicalTransport(item.transport),
+                interests: (Array.isArray(item.interests) ? item.interests : [])
+                  .map(canonicalInterest)
+                  .filter((interest): interest is InterestCode => Boolean(interest)),
+                plan: migratedPlan,
+              }];
+            });
+            window.localStorage.setItem(
+              "gemgo-saved-plans",
+              JSON.stringify(restoredSavedPlans),
             );
           }
         } catch {
@@ -1029,7 +845,7 @@ export default function Home() {
       }
       if (storedPlan) {
         try {
-          const restoredPlan = JSON.parse(storedPlan) as PlanDay[];
+          const restoredPlan = migratePlan(JSON.parse(storedPlan));
           if (Array.isArray(restoredPlan) && restoredPlan.length > 0) {
             setPlan(restoredPlan);
             setPlanSaved(true);
@@ -1040,13 +856,11 @@ export default function Home() {
               const now = new Date().toISOString();
               const migrated: SavedPlan = {
                 id: createId(),
-                name: `${restoredPlan[0]?.stops[0]?.region ?? "Alps"} · ${formatDate(restoredPlan[0].date)}`,
                 createdAt: now,
                 updatedAt: now,
                 region:
-                  (restoredPlan[0]?.stops[0]?.region as Region | undefined) ??
-                  "All",
-                transport: "e-bike",
+                  restoredPlan[0]?.stops[0]?.region ?? "all",
+                transport: "e_bike",
                 interests: [],
                 plan: restoredPlan,
               };
@@ -1272,11 +1086,18 @@ export default function Home() {
     }
   };
 
-  const notify = (title: string, body: string) => {
+  const notify = (
+    type: string,
+    params: Record<string, string | number> | undefined,
+    bodyType: string,
+    bodyParams?: Record<string, string | number>,
+  ) => {
     const item: GemNotification = {
       id: createId(),
-      title,
-      body,
+      type,
+      params,
+      bodyType,
+      bodyParams,
       createdAt: new Date().toISOString(),
       read: false,
     };
@@ -1286,6 +1107,8 @@ export default function Home() {
       return next;
     });
     if ("Notification" in window && Notification.permission === "granted") {
+      const title = t(type, params);
+      const body = t(bodyType, bodyParams);
       const options = {
         body,
         icon: "/assets/gemgo-logo.png",
@@ -1302,7 +1125,11 @@ export default function Home() {
     }
   };
 
-  const addPoints = (amount: number, reason: string) => {
+  const addPoints = (
+    amount: number,
+    reasonType: string,
+    reasonParams?: Record<string, string | number>,
+  ) => {
     const actionTime = new Date().getTime();
     setXp((current) => {
       const nextBalance = Math.max(0, current + amount);
@@ -1310,7 +1137,8 @@ export default function Home() {
       const entry: PointEvent = {
         id: createId(),
         amount,
-        reason,
+        reasonType,
+        reasonParams,
         createdAt: new Date().toISOString(),
         balanceAfter: nextBalance,
         status: "local",
@@ -1326,8 +1154,10 @@ export default function Home() {
       return nextBalance;
     });
     notify(
-      amount >= 0 ? `You earned ${amount} GemXP` : `${Math.abs(amount)} GemXP used`,
-      reason,
+      amount >= 0 ? "notifications.earned" : "notifications.used",
+      { count: Math.abs(amount) },
+      reasonType,
+      reasonParams,
     );
     showToast(
       amount >= 0 ? `+${amount} GemXP` : `${amount} GemXP`,
@@ -1343,7 +1173,11 @@ export default function Home() {
     const permission = await Notification.requestPermission();
     setNotificationPermission(permission);
     if (permission === "granted") {
-      notify("GemGo notifications are on", "Point rewards will also appear on this device.");
+      notify(
+        "notifications.onTitle",
+        undefined,
+        "notifications.onBody",
+      );
     }
   };
 
@@ -1366,11 +1200,14 @@ export default function Home() {
       const destination = destinations.find((item) => item.id === id);
       if (destination) {
         setSelected(destination);
-        showToast(`Location set to ${destination.name}`, "success");
+        showToast(
+          t("settings.locationSet", { place: destination.name }),
+          "success",
+        );
       }
     } else {
       window.localStorage.removeItem("gemgo-demo-location");
-      showToast("Real device location restored", "info");
+      showToast(t("settings.locationRestored"), "info");
     }
   };
 
@@ -1385,7 +1222,7 @@ export default function Home() {
 
   const visibleDestinations = useMemo(() => {
     const scoped =
-      region === "All"
+      region === "all"
         ? destinations
         : destinations.filter((destination) => destination.region === region);
     const ordered = !mockLocation
@@ -1400,7 +1237,7 @@ export default function Home() {
       : ordered;
   }, [hidePlanned, mockLocation, plannedDestinationIds, region]);
 
-  const nearbyLabel = mockLocation ? "Near you" : "Places in this area";
+  const nearbyLabel = mockLocation ? t("map.nearYou") : t("map.areaPlaces");
   const crowdForExplore = (destination: Destination) =>
     getCrowd(destination, startDate, 1, true).crowd;
 
@@ -1425,35 +1262,38 @@ export default function Home() {
     const reportKey = `gemgo-crowd-${mockLocation.id}-${today()}`;
     if (!window.localStorage.getItem(reportKey)) {
       window.localStorage.setItem(reportKey, String(crowdReport));
-      addPoints(10, `Crowd report saved for ${mockLocation.name}.`);
+      addPoints(10, "event.crowdReport", { place: mockLocation.name });
     }
-    setDropMessage(
-      `Your report for ${mockLocation.name} was saved on this device. +10 GemXP. ${
-        gemDropAlternative
-          ? `${gemDropAlternative.name} is the calmer nearby GemDrop.`
-          : "No lower-crowd alternative is available in this pilot area yet."
-      }`,
+    setDropMessage({
+      key: "gemdrop.saved",
+      params: { place: mockLocation.name },
+    });
+    showToast(
+      gemDropAlternative
+        ? t("gemdrop.alternative", { place: gemDropAlternative.name })
+        : t("gemdrop.noAlternative"),
+      "success",
     );
   };
 
   const previewDeal = (dealName: string) => {
     setUnlockedDeal(dealName);
-    showToast(`${dealName} concept opened`, "info");
+    showToast(t("deals.opened", { name: dealName }), "info");
   };
 
   const routeLink = (destination: Destination) => {
     const travelmode =
       transport === "walking"
         ? "walking"
-        : transport === "cycling" || transport === "e-bike"
+        : transport === "cycling" || transport === "e_bike"
           ? "bicycling"
           : transport === "driving"
             ? "driving"
             : "transit";
     const origin =
-      destination.region === "Valle d’Aosta"
+      destination.region === "aosta"
         ? "Aosta%2C%20Italy"
-        : destination.region === "Bavaria"
+        : destination.region === "bavaria"
           ? "Munich%2C%20Germany"
           : "F%C3%BCssen%2C%20Germany";
     return `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination.lat},${destination.lng}&travelmode=${travelmode}`;
@@ -1462,9 +1302,9 @@ export default function Home() {
   const fetchWeather = async (requestedRegion: Region): Promise<WeatherDay[]> => {
     try {
       const coordinates =
-        requestedRegion === "Valle d’Aosta"
+        requestedRegion === "aosta"
           ? "latitude=45.74&longitude=7.32"
-          : requestedRegion === "Bavaria"
+          : requestedRegion === "bavaria"
             ? "latitude=47.7&longitude=11.2"
             : "latitude=47.57&longitude=10.70";
       const response = await fetch(
@@ -1490,23 +1330,38 @@ export default function Home() {
   const buildPlan = async (event?: FormEvent) => {
     event?.preventDefault();
     setLoading(true);
-    const parsed = controlsOverridePrompt
+    const parsed: PromptParseResult = controlsOverridePrompt
       ? {
           days,
           transport,
           interests,
-          easy: difficulty === "Easy",
+          excludedInterests: [],
+          excludedTransports: [],
+          difficulty,
           avoidCrowds,
-          region,
-          startDate: undefined,
+          region: region === "all" ? undefined : region,
+          confidence: 1,
+          ambiguous: [],
         }
       : parsePrompt(prompt);
-    const nextDays = parsed.days;
-    const nextTransport = parsed.transport;
-    const nextInterests = parsed.interests;
-    const nextDifficulty = parsed.easy ? "Easy" : difficulty;
-    const nextAvoidCrowds = parsed.avoidCrowds || avoidCrowds;
-    const nextRegion = parsed.region;
+    if (!isValidParseResult(parsed)) {
+      showToast(t("planner.ambiguous"), "error");
+      setLoading(false);
+      return;
+    }
+    const nextDays = parsed.days ?? days;
+    const nextTransport =
+      parsed.transport && !parsed.excludedTransports.includes(parsed.transport)
+        ? parsed.transport
+        : transport;
+    const nextInterests = Array.from(
+      new Set([
+        ...(parsed.interests.length > 0 ? parsed.interests : interests),
+      ]),
+    ).filter((interest) => !parsed.excludedInterests.includes(interest));
+    const nextDifficulty = parsed.difficulty ?? difficulty;
+    const nextAvoidCrowds = parsed.avoidCrowds ?? avoidCrowds;
+    const nextRegion = parsed.region ?? region;
     setDays(nextDays);
     setTransport(nextTransport);
     setInterests(nextInterests);
@@ -1517,7 +1372,7 @@ export default function Home() {
 
     const weather = await fetchWeather(nextRegion);
     const eligible =
-      nextRegion === "All"
+      nextRegion === "all"
         ? destinations
         : destinations.filter((destination) => destination.region === nextRegion);
     const ranked = [...eligible].sort(
@@ -1551,7 +1406,7 @@ export default function Home() {
           nextAvoidCrowds,
           dayWeather,
         );
-        if (crowd.crowd === "Busy") continue;
+        if (crowd.crowd === "busy") continue;
         const travelMinutes = Math.max(
           8,
           Math.round((destination.distanceKm / speedByMode[nextTransport]) * 60),
@@ -1573,7 +1428,7 @@ export default function Home() {
     setPlanSaved(false);
     setActiveSavedPlanId(null);
     setPlanUndo(null);
-    setPlanNotice("Busy predictions were excluded from this itinerary.");
+    setPlanNotice({ key: "plan.busyExcluded" });
     if (newPlan[0]?.stops[0]) setSelected(newPlan[0].stops[0]);
     setLoading(false);
     window.setTimeout(() => {
@@ -1584,7 +1439,7 @@ export default function Home() {
     }, 80);
   };
 
-  const toggleInterest = (interest: string) => {
+  const toggleInterest = (interest: InterestCode) => {
     setInterests((current) =>
       current.includes(interest)
         ? current.filter((item) => item !== interest)
@@ -1596,12 +1451,22 @@ export default function Home() {
     setPrompt(value);
     setControlsOverridePrompt(false);
     const parsed = parsePrompt(value);
-    setDays(parsed.days);
-    setTransport(parsed.transport);
-    setInterests(parsed.interests);
-    setDifficulty(parsed.easy ? "Easy" : "Moderate");
-    setAvoidCrowds(true);
-    setRegion(parsed.region);
+    if (parsed.days !== undefined) setDays(parsed.days);
+    if (parsed.transport !== undefined) setTransport(parsed.transport);
+    if (parsed.interests.length > 0 || parsed.excludedInterests.length > 0) {
+      setInterests((current) =>
+        Array.from(
+          new Set([
+            ...(parsed.interests.length > 0 ? parsed.interests : current),
+          ]),
+        ).filter((interest) => !parsed.excludedInterests.includes(interest)),
+      );
+    }
+    if (parsed.difficulty !== undefined) setDifficulty(parsed.difficulty);
+    if (parsed.avoidCrowds !== undefined) {
+      setAvoidCrowds(parsed.avoidCrowds);
+    }
+    if (parsed.region !== undefined) setRegion(parsed.region);
     if (parsed.startDate) setStartDate(parsed.startDate);
   };
 
@@ -1610,14 +1475,21 @@ export default function Home() {
     window.localStorage.setItem("gemgo-saved-plans", JSON.stringify(items));
   };
 
+  const savedPlanName = (saved: SavedPlan) => {
+    const startDate = saved.plan[0]?.date;
+    const baseName =
+      saved.customName ||
+      (startDate
+        ? automaticPlanName(locale, saved.region, startDate)
+        : regionLabel(saved.region));
+    return saved.copyNumber
+      ? `${baseName} · ${t("plan.copySuffix")} ${saved.copyNumber}`
+      : baseName;
+  };
+
   const savePlan = () => {
     if (plan.length === 0) return;
     const now = new Date().toISOString();
-    const firstStop = plan.flatMap((day) => day.stops)[0];
-    const defaultName = `${firstStop?.region ?? region} · ${new Intl.DateTimeFormat(
-      localeCodes[locale],
-      { day: "numeric", month: "short" },
-    ).format(new Date(`${plan[0].date}T12:00:00`))}`;
     let savedId = activeSavedPlanId;
     let nextPlans: SavedPlan[];
     if (activeSavedPlanId) {
@@ -1636,7 +1508,6 @@ export default function Home() {
     } else {
       const saved: SavedPlan = {
         id: createId(),
-        name: defaultName,
         createdAt: now,
         updatedAt: now,
         region,
@@ -1651,8 +1522,8 @@ export default function Home() {
     setActiveSavedPlanId(savedId);
     window.localStorage.setItem("gemgo-saved-plan", JSON.stringify(plan));
     setPlanSaved(true);
-    setPlanNotice("Plan saved on this device.");
-    showToast("Plan saved on this device", "success");
+    setPlanNotice({ key: "plan.savedDevice" });
+    showToast(t("plan.savedDevice"), "success");
     maybeShowAccountPrompt(new Date().getTime());
   };
 
@@ -1671,7 +1542,7 @@ export default function Home() {
         block: "start",
       });
     }, 90);
-    showToast(`${saved.name} opened`, "success");
+    showToast(t("plan.opened", { name: savedPlanName(saved) }), "success");
   };
 
   const duplicateSavedPlan = (saved: SavedPlan) => {
@@ -1679,12 +1550,13 @@ export default function Home() {
     const duplicate: SavedPlan = {
       ...saved,
       id: createId(),
-      name: `${saved.name} · copy`,
+      name: undefined,
+      copyNumber: (saved.copyNumber ?? 0) + 1,
       createdAt: now,
       updatedAt: now,
     };
     persistSavedPlans([duplicate, ...savedPlans]);
-    showToast(`${saved.name} duplicated`, "success", () => {
+    showToast(t("plan.duplicated", { name: savedPlanName(saved) }), "success", () => {
       persistSavedPlans(savedPlans);
     });
   };
@@ -1697,7 +1569,7 @@ export default function Home() {
       setActiveSavedPlanId(null);
       setPlanSaved(false);
     }
-    showToast(`${saved.name} deleted`, "info", () => {
+    showToast(t("plan.deleted", { name: savedPlanName(saved) }), "info", () => {
       persistSavedPlans(previous);
       setActiveSavedPlanId(saved.id);
       setPlanSaved(true);
@@ -1710,7 +1582,13 @@ export default function Home() {
     persistSavedPlans(
       savedPlans.map((item) =>
         item.id === id
-          ? { ...item, name: cleanName, updatedAt: new Date().toISOString() }
+          ? {
+              ...item,
+              name: undefined,
+              customName: cleanName,
+              copyNumber: undefined,
+              updatedAt: new Date().toISOString(),
+            }
           : item,
       ),
     );
@@ -1718,7 +1596,10 @@ export default function Home() {
 
   const addDestinationToPlan = (destination: Destination) => {
     if (plan.some((day) => day.stops.some((stop) => stop.id === destination.id))) {
-      setPlanNotice(`${destination.name} is already in your plan.`);
+      setPlanNotice({
+        key: "plan.already",
+        params: { name: destination.name },
+      });
       return;
     }
     const previousPlan = plan;
@@ -1727,7 +1608,7 @@ export default function Home() {
     const stop: Stop = {
       ...destination,
       ...crowd,
-      suggestedTime: crowd.crowd === "Busy" ? "08:00" : crowd.suggestedTime,
+      suggestedTime: crowd.crowd === "busy" ? "08:00" : crowd.suggestedTime,
       travelMinutes: Math.max(
         8,
         Math.round((destination.distanceKm / speedByMode[transport]) * 60),
@@ -1764,9 +1645,11 @@ export default function Home() {
     setPlanSaved(false);
     setPlanUndo({
       previousPlan,
-      message: `${destination.name} added to My Plan.`,
     });
-    setPlanNotice(`${destination.name} added to My Plan.`);
+    setPlanNotice({
+      key: "plan.added",
+      params: { name: destination.name },
+    });
     setJustAddedId(destination.id);
     if (highlightTimerRef.current) {
       window.clearTimeout(highlightTimerRef.current);
@@ -1775,11 +1658,11 @@ export default function Home() {
       setJustAddedId(null);
       highlightTimerRef.current = null;
     }, 950);
-    showToast(`${destination.name} added to Your plan`, "success", () => {
+    showToast(t("plan.added", { name: destination.name }), "success", () => {
       setPlan(previousPlan);
       setPlanSaved(false);
       setPlanUndo(null);
-      setPlanNotice("Last plan change undone.");
+      setPlanNotice({ key: "plan.changeUndone" });
       setJustAddedId(null);
     });
     window.setTimeout(() => {
@@ -1794,9 +1677,9 @@ export default function Home() {
     if (!planUndo) return;
     setPlan(planUndo.previousPlan);
     setPlanSaved(false);
-    setPlanNotice("Last plan change undone.");
+    setPlanNotice({ key: "plan.changeUndone" });
     setPlanUndo(null);
-    showToast("Plan change undone", "info");
+    showToast(t("plan.changeUndone"), "info");
   };
 
   const verifyLocation = () => {
@@ -1804,19 +1687,20 @@ export default function Home() {
       const key = `gemgo-checkin-${selected.id}`;
       if (!window.localStorage.getItem(key)) {
         window.localStorage.setItem(key, "demo-verified");
-        addPoints(5, `Demo check-in completed at ${selected.name}.`);
+        addPoints(5, "event.demoCheckin", { place: selected.name });
       }
       setCheckInKind("demo");
-      setCheckInMessage(
-        `Demo location matched ${selected.name}. +5 demo GemXP — presentation mode, not a real GPS verification.`,
-      );
+      setCheckInMessage({
+        key: "points.demoVerified",
+        params: { place: selected.name },
+      });
       return;
     }
     if (!navigator.geolocation) {
-      setCheckInMessage("Geolocation is not supported on this device.");
+      setCheckInMessage({ key: "points.geoUnsupported" });
       return;
     }
-    setCheckInMessage("Checking your position…");
+    setCheckInMessage({ key: "points.checking" });
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const distance = haversineKm(
@@ -1829,25 +1713,28 @@ export default function Home() {
           const key = `gemgo-checkin-${selected.id}`;
           if (!window.localStorage.getItem(key)) {
             window.localStorage.setItem(key, "verified");
-            addPoints(60, `GPS check-in verified at ${selected.name}.`);
+            addPoints(60, "event.gpsCheckin", { place: selected.name });
           }
           setCheckInKind("verified");
-          setCheckInMessage(
-            `Verified at ${selected.name}. +60 GemXP — this proves presence, not transport mode.`,
-          );
+          setCheckInMessage({
+            key: "points.gpsVerified",
+            params: { place: selected.name },
+          });
         } else {
           setCheckInKind("none");
-          setCheckInMessage(
-            `You are about ${distance.toFixed(
-              distance < 10 ? 1 : 0,
-            )} km from ${selected.name}. Check-in unlocks within 500 m.`,
-          );
+          setCheckInMessage({
+            key: "points.tooFar",
+            params: {
+              distance: new Intl.NumberFormat(localeCodes[locale], {
+                maximumFractionDigits: distance < 10 ? 1 : 0,
+              }).format(distance),
+              place: selected.name,
+            },
+          });
         }
       },
       () => {
-        setCheckInMessage(
-          "Location permission was unavailable. You can still try the clearly labelled demo.",
-        );
+        setCheckInMessage({ key: "points.locationUnavailable" });
       },
       { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 },
     );
@@ -1865,47 +1752,53 @@ export default function Home() {
         window.localStorage.setItem(key, "added");
         addPoints(
           checkInKind === "verified" ? 5 : 2,
-          `Visit photo linked to ${selected.name}.`,
+          "event.visitPhoto",
+          { place: selected.name },
         );
       }
       setCheckInMessage(
         checkInKind === "verified"
-          ? "Photo linked to your verified visit. +5 GemXP."
-          : `Photo linked to the demo check-in at ${selected.name}. +2 demo GemXP.`,
+          ? { key: "points.photoVerified" }
+          : {
+              key: "points.photoDemo",
+              params: { place: selected.name },
+            },
       );
     } else {
-      setCheckInMessage(
-        "Photo preview added locally. Verify a visit before it can earn GemXP.",
-      );
+      setCheckInMessage({ key: "points.photoLocal" });
     }
   };
 
   const shareSite = async () => {
     const shareData = {
       title: "GemGo MVP",
-      text: "Plan a quieter, lower-impact trip around Füssen and the Allgäu.",
+      text: t("global.shareText"),
       url: window.location.href,
     };
     try {
-      if (navigator.share) await navigator.share(shareData);
+      const canShare = "share" in navigator;
+      if (canShare) await navigator.share(shareData);
       else await navigator.clipboard.writeText(window.location.href);
-      setShareLabel(navigator.share ? "Shared" : "Link copied");
-      showToast(navigator.share ? "GemGo shared" : "Link copied", "success");
-      window.setTimeout(() => setShareLabel("Share MVP"), 1800);
+      setShareLabel(canShare ? "global.shared" : "global.linkCopied");
+      showToast(
+        canShare ? t("global.shared") : t("global.linkCopied"),
+        "success",
+      );
+      window.setTimeout(() => setShareLabel("global.share"), 1800);
     } catch {
-      setShareLabel("Share MVP");
+      setShareLabel("global.share");
     }
   };
 
   return (
     <main className={`app-page page-${appPage}`}>
       <header className="site-header">
-        <Link className="brand" href="/" onClick={(event) => { event.preventDefault(); navigate("home"); }} aria-label="GemGo home">
+        <Link className="brand" href="/" onClick={(event) => { event.preventDefault(); navigate("home"); }} aria-label={t("global.home")}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img className="brand-logo" src="/assets/gemgo-logo-green.svg?v=2" alt="" aria-hidden="true" />
           <span>GemGo</span>
         </Link>
-        <nav aria-label="Main navigation" ref={desktopNavRef}>
+        <nav aria-label={t("nav.main")} ref={desktopNavRef}>
           <span
             className="nav-flow-indicator"
             aria-hidden="true"
@@ -1915,20 +1808,20 @@ export default function Home() {
               opacity: desktopIndicator.width ? 1 : 0,
             }}
           />
-          <Link data-page="home" className={appPage === "home" ? "active" : ""} href="/" onClick={(event) => { event.preventDefault(); navigate("home"); }}>{t("explore")}</Link>
-          <Link data-page="saved" className={appPage === "saved" ? "active" : ""} href="/saved" onClick={(event) => { event.preventDefault(); navigate("saved"); }}>{t("saved")}</Link>
-          <Link data-page="gemdrop" className={appPage === "gemdrop" ? "active" : ""} href="/gemdrop" onClick={(event) => { event.preventDefault(); navigate("gemdrop"); }}>{t("gemdrop")}</Link>
-          <Link data-page="points" className={appPage === "points" ? "active" : ""} href="/points" onClick={(event) => { event.preventDefault(); navigate("points"); }}>GemPoints</Link>
-          <Link data-page="gemdeals" className={appPage === "gemdeals" ? "active" : ""} href="/gemdeals" onClick={(event) => { event.preventDefault(); navigate("gemdeals"); }}>GemDeals</Link>
+          <Link data-page="home" className={appPage === "home" ? "active" : ""} href="/" onClick={(event) => { event.preventDefault(); navigate("home"); }}>{t("nav.explore")}</Link>
+          <Link data-page="saved" className={appPage === "saved" ? "active" : ""} href="/saved" onClick={(event) => { event.preventDefault(); navigate("saved"); }}>{t("nav.saved")}</Link>
+          <Link data-page="gemdrop" className={appPage === "gemdrop" ? "active" : ""} href="/gemdrop" onClick={(event) => { event.preventDefault(); navigate("gemdrop"); }}>{t("nav.gemdrop")}</Link>
+          <Link data-page="points" className={appPage === "points" ? "active" : ""} href="/points" onClick={(event) => { event.preventDefault(); navigate("points"); }}>Gem{t("nav.points")}</Link>
+          <Link data-page="gemdeals" className={appPage === "gemdeals" ? "active" : ""} href="/gemdeals" onClick={(event) => { event.preventDefault(); navigate("gemdeals"); }}>Gem{t("nav.deals")}</Link>
         </nav>
         <div className="header-actions">
-          <button className="xp-pill" aria-label={`${xp} GemXP. Open points.`} onClick={() => navigate("points")}>
+          <button className="xp-pill" aria-label={t("global.pointsLabel", { count: xp })} onClick={() => navigate("points")}>
             <Gem aria-hidden="true" size={17} strokeWidth={2.4} />
             {xp} XP
           </button>
           <button
             className="notification-button"
-            aria-label={`Open notifications. ${notifications.filter((item) => !item.read).length} unread.`}
+            aria-label={t("global.notificationsLabel", { count: notifications.filter((item) => !item.read).length })}
             onClick={() => navigate("notifications")}
           >
             <Bell aria-hidden="true" size={20} strokeWidth={2.2} />
@@ -1937,11 +1830,11 @@ export default function Home() {
             )}
           </button>
           <button className="outline-button compact" onClick={shareSite}>
-            {shareLabel}
+            {t(shareLabel)}
           </button>
           <button
             className="settings-button"
-            aria-label="Open app settings"
+            aria-label={t("global.openSettings")}
             onClick={() => setSettingsOpen(true)}
           >
             <Settings aria-hidden="true" size={20} strokeWidth={2.2} />
@@ -1975,7 +1868,7 @@ export default function Home() {
               }}
             >
               <Undo2 aria-hidden="true" size={14} />
-              Undo
+              {t("global.undo")}
             </button>
           )}
         </div>
@@ -1983,10 +1876,10 @@ export default function Home() {
 
       <section className="hero home-only" id="top">
         <div className="planner-panel">
-          <p className="eyebrow">{l.heroEyebrow}</p>
-          <h1>{l.heroTitle}</h1>
+          <p className="eyebrow">{t("planner.eyebrow")}</p>
+          <h1>{t("planner.title")}</h1>
           <p className="hero-copy">
-            {l.heroBody}
+            {t("planner.body")}
           </p>
 
           <div className={howOpen ? "how-preview open" : "how-preview"}>
@@ -1998,7 +1891,7 @@ export default function Home() {
             >
               <span>
                 <Info aria-hidden="true" size={18} />
-                {l.howWorks}
+                {t("planner.how")}
               </span>
               {howOpen ? (
                 <ChevronUp aria-hidden="true" size={18} />
@@ -2008,19 +1901,20 @@ export default function Home() {
             </button>
             {howOpen && (
               <div className="how-preview-steps">
-                <span><Search aria-hidden="true" size={16} />Describe your trip</span>
-                <span><CloudSun aria-hidden="true" size={16} />Compare weather and crowds</span>
-                <span><Route aria-hidden="true" size={16} />Get a quieter plan</span>
+                <span><Search aria-hidden="true" size={16} />{t("planner.stepDescribe")}</span>
+                <span><CloudSun aria-hidden="true" size={16} />{t("planner.stepCompare")}</span>
+                <span><Route aria-hidden="true" size={16} />{t("planner.stepPlan")}</span>
               </div>
             )}
           </div>
 
           <form onSubmit={buildPlan} className="planner-form">
-            <label htmlFor="trip-prompt">{l.promptLabel}</label>
+            <label htmlFor="trip-prompt">{t("planner.promptLabel")}</label>
             <div className="prompt-row">
               <textarea
                 id="trip-prompt"
                 value={prompt}
+                placeholder={promptSuggestions[locale][0]}
                 onChange={(event) => updatePrompt(event.target.value)}
                 rows={3}
                 aria-describedby="prompt-hint"
@@ -2028,7 +1922,7 @@ export default function Home() {
               <button
                 type="submit"
                 className="prompt-submit"
-                aria-label="Build this trip"
+                aria-label={t("planner.promptAria")}
                 disabled={loading}
               >
                 {loading ? (
@@ -2039,16 +1933,12 @@ export default function Home() {
               </button>
             </div>
             <span id="prompt-hint" className="sr-only">
-              {l.promptHelp}
+              {t("planner.promptHelp")}
             </span>
           </form>
 
-          <div className="prompt-suggestions" aria-label="Try a request">
-            {[
-              "Tomorrow, 2 days in Bavaria by train with castles",
-              "Three days in Valle d’Aosta by e-bike, no quiet places",
-              "One easy day around Füssen with lakes and views",
-            ].map((suggestion) => (
+          <div className="prompt-suggestions" aria-label={t("planner.tryRequest")}>
+            {promptSuggestions[locale].map((suggestion) => (
               <button
                 type="button"
                 key={suggestion}
@@ -2059,9 +1949,81 @@ export default function Home() {
             ))}
           </div>
 
-          <div className="quick-settings" aria-label="Trip settings">
+          <div className="interpretation">
+            <strong>
+              {t(prompt ? "planner.interpreted" : "planner.preferences")}
+            </strong>
+            {prompt && !promptRecognized ? (
+              <small>{t("planner.notUnderstood")}</small>
+            ) : currentPromptParse.ambiguous.length > 0 ? (
+              <small>{t("planner.ambiguous")}</small>
+            ) : null}
+            <div className="interpretation-chips">
+              <button
+                type="button"
+                onClick={() => {
+                  setDays((value) => (value >= 7 ? 1 : value + 1));
+                  setControlsOverridePrompt(true);
+                }}
+              >
+                <CalendarDays aria-hidden="true" size={14} />
+                {days} {plural(locale, days, "global.day", "global.days")}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const index = transportCodes.indexOf(transport);
+                  setTransport(transportCodes[(index + 1) % transportCodes.length]);
+                  setControlsOverridePrompt(true);
+                }}
+              >
+                <Navigation aria-hidden="true" size={14} />
+                {transportLabel(transport)}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const index = regionCodes.indexOf(region);
+                  setRegion(regionCodes[(index + 1) % regionCodes.length]);
+                  setControlsOverridePrompt(true);
+                }}
+              >
+                <MapPin aria-hidden="true" size={14} />
+                {regionLabel(region)}
+              </button>
+              <button
+                type="button"
+                aria-pressed={avoidCrowds}
+                onClick={() => {
+                  setAvoidCrowds((value) => !value);
+                  setControlsOverridePrompt(true);
+                }}
+              >
+                <UserRoundCheck aria-hidden="true" size={14} />
+                {t("planner.crowdDefault")}
+              </button>
+              {interests.map((interest) => (
+                <button
+                  type="button"
+                  key={`interpreted-${interest}`}
+                  aria-label={t("planner.removeInterest", {
+                    value: interestLabel(interest),
+                  })}
+                  onClick={() => {
+                    toggleInterest(interest);
+                    setControlsOverridePrompt(true);
+                  }}
+                >
+                  {interestLabel(interest)}
+                  <X aria-hidden="true" size={13} />
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="quick-settings" aria-label={t("planner.settings")}>
             <label>
-              <span>Days</span>
+              <span>{t("planner.days")}</span>
               <select
                 value={days}
                 onChange={(event) => {
@@ -2069,17 +2031,15 @@ export default function Home() {
                   setControlsOverridePrompt(true);
                 }}
               >
-                <option value={1}>1 day</option>
-                <option value={2}>2 days</option>
-                <option value={3}>3 days</option>
-                <option value={4}>4 days</option>
-                <option value={5}>5 days</option>
-                <option value={6}>6 days</option>
-                <option value={7}>7 days</option>
+                {Array.from({ length: 7 }, (_, index) => index + 1).map((count) => (
+                  <option key={count} value={count}>
+                    {count} {plural(locale, count, "global.day", "global.days")}
+                  </option>
+                ))}
               </select>
             </label>
             <label>
-              <span>Area</span>
+              <span>{t("planner.area")}</span>
               <select
                 value={region}
                 onChange={(event) => {
@@ -2087,14 +2047,13 @@ export default function Home() {
                   setControlsOverridePrompt(true);
                 }}
               >
-                <option value="All">All pilot areas</option>
-                <option value="Füssen / Allgäu">Füssen / Allgäu</option>
-                <option value="Bavaria">Bavaria</option>
-                <option value="Valle d’Aosta">Valle d’Aosta</option>
+                {regionCodes.map((value) => (
+                  <option key={value} value={value}>{regionLabel(value)}</option>
+                ))}
               </select>
             </label>
             <label>
-              <span>Transport</span>
+              <span>{t("planner.transport")}</span>
               <select
                 value={transport}
                 onChange={(event) => {
@@ -2102,15 +2061,15 @@ export default function Home() {
                   setControlsOverridePrompt(true);
                 }}
               >
-                {Object.entries(transportLabels).map(([value, label]) => (
+                {transportCodes.map((value) => (
                   <option key={value} value={value}>
-                    {label}
+                    {transportLabel(value)}
                   </option>
                 ))}
               </select>
             </label>
             <label>
-              <span>Start</span>
+              <span>{t("planner.start")}</span>
               <input
                 type="date"
                 min={today()}
@@ -2123,7 +2082,7 @@ export default function Home() {
             </label>
           </div>
 
-          <div className="interest-chips" aria-label="Interests">
+          <div className="interest-chips" aria-label={t("planner.interests")}>
             {interestOptions.map((interest) => (
               <button
                 type="button"
@@ -2135,11 +2094,11 @@ export default function Home() {
                   setControlsOverridePrompt(true);
                 }}
               >
-                {interest}
+                {interestLabel(interest)}
               </button>
             ))}
             <span className="chip active baseline-chip">
-              Crowd-smart by default
+              {t("planner.crowdDefault")}
               <Check aria-hidden="true" size={15} />
             </span>
           </div>
@@ -2151,31 +2110,35 @@ export default function Home() {
               onClick={() => buildPlan()}
               disabled={loading}
             >
-              {loading ? "Building your trip…" : l.buildTrip}
+              {loading ? t("planner.building") : t("planner.build")}
               <ArrowRight aria-hidden="true" size={19} />
             </button>
             <a href="#explore" className="text-link">
-              {l.exploreDestinations}
+              {t("planner.explore")}
             </a>
           </div>
           <p className="trust-note">
-            {l.noSignup}
+            {t("planner.noSignup")}
           </p>
         </div>
 
-        <div className="map-panel" aria-label="Destination map">
-          <div className="map-switch" role="group" aria-label="Map view">
+        <div
+          className="map-panel"
+          id="destination-map"
+          aria-label={t("map.destinationMap")}
+        >
+          <div className="map-switch" role="group" aria-label={t("map.view")}>
             <button
               className={mapMode === "map" ? "active" : ""}
               onClick={() => setMapMode("map")}
             >
-              Map
+              {t("map.map")}
             </button>
             <button
               className={mapMode === "list" ? "active" : ""}
               onClick={() => setMapMode("list")}
             >
-              List
+              {t("map.list")}
             </button>
             <button
               className={showCrowdLayer ? "active crowd-toggle" : "crowd-toggle"}
@@ -2184,12 +2147,12 @@ export default function Home() {
                 const next = !showCrowdLayer;
                 setShowCrowdLayer(next);
                 showToast(
-                  next ? "Crowd veil enabled" : "Crowd veil hidden",
+                  next ? t("map.crowdEnabled") : t("map.crowdHidden"),
                   "info",
                 );
               }}
             >
-              Crowds
+              {t("map.crowds")}
             </button>
           </div>
           {mapMode === "map" ? (
@@ -2199,14 +2162,17 @@ export default function Home() {
               onSelect={setSelected}
               showCrowdLayer={showCrowdLayer}
               routeLink={routeLink}
+              locale={locale}
             />
           ) : (
             <div className="map-list">
               <p className="eyebrow">{nearbyLabel}</p>
               <p className="map-list-context">
                 {mockLocation
-                  ? `Ordered by distance from ${mockLocation.name}.`
-                  : `Showing destinations in ${region === "All" ? "all pilot areas" : region}. Enable location to sort by distance.`}
+                  ? t("map.ordered", { place: mockLocation.name })
+                  : region === "all"
+                    ? t("map.showingAll")
+                    : t("map.showingRegion", { region: regionLabel(region) })}
               </p>
               {visibleDestinations.map((destination) => (
                 <button
@@ -2218,7 +2184,7 @@ export default function Home() {
                 >
                   <span>
                     <strong>{destination.name}</strong>
-                    <small>{destination.kind}</small>
+                    <small>{kindLabel(destination)}</small>
                   </span>
                   <span className="inline-icon">
                     {mockLocation
@@ -2241,7 +2207,7 @@ export default function Home() {
             target="_blank"
             rel="noreferrer"
           >
-            View on OpenStreetMap
+            {t("map.osm")}
             <ExternalLink aria-hidden="true" size={12} />
           </a>
         </div>
@@ -2250,11 +2216,14 @@ export default function Home() {
       <section className="plan-section home-only" id="trip-plan" aria-live="polite">
         <div className="section-heading">
           <div>
-            <p className="eyebrow">{l.yourPlan}</p>
+            <p className="eyebrow">{t("plan.eyebrow")}</p>
             <h2>
               {plan.length
-                ? `${plan.length} ${plan.length === 1 ? "day" : "days"}, balanced for you.`
-                : l.planEmpty}
+                ? t("plan.summary", {
+                    count: plan.length,
+                    days: plural(locale, plan.length, "global.day", "global.days"),
+                  })
+                : t("plan.empty")}
             </h2>
           </div>
           {plan.length > 0 && (
@@ -2264,11 +2233,13 @@ export default function Home() {
                   {weatherSource === "live" && (
                     <Circle aria-hidden="true" size={8} fill="currentColor" />
                   )}
-                  {weatherSource === "live" ? "Live weather" : "Weather unavailable"}
+                  {weatherSource === "live"
+                    ? t("plan.liveWeather")
+                    : t("plan.weatherUnavailable")}
                 </span>
                 <span>
                   <Sparkles aria-hidden="true" size={14} />
-                  Crowd: predicted
+                  {t("plan.crowdPredicted")}
                 </span>
               </div>
               <div className="plan-actions">
@@ -2279,7 +2250,7 @@ export default function Home() {
                   onClick={() => setWhyPlanOpen((value) => !value)}
                 >
                   <Info aria-hidden="true" size={16} />
-                  {l.whyPlan}
+                  {t("plan.why")}
                 </button>
                 <button
                   type="button"
@@ -2291,7 +2262,7 @@ export default function Home() {
                   ) : (
                     <Save aria-hidden="true" size={16} />
                   )}
-                  {planSaved ? t("savedState") : t("savePlan")}
+                  {planSaved ? t("plan.saved") : t("plan.save")}
                 </button>
                 <button
                   type="button"
@@ -2299,7 +2270,7 @@ export default function Home() {
                   onClick={() => navigate("saved")}
                 >
                   <FolderOpen aria-hidden="true" size={16} />
-                  {t("saved")}
+                  {t("nav.saved")}
                 </button>
               </div>
             </div>
@@ -2310,31 +2281,36 @@ export default function Home() {
           <div className="why-plan-panel">
             <div>
               <Sparkles aria-hidden="true" size={19} />
-              <strong>Preference match</strong>
+              <strong>{t("plan.preferenceTitle")}</strong>
               <span>
                 {interests.length
-                  ? `Prioritised ${interests.join(", ").toLowerCase()}.`
-                  : "Balanced across the selected pilot area."}
+                  ? t("plan.preferenceValue", {
+                      values: interests
+                        .map(interestLabel)
+                        .join(", ")
+                        .toLocaleLowerCase(locale),
+                    })
+                  : t("plan.preferenceBalanced")}
               </span>
             </div>
             <div>
               <UserRoundCheck aria-hidden="true" size={19} />
-              <strong>Busy places removed</strong>
-              <span>Automatic suggestions marked Busy are excluded, not merely ranked lower.</span>
+              <strong>{t("plan.busyTitle")}</strong>
+              <span>{t("plan.busyBody")}</span>
             </div>
             <div>
               <CloudSun aria-hidden="true" size={19} />
-              <strong>Conditions checked</strong>
+              <strong>{t("plan.conditionsTitle")}</strong>
               <span>
                 {weatherSource === "live"
-                  ? "Forecast, date and weekday affect the schedule."
-                  : "Date and weekday are used; live weather was unavailable."}
+                  ? t("plan.conditionsLive")
+                  : t("plan.conditionsOffline")}
               </span>
             </div>
             <div>
               <Navigation aria-hidden="true" size={19} />
-              <strong>Route fit</strong>
-              <span>{transportLabels[transport]} travel and off-peak times shape each day.</span>
+              <strong>{t("plan.routeTitle")}</strong>
+              <span>{t("plan.routeBody", { transport: transportLabel(transport) })}</span>
             </div>
           </div>
         )}
@@ -2342,11 +2318,11 @@ export default function Home() {
         {planNotice && (
           <div className="plan-notice" role="status">
             <CheckCircle2 aria-hidden="true" size={17} />
-            <span>{planNotice}</span>
+            <span>{t(planNotice.key, planNotice.params)}</span>
             {planUndo && (
               <button type="button" onClick={undoPlanChange}>
                 <Undo2 aria-hidden="true" size={15} />
-                Undo
+                {t("global.undo")}
               </button>
             )}
           </div>
@@ -2366,15 +2342,37 @@ export default function Home() {
               >
                 <div className="day-header">
                   <div>
-                    <span>Day {index + 1}</span>
+                    <span>{t("plan.dayNumber", { count: index + 1 })}</span>
                     <h3>{formatDate(day.date, localeCodes[locale])}</h3>
                   </div>
                   <div className="weather">
-                    <strong>{weatherLabel(day.weather?.code)}</strong>
+                    <strong>
+                      {t(
+                        day.weather?.code === undefined
+                          ? "weather.unavailable"
+                          : day.weather.code === 0
+                            ? "weather.clear"
+                            : day.weather.code <= 3
+                              ? "weather.partlyCloudy"
+                              : day.weather.code <= 57
+                                ? "weather.misty"
+                                : day.weather.code <= 67
+                                  ? "weather.rain"
+                                  : day.weather.code <= 77
+                                    ? "weather.snow"
+                                    : day.weather.code <= 82
+                                      ? "weather.showers"
+                                      : "weather.storm",
+                      )}
+                    </strong>
                     <span>
                       {day.weather
-                        ? `${day.weather.min}° / ${day.weather.max}° · ${day.weather.rain}% rain`
-                        : "No live forecast for this date"}
+                        ? t("weather.range", {
+                            min: day.weather.min,
+                            max: day.weather.max,
+                            rain: day.weather.rain,
+                          })
+                        : t("weather.noForecast")}
                     </span>
                   </div>
                 </div>
@@ -2394,22 +2392,23 @@ export default function Home() {
                         <span className="stop-copy">
                           <strong>{stop.name}</strong>
                           <small>
-                            {stop.travelMinutes} min by {transportLabels[transport].toLowerCase()} ·{" "}
-                            {stop.visitMinutes} min visit
+                            {t("plan.travelVisit", {
+                              travel: stop.travelMinutes,
+                              transport: transportLabel(transport).toLocaleLowerCase(locale),
+                              visit: stop.visitMinutes,
+                            })}
                           </small>
                         </span>
                         <span className={`crowd crowd-${stop.crowd.toLowerCase()}`}>
-                          {stop.crowd}
+                          {crowdLabel(stop.crowd)}
                         </span>
                       </button>
                     </li>
                   ))}
                 </ol>
                 <div className="day-footer">
-                  <span>≈ {day.distanceKm} km total</span>
-                  <span>
-                    Estimates use distance, popularity, weekday and weather.
-                  </span>
+                  <span>{t("plan.totalDistance", { distance: day.distanceKm })}</span>
+                  <span>{t("plan.estimateNote")}</span>
                 </div>
               </article>
             ))}
@@ -2420,8 +2419,7 @@ export default function Home() {
               <ArrowRight size={22} />
             </span>
             <p>
-              Try: “Two quiet days with lakes and easy cycling” or set the
-              controls above.
+              {t("plan.emptyExample")}
             </p>
           </div>
         )}
@@ -2430,14 +2428,12 @@ export default function Home() {
       <section className="explore-section home-only" id="explore">
         <div className="section-heading">
           <div>
-            <p className="eyebrow">Explore</p>
-            <h2>{l.exploreTitle}</h2>
+            <p className="eyebrow">{t("explore.eyebrow")}</p>
+            <h2>{t("explore.title")}</h2>
           </div>
           <div className="explore-heading-tools">
             <p>
-              {destinations.length} public-safe pilot destinations across
-              Bavaria, Valle d’Aosta and Füssen. Select one to inspect it on the
-              map.
+              {t("explore.intro", { count: destinations.length })}
             </p>
             {plannedDestinationIds.size > 0 && (
               <button
@@ -2450,7 +2446,9 @@ export default function Home() {
                 ) : (
                   <Check aria-hidden="true" size={15} />
                 )}
-                {hidePlanned ? t("showPlanned") : t("hidePlanned")}
+                {hidePlanned
+                  ? t("explore.showPlanned")
+                  : t("explore.hidePlanned")}
                 <span>{plannedDestinationIds.size}</span>
               </button>
             )}
@@ -2459,8 +2457,8 @@ export default function Home() {
         {visibleDestinations.length === 0 ? (
           <div className="empty-explore-filter">
             <CheckCircle2 aria-hidden="true" size={26} />
-            <p>All places in this area are already in your plan.</p>
-            <button onClick={() => setHidePlanned(false)}>{t("showPlanned")}</button>
+            <p>{t("explore.allPlanned")}</p>
+            <button onClick={() => setHidePlanned(false)}>{t("explore.showPlanned")}</button>
           </div>
         ) : <div className="destination-grid">
           {visibleDestinations.map((destination) => (
@@ -2471,21 +2469,23 @@ export default function Home() {
               <div className="destination-index">
                 {String(visibleDestinations.indexOf(destination) + 1).padStart(2, "0")}
               </div>
-              <span>{destination.kind}</span>
-              <small>{destination.region}</small>
+              <span>{kindLabel(destination)}</span>
+              <small>{regionLabel(destination.region)}</small>
               <h3>{destination.name}</h3>
               <div className={`explore-crowd crowd-${crowdForExplore(destination).toLowerCase()}`}>
-                <span>{crowdForExplore(destination)}</span>
+                <span>{crowdLabel(crowdForExplore(destination))}</span>
                 <small>
-                  GemGo estimate for {formatDate(startDate, localeCodes[locale])} · medium confidence
+                  {t("explore.estimate", {
+                    date: formatDate(startDate, localeCodes[locale]),
+                  })}
                 </small>
               </div>
-              <p>{destination.description}</p>
+              <p>{destinationDescription(destination)}</p>
               <div className="destination-tags">
                 {Array.from(new Set(destination.tags))
                   .slice(0, 3)
                   .map((tag) => (
-                    <small key={`${destination.id}-${tag}`}>{tag}</small>
+                    <small key={`${destination.id}-${tag}`}>{interestLabel(tag)}</small>
                   ))}
               </div>
               <div className="destination-actions">
@@ -2504,8 +2504,8 @@ export default function Home() {
                     <BookmarkPlus aria-hidden="true" size={15} />
                   )}
                   {plannedDestinationIds.has(destination.id)
-                    ? t("inPlan")
-                    : t("addToPlan")}
+                    ? t("explore.inPlan")
+                    : t("explore.add")}
                 </button>
                 <button
                   onClick={() => {
@@ -2515,7 +2515,7 @@ export default function Home() {
                       ?.scrollIntoView({ behavior: "smooth" });
                   }}
                 >
-                  {t("viewMap")}
+                  {t("explore.viewMap")}
                   <ArrowRight aria-hidden="true" size={15} />
                 </button>
               </div>
@@ -2527,43 +2527,30 @@ export default function Home() {
       <section className="how-section home-only" id="how">
         <div className="section-heading">
           <div>
-            <p className="eyebrow">{l.howEyebrow}</p>
-            <h2>{l.howTitle}</h2>
+            <p className="eyebrow">{t("how.eyebrow")}</p>
+            <h2>{t("how.title")}</h2>
           </div>
         </div>
         <div className="how-grid">
           <article>
             <span>01</span>
-            <h3>Describe your day</h3>
-            <p>
-              GemGo’s MVP recognises days, transport and interests from your
-              request, while keeping every setting editable.
-            </p>
+            <h3>{t("how.oneTitle")}</h3>
+            <p>{t("how.oneBody")}</p>
           </article>
           <article>
             <span>02</span>
-            <h3>Balance the route</h3>
-            <p>
-              A transparent planner ranks curated places, estimates travel time
-              and spreads stops across the available days.
-            </p>
+            <h3>{t("how.twoTitle")}</h3>
+            <p>{t("how.twoBody")}</p>
           </article>
           <article>
             <span>03</span>
-            <h3>Check live conditions</h3>
-            <p>
-              Weather comes from Open-Meteo. Crowd labels are predictions with
-              medium confidence—not invented real-time counts.
-            </p>
+            <h3>{t("how.threeTitle")}</h3>
+            <p>{t("how.threeBody")}</p>
           </article>
           <article>
             <span>04</span>
-            <h3>Earn now, redeem later</h3>
-            <p>
-              GemXP records participation without sign-up. If you later want
-              real rewards, an account links eligible verified XP and converts
-              it into spendable GemCredits.
-            </p>
+            <h3>{t("how.fourTitle")}</h3>
+            <p>{t("how.fourBody")}</p>
           </article>
         </div>
       </section>
@@ -2574,23 +2561,23 @@ export default function Home() {
       >
         <div className="saved-plans-heading">
           <div>
-            <p className="eyebrow">{t("savedEyebrow")}</p>
-            <h1 id="saved-plans-title">{t("savedTitle")}</h1>
-            <p>{t("savedIntro")}</p>
+            <p className="eyebrow">{t("saved.eyebrow")}</p>
+            <h1 id="saved-plans-title">{t("saved.title")}</h1>
+            <p>{t("saved.intro")}</p>
           </div>
           <button className="primary-button small" onClick={() => navigate("home")}>
             <Search aria-hidden="true" size={16} />
-            {t("explore")}
+            {t("nav.explore")}
           </button>
         </div>
         {savedPlans.length === 0 ? (
           <div className="empty-saved-plans">
             <FolderOpen aria-hidden="true" size={32} />
-            <h2>{t("noSavedTitle")}</h2>
-            <p>{t("noSavedBody")}</p>
+            <h2>{t("saved.emptyTitle")}</h2>
+            <p>{t("saved.emptyBody")}</p>
             <button className="primary-button small" onClick={() => navigate("home")}>
               <ArrowRight aria-hidden="true" size={16} />
-              {t("explore")}
+              {t("nav.explore")}
             </button>
           </div>
         ) : (
@@ -2612,20 +2599,20 @@ export default function Home() {
                   }
                 >
                   <div className="saved-plan-topline">
-                    <span>{saved.region}</span>
+                    <span>{regionLabel(saved.region)}</span>
                     {activeSavedPlanId === saved.id && (
                       <small>
                         <CheckCircle2 aria-hidden="true" size={13} />
-                        {t("savedState")}
+                        {t("plan.saved")}
                       </small>
                     )}
                   </div>
                   <label className="saved-plan-name">
                     <Pencil aria-hidden="true" size={15} />
-                    <span className="sr-only">{t("rename")}</span>
+                    <span className="sr-only">{t("saved.rename")}</span>
                     <input
-                      key={`${saved.id}-${saved.name}`}
-                      defaultValue={saved.name}
+                      key={`${saved.id}-${locale}-${saved.customName ?? "auto"}-${saved.copyNumber ?? 0}`}
+                      defaultValue={savedPlanName(saved)}
                       maxLength={64}
                       onBlur={(event) =>
                         renameSavedPlan(saved.id, event.currentTarget.value)
@@ -2654,13 +2641,14 @@ export default function Home() {
                     </span>
                     <span>
                       <Route aria-hidden="true" size={15} />
-                      {saved.plan.length} {t("days")} · {stopCount} {t("places")}
+                      {saved.plan.length} {plural(locale, saved.plan.length, "global.day", "global.days")} ·{" "}
+                      {stopCount} {plural(locale, stopCount, "global.place", "global.places")}
                     </span>
                   </div>
                   <div className="saved-plan-tags">
-                    <span>{transportLabels[saved.transport]}</span>
+                    <span>{transportLabel(saved.transport)}</span>
                     {saved.interests.slice(0, 2).map((interest) => (
-                      <span key={`${saved.id}-${interest}`}>{interest}</span>
+                      <span key={`${saved.id}-${interest}`}>{interestLabel(interest)}</span>
                     ))}
                   </div>
                   <div className="saved-plan-actions">
@@ -2669,18 +2657,18 @@ export default function Home() {
                       onClick={() => openSavedPlan(saved)}
                     >
                       <FolderOpen aria-hidden="true" size={15} />
-                      {t("openPlan")}
+                      {t("saved.open")}
                     </button>
                     <button onClick={() => duplicateSavedPlan(saved)}>
                       <Copy aria-hidden="true" size={15} />
-                      {t("duplicate")}
+                      {t("saved.duplicate")}
                     </button>
                     <button
                       className="destructive"
                       onClick={() => deleteSavedPlan(saved)}
                     >
                       <Trash2 aria-hidden="true" size={15} />
-                      {t("delete")}
+                      {t("saved.delete")}
                     </button>
                   </div>
                 </article>
@@ -2693,22 +2681,21 @@ export default function Home() {
       <section className="feature-section gemdrop-section page-section gemdrop-only" id="gemdrop">
         <div className="section-heading">
           <div>
-            <p className="eyebrow">GemDrop · react in the moment</p>
-            <h2>Too busy? Drop into a calmer nearby place.</h2>
+            <p className="eyebrow">{t("gemdrop.eyebrow")}</p>
+            <h2>{t("gemdrop.title")}</h2>
           </div>
           <p>
-            Community reports are pilot signals. They never claim an exact
-            live visitor count.
+            {t("gemdrop.intro")}
           </p>
         </div>
         <div className="feature-grid">
           {mockLocation && <article className="drop-control-card">
             <div className="location-status matched">
-              <span>Your current location</span>
+              <span>{t("gemdrop.current")}</span>
               <strong>{mockLocation.name}</strong>
             </div>
             <label className="crowd-slider">
-              <span>How crowded does it feel? {crowdReport}/5</span>
+              <span>{t("gemdrop.crowdQuestion", { value: crowdReport })}</span>
               <input
                 type="range"
                 min={1}
@@ -2718,39 +2705,46 @@ export default function Home() {
               />
             </label>
             <button className="primary-button small" onClick={reportCrowd}>
-              Rate this place · +10 XP
+              {t("gemdrop.rate")}
             </button>
-            <p className="checkin-message">{dropMessage}</p>
+            <p className="checkin-message">
+              {t(dropMessage.key, dropMessage.params)}{" "}
+              {dropMessage.key === "gemdrop.saved" &&
+                (gemDropAlternative
+                  ? t("gemdrop.alternative", { place: gemDropAlternative.name })
+                  : t("gemdrop.noAlternative"))}
+            </p>
           </article>}
 
           <article className="drop-result-card">
-            <span className="drop-badge">Suggested GemDrop</span>
+            <span className="drop-badge">{t("gemdrop.suggested")}</span>
             {gemDropAlternative ? (
               <>
-                <small>{gemDropAlternative.region}</small>
+                <small>{regionLabel(gemDropAlternative.region)}</small>
                 <h3>{gemDropAlternative.name}</h3>
-                <p>{gemDropAlternative.description}</p>
+                <p>{destinationDescription(gemDropAlternative)}</p>
                 <div className="drop-stats">
                   <span>
-                    {haversineKm(
-                      (mockLocation ?? selected).lat,
-                      (mockLocation ?? selected).lng,
-                      gemDropAlternative.lat,
-                      gemDropAlternative.lng,
-                    ).toFixed(1)}{" "}
-                    km away
+                    {t("global.kmAway", {
+                      distance: haversineKm(
+                        (mockLocation ?? selected).lat,
+                        (mockLocation ?? selected).lng,
+                        gemDropAlternative.lat,
+                        gemDropAlternative.lng,
+                      ).toFixed(1),
+                    })}
                   </span>
-                  <span>Lower modelled popularity</span>
+                  <span>{t("gemdrop.lower")}</span>
                 </div>
                 <button
                   className="outline-button"
                   onClick={() => setSelected(gemDropAlternative)}
                 >
-                  Show this place on the map
+                  {t("gemdrop.showMap")}
                 </button>
               </>
             ) : (
-              <p>Choose another destination to see a nearby alternative.</p>
+              <p>{t("gemdrop.chooseAnother")}</p>
             )}
           </article>
         </div>
@@ -2758,76 +2752,74 @@ export default function Home() {
 
       <section className="gems-section page-section points-only" id="gems">
         <div className="gems-copy">
-          <p className="eyebrow">GemXP + GemCredits</p>
-          <h2>Progress first. Real rewards only when you choose them.</h2>
-          <p>
-            Planning and earning GemXP never require an account. An account is
-            requested only when you decide to convert eligible, verified XP
-            into GemCredits for real rewards.
-          </p>
+          <p className="eyebrow">{t("points.eyebrow")}</p>
+          <h2>{t("points.title")}</h2>
+          <p>{t("points.intro")}</p>
           <div className="balance-grid">
             <article className="balance-card xp-balance">
               <Gem aria-hidden="true" size={20} />
-              <span>Your progress</span>
+              <span>{t("points.progress")}</span>
               <strong>{xp} GemXP</strong>
-              <small>Starts immediately · local to this device · not spendable</small>
+              <small>{t("points.progressHelp")}</small>
             </article>
             <article className="balance-card credit-balance">
               <WalletCards aria-hidden="true" size={20} />
-              <span>Reward-ready balance</span>
+              <span>{t("points.rewardBalance")}</span>
               <strong>0 GemCredits</strong>
-              <small>Account-linked · only verified XP can become credits</small>
+              <small>{t("points.rewardHelp")}</small>
             </article>
           </div>
-          <div className="conversion-flow" aria-label="How XP becomes GemCredits">
-            <div><span>1</span><strong>Earn GemXP</strong><small>No registration needed</small></div>
+          <div className="conversion-flow" aria-label={t("points.flowAria")}>
+            <div><span>1</span><strong>{t("points.earn")}</strong><small>{t("points.noRegistration")}</small></div>
             <ArrowRight aria-hidden="true" size={16} />
-            <div><span>2</span><strong>Verify & link</strong><small>Only when you want rewards</small></div>
+            <div><span>2</span><strong>{t("points.verify")}</strong><small>{t("points.whenRewards")}</small></div>
             <ArrowRight aria-hidden="true" size={16} />
-            <div><span>3</span><strong>Get GemCredits</strong><small>Redeem with real partners</small></div>
+            <div><span>3</span><strong>{t("points.getCredits")}</strong><small>{t("points.redeem")}</small></div>
           </div>
           <div className="earn-list">
-            <span><strong>+60</strong> verified recommended visit</span>
-            <span><strong>+20</strong> off-peak or off-season choice</span>
-            <span><strong>+10</strong> sustainable travel evidence</span>
-            <span><strong>+15</strong> local partner visit</span>
-            <span><strong>+5</strong> original visit photo</span>
+            <span><strong>+60</strong> {t("points.earnedVisit")}</span>
+            <span><strong>+20</strong> {t("points.earnedOffPeak")}</span>
+            <span><strong>+10</strong> {t("points.earnedTravel")}</span>
+            <span><strong>+15</strong> {t("points.earnedPartner")}</span>
+            <span><strong>+5</strong> {t("points.earnedPhoto")}</span>
           </div>
         </div>
         <div className="checkin-card">
           <div className="checkin-place">
-            <span>Selected destination</span>
+            <span>{t("points.selected")}</span>
             <strong>{selected.name}</strong>
             <button
               onClick={() => navigate("home")}
             >
-              Change
+              {t("global.change")}
             </button>
           </div>
           <div className="checkin-actions">
             <button className="primary-button small" onClick={verifyLocation}>
-              {isAtSelectedPlace ? "Verify demo-location check-in" : "Verify GPS check-in"}
+              {isAtSelectedPlace ? t("points.verifyDemo") : t("points.verifyGps")}
             </button>
             <button className="outline-button" onClick={() => setSettingsOpen(true)}>
               <Settings aria-hidden="true" size={16} />
-              Demo location
+              {t("points.demoLocation")}
             </button>
           </div>
-          <p className={`checkin-message ${checkInKind}`}>{checkInMessage}</p>
+          <p className={`checkin-message ${checkInKind}`}>
+            {t(checkInMessage.key, checkInMessage.params)}
+          </p>
           <label className="photo-upload">
-            <span>Attach a visit photo</span>
-            <small>Preview stays on this device in the MVP.</small>
+            <span>{t("points.attachPhoto")}</span>
+            <small>{t("points.photoHelp")}</small>
             <input
               type="file"
               accept="image/*"
-              aria-label="Choose a visit photo"
+              aria-label={t("points.choosePhoto")}
               onChange={handlePhoto}
             />
           </label>
           {photoUrl && (
             <div className="photo-preview">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={photoUrl} alt={`Local preview of ${photoName}`} />
+              <img src={photoUrl} alt={t("points.photoAlt", { name: photoName })} />
               <span>{photoName}</span>
             </div>
           )}
@@ -2837,16 +2829,19 @@ export default function Home() {
             <div>
               <History aria-hidden="true" size={20} />
               <div>
-                <h3>GemXP history</h3>
-                <p>Every local movement includes its reason, time and resulting balance.</p>
+                <h3>{t("points.history")}</h3>
+                <p>{t("points.historyIntro")}</p>
               </div>
             </div>
-            <span>{pointHistory.length} {pointHistory.length === 1 ? "entry" : "entries"}</span>
+            <span>
+              {pointHistory.length}{" "}
+              {plural(locale, pointHistory.length, "global.entry", "global.entries")}
+            </span>
           </div>
           {pointHistory.length === 0 ? (
             <div className="empty-history">
               <Clock3 aria-hidden="true" size={26} />
-              <p>Your first check-in, crowd report or visit photo will appear here.</p>
+              <p>{t("points.historyEmpty")}</p>
             </div>
           ) : (
             <ol>
@@ -2857,7 +2852,7 @@ export default function Home() {
                     {entry.amount} XP
                   </span>
                   <span className="point-reason">
-                    <strong>{entry.reason}</strong>
+                    <strong>{t(entry.reasonType, entry.reasonParams)}</strong>
                     <time>
                       {new Intl.DateTimeFormat(localeCodes[locale], {
                         dateStyle: "medium",
@@ -2865,7 +2860,9 @@ export default function Home() {
                       }).format(new Date(entry.createdAt))}
                     </time>
                   </span>
-                  <span className="point-balance">{entry.balanceAfter} XP balance</span>
+                  <span className="point-balance">
+                    {t("points.balance", { count: entry.balanceAfter })}
+                  </span>
                 </li>
               ))}
             </ol>
@@ -2876,47 +2873,47 @@ export default function Home() {
       <section className="feature-section deals-section page-section deals-only" id="deals">
         <div className="section-heading">
           <div>
-            <p className="eyebrow">GemDeals · reward the good route</p>
-            <h2>Real local businesses, concept partnerships for now.</h2>
+            <p className="eyebrow">{t("deals.eyebrow")}</p>
+            <h2>{t("deals.title")}</h2>
           </div>
           <p>
-            GemXP is never spent directly. Future verified XP becomes
-            GemCredits, which can unlock partner rewards. Business names and
-            links are real; these terms are mock pilot proposals.
+            {t("deals.intro")}
           </p>
         </div>
-        <div className="deal-filters" aria-label="Filter GemDeals">
-          {(["All", "Füssen / Allgäu", "Bavaria", "Valle d’Aosta"] as Region[]).map(
+        <div className="deal-filters" aria-label={t("deals.filterAria")}>
+          {regionCodes.map(
             (item) => (
               <button
                 key={item}
                 className={dealRegion === item ? "chip active" : "chip"}
                 onClick={() => setDealRegion(item)}
               >
-                {item}
+                {regionLabel(item)}
               </button>
             ),
           )}
         </div>
         <div className="deals-grid">
           {gemDeals
-            .filter((deal) => dealRegion === "All" || deal.region === dealRegion)
+            .filter((deal) => dealRegion === "all" || deal.region === dealRegion)
             .map((deal) => (
               <article className="deal-card" key={deal.name}>
-                <span>{deal.region}</span>
-                <small>{deal.category}</small>
+                <span>{regionLabel(deal.region)}</span>
+                <small>{t(deal.category)}</small>
                 <h3>{deal.name}</h3>
                 <p>
                   {unlockedDeal === deal.name
-                    ? deal.offer
-                    : `A future reward concept for ${deal.creditCost} GemCredits.`}
+                    ? t(deal.offer)
+                    : t("deals.future", { count: deal.creditCost })}
                 </p>
                 <div className="deal-actions">
                   <button onClick={() => previewDeal(deal.name)}>
-                    {unlockedDeal === deal.name ? "Concept shown" : "Preview concept"}
+                    {unlockedDeal === deal.name
+                      ? t("deals.shown")
+                      : t("deals.preview")}
                   </button>
                   <a href={deal.url} target="_blank" rel="noreferrer">
-                    Real business
+                    {t("deals.realBusiness")}
                     <ExternalLink aria-hidden="true" size={13} />
                   </a>
                 </div>
@@ -2928,14 +2925,14 @@ export default function Home() {
       <section className="notifications-section page-section notifications-only" aria-labelledby="notifications-title">
         <div className="notifications-heading">
           <div>
-            <p className="eyebrow">Activity centre</p>
-            <h1 id="notifications-title">Notifications</h1>
-            <p>Your GemGo history stays on this device for the MVP.</p>
+            <p className="eyebrow">{t("notifications.eyebrow")}</p>
+            <h1 id="notifications-title">{t("notifications.title")}</h1>
+            <p>{t("notifications.intro")}</p>
           </div>
           <div className="notification-actions">
             {notificationPermission !== "granted" && (
               <button className="primary-button small" onClick={requestNotifications}>
-                Enable phone notifications
+                {t("notifications.enable")}
               </button>
             )}
             {notifications.length > 0 && (
@@ -2945,7 +2942,7 @@ export default function Home() {
                   persistNotifications(notifications.map((item) => ({ ...item, read: true })))
                 }
               >
-                Mark all read
+                {t("notifications.markAll")}
               </button>
             )}
           </div>
@@ -2954,8 +2951,8 @@ export default function Home() {
           {notifications.length === 0 ? (
             <div className="empty-notifications">
               <BellOff aria-hidden="true" size={38} />
-              <h2>No notifications yet</h2>
-              <p>Check in, rate a place or add a visit photo to see your activity here.</p>
+              <h2>{t("notifications.emptyTitle")}</h2>
+              <p>{t("notifications.emptyBody")}</p>
             </div>
           ) : (
             notifications.map((item) => (
@@ -2974,8 +2971,8 @@ export default function Home() {
                     <Bell aria-hidden="true" size={20} />
                   </span>
                   <span>
-                    <strong>{item.title}</strong>
-                    <small>{item.body}</small>
+                    <strong>{t(item.type, item.params)}</strong>
+                    <small>{t(item.bodyType ?? "notifications.onBody", item.bodyParams)}</small>
                     <time>
                       {new Intl.DateTimeFormat(localeCodes[locale], {
                         dateStyle: "medium",
@@ -2994,7 +2991,11 @@ export default function Home() {
                     )
                   }
                 >
-                  Mark as {item.read ? "unread" : "read"}
+                  {t("notifications.markAs", {
+                    state: item.read
+                      ? t("notifications.unread")
+                      : t("notifications.read"),
+                  })}
                 </button>
               </article>
             ))
@@ -3010,11 +3011,11 @@ export default function Home() {
               : "account-prompt"
           }
           aria-live="polite"
-          aria-label={t("accountTitle")}
+          aria-label={t("account.title")}
         >
           <button
             className="account-prompt-close"
-            aria-label={t("close")}
+            aria-label={t("global.close")}
             onClick={snoozeAccountPrompt}
           >
             <X aria-hidden="true" size={17} />
@@ -3028,34 +3029,34 @@ export default function Home() {
           </span>
           {accountPrompt === "prompt" ? (
             <>
-              <strong>{t("accountTitle")}</strong>
-              <p>{t("accountBody")}</p>
+              <strong>{t("account.title")}</strong>
+              <p>{t("account.body")}</p>
               <div>
                 <button onClick={() => setAccountPrompt("details")}>
-                  {t("accountCta")}
+                  {t("account.cta")}
                 </button>
-                <button onClick={snoozeAccountPrompt}>{t("notNow")}</button>
+                <button onClick={snoozeAccountPrompt}>{t("account.notNow")}</button>
               </div>
             </>
           ) : (
             <>
-              <small>{t("comingSoon")}</small>
-              <strong>{t("accountTitle")}</strong>
-              <p>{t("accountDetails")}</p>
+              <small>{t("account.coming")}</small>
+              <strong>{t("account.title")}</strong>
+              <p>{t("account.details")}</p>
               <ul>
-                <li><Check aria-hidden="true" size={14} />{t("accountBenefitOne")}</li>
-                <li><Check aria-hidden="true" size={14} />{t("accountBenefitTwo")}</li>
-                <li><Check aria-hidden="true" size={14} />{t("accountBenefitThree")}</li>
+                <li><Check aria-hidden="true" size={14} />{t("account.one")}</li>
+                <li><Check aria-hidden="true" size={14} />{t("account.two")}</li>
+                <li><Check aria-hidden="true" size={14} />{t("account.three")}</li>
               </ul>
               <button className="account-details-done" onClick={snoozeAccountPrompt}>
-                {t("notNow")}
+                {t("account.notNow")}
               </button>
             </>
           )}
         </aside>
       )}
 
-      <nav className="mobile-tabbar" aria-label="GemGo sections" ref={mobileNavRef}>
+      <nav className="mobile-tabbar" aria-label={t("nav.sections")} ref={mobileNavRef}>
         <span
           className="nav-flow-indicator"
           aria-hidden="true"
@@ -3065,11 +3066,11 @@ export default function Home() {
             opacity: mobileIndicator.width ? 1 : 0,
           }}
         />
-        <Link data-page="home" className={appPage === "home" ? "active" : ""} href="/" onClick={(event) => { event.preventDefault(); navigate("home"); }}><Search aria-hidden="true" size={19} />{t("explore")}</Link>
-        <Link data-page="saved" className={appPage === "saved" ? "active" : ""} href="/saved" onClick={(event) => { event.preventDefault(); navigate("saved"); }}><FolderOpen aria-hidden="true" size={19} />{t("saved")}</Link>
-        <Link data-page="gemdrop" className={appPage === "gemdrop" ? "active" : ""} href="/gemdrop" onClick={(event) => { event.preventDefault(); navigate("gemdrop"); }}><MapPin aria-hidden="true" size={19} />GemDrop</Link>
-        <Link data-page="points" className={appPage === "points" ? "active" : ""} href="/points" onClick={(event) => { event.preventDefault(); navigate("points"); }}><Gem aria-hidden="true" size={19} />{t("points")}</Link>
-        <Link data-page="gemdeals" className={appPage === "gemdeals" ? "active" : ""} href="/gemdeals" onClick={(event) => { event.preventDefault(); navigate("gemdeals"); }}><BadgePercent aria-hidden="true" size={19} />{t("deals")}</Link>
+        <Link data-page="home" className={appPage === "home" ? "active" : ""} href="/" onClick={(event) => { event.preventDefault(); navigate("home"); }}><Search aria-hidden="true" size={19} />{t("nav.explore")}</Link>
+        <Link data-page="saved" className={appPage === "saved" ? "active" : ""} href="/saved" onClick={(event) => { event.preventDefault(); navigate("saved"); }}><FolderOpen aria-hidden="true" size={19} />{t("nav.saved")}</Link>
+        <Link data-page="gemdrop" className={appPage === "gemdrop" ? "active" : ""} href="/gemdrop" onClick={(event) => { event.preventDefault(); navigate("gemdrop"); }}><MapPin aria-hidden="true" size={19} />{t("nav.gemdrop")}</Link>
+        <Link data-page="points" className={appPage === "points" ? "active" : ""} href="/points" onClick={(event) => { event.preventDefault(); navigate("points"); }}><Gem aria-hidden="true" size={19} />{t("nav.points")}</Link>
+        <Link data-page="gemdeals" className={appPage === "gemdeals" ? "active" : ""} href="/gemdeals" onClick={(event) => { event.preventDefault(); navigate("gemdeals"); }}><BadgePercent aria-hidden="true" size={19} />{t("nav.deals")}</Link>
       </nav>
 
       <footer>
@@ -3080,15 +3081,15 @@ export default function Home() {
             event.preventDefault();
             navigate("home");
           }}
-          aria-label="GemGo home"
+          aria-label={t("global.home")}
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img className="brand-logo" src="/assets/gemgo-logo-green.svg?v=2" alt="" aria-hidden="true" />
           <span>GemGo</span>
         </Link>
-        <p>Public MVP · Bavaria · Füssen / Allgäu · Valle d’Aosta.</p>
+        <p>{t("global.publicMvp")}</p>
         <button onClick={shareSite}>
-          {shareLabel}
+          {t(shareLabel)}
           <Share2 aria-hidden="true" size={16} />
         </button>
       </footer>
@@ -3102,24 +3103,24 @@ export default function Home() {
             onMouseDown={(event) => event.stopPropagation()}
           >
             <div className="settings-heading">
-              <div><p className="eyebrow">{l.settingsEyebrow}</p><h2 id="settings-title">{t("settings")}</h2></div>
-              <button aria-label={t("close")} onClick={() => setSettingsOpen(false)}>
+              <div><p className="eyebrow">{t("settings.eyebrow")}</p><h2 id="settings-title">{t("settings.title")}</h2></div>
+              <button aria-label={t("global.close")} onClick={() => setSettingsOpen(false)}>
                 <X aria-hidden="true" size={21} />
               </button>
             </div>
             <p>
-              {l.settingsIntro}
+              {t("settings.intro")}
             </p>
             <label>
-              <span>{l.simulatedLocation}</span>
+              <span>{t("settings.simulated")}</span>
               <select
                 value={mockLocationId ?? ""}
                 onChange={(event) => setDemoLocation(event.target.value || null)}
               >
-                <option value="">{l.realGps}</option>
+                <option value="">{t("settings.realGps")}</option>
                 {destinations.map((destination) => (
                   <option key={destination.id} value={destination.id}>
-                    {destination.name} · {destination.region}
+                    {destination.name} · {regionLabel(destination.region)}
                   </option>
                 ))}
               </select>
@@ -3127,17 +3128,16 @@ export default function Home() {
             <label className="language-setting">
               <span>
                 <Globe2 aria-hidden="true" size={18} />
-                {t("language")}
+                {t("settings.language")}
               </span>
-              <small>{t("languageHelp")}</small>
+              <small>{t("settings.languageHelp")}</small>
               <select
                 value={locale}
                 onChange={(event) => setLocale(event.target.value as Locale)}
               >
-                <option value="en">English · EN</option>
-                <option value="it">Italiano · IT</option>
-                <option value="de">Deutsch · DE</option>
-                <option value="fr">Français · FR</option>
+                {languageOptions.map(([value, label]) => (
+                  <option key={value} value={value}>{label}</option>
+                ))}
               </select>
             </label>
             <div className="sound-setting">
@@ -3149,8 +3149,8 @@ export default function Home() {
                 )}
               </span>
               <span>
-                <strong>{t("sound")}</strong>
-                <small>{l.soundHelp}</small>
+                <strong>{t("settings.sound")}</strong>
+                <small>{t("settings.soundHelp")}</small>
               </span>
               <button
                 type="button"
@@ -3161,19 +3161,25 @@ export default function Home() {
               >
                 <span />
                 <span className="sr-only">
-                  {soundEnabled ? "Disable action sounds" : "Enable action sounds"}
+                  {soundEnabled
+                    ? t("settings.disableSound")
+                    : t("settings.enableSound")}
                 </span>
               </button>
             </div>
             {mockLocation && (
               <div className="demo-location-card">
-                <span>Demo location active</span>
+                <span>{t("settings.demoActive")}</span>
                 <strong>{mockLocation.name}</strong>
-                <small>{mockLocation.region} · crowd reports, check-in and visit photos are now testable here.</small>
+                <small>
+                  {t("settings.demoHelp", {
+                    region: regionLabel(mockLocation.region),
+                  })}
+                </small>
               </div>
             )}
             <button className="primary-button small" onClick={() => setSettingsOpen(false)}>
-              {t("apply")}
+              {t("global.apply")}
             </button>
           </section>
         </div>
