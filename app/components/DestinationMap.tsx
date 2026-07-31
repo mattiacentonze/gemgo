@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import type { Destination } from "../page";
+import { useCallback, useEffect, useRef, useState } from "react";
+import type { Destination, Locale } from "../domain";
+import { msg } from "../i18n/catalogs.mjs";
 
 type Props = {
   destinations: Destination[];
@@ -9,6 +10,7 @@ type Props = {
   onSelect: (destination: Destination) => void;
   showCrowdLayer: boolean;
   routeLink: (destination: Destination) => string;
+  locale: Locale;
 };
 
 type CrowdLevel = "manageable" | "moderate" | "busy";
@@ -16,7 +18,7 @@ type CrowdLevel = "manageable" | "moderate" | "busy";
 type CrowdMeta = {
   color: string;
   clusterBackground: string;
-  label: string;
+  labelKey: string;
   level: CrowdLevel;
   logo: string;
   rgb: [number, number, number];
@@ -27,7 +29,7 @@ const crowdMeta = (popularity: number): CrowdMeta => {
     return {
       color: "#e2493f",
       clusterBackground: "#fff0ed",
-      label: "Usually busy",
+      labelKey: "map.legendBusy",
       level: "busy",
       logo: "/assets/gemgo-logo-red.svg?v=2",
       rgb: [226, 73, 63],
@@ -37,7 +39,7 @@ const crowdMeta = (popularity: number): CrowdMeta => {
     return {
       color: "#ee9b37",
       clusterBackground: "#fff6e7",
-      label: "Often moderate",
+      labelKey: "map.legendModerate",
       level: "moderate",
       logo: "/assets/gemgo-logo-orange.svg?v=2",
       rgb: [238, 155, 55],
@@ -46,7 +48,7 @@ const crowdMeta = (popularity: number): CrowdMeta => {
   return {
     color: "#35a66f",
     clusterBackground: "#ecf8f1",
-    label: "Usually manageable",
+    labelKey: "map.legendLow",
     level: "manageable",
     logo: "/assets/gemgo-logo-green.svg?v=2",
     rgb: [53, 166, 111],
@@ -88,7 +90,30 @@ export default function DestinationMap({
   onSelect,
   showCrowdLayer,
   routeLink,
+  locale,
 }: Props) {
+  const t = useCallback(
+    (key: string, params?: Record<string, string | number>) =>
+      msg(locale, key, params),
+    [locale],
+  );
+  const regionLabel = useCallback(
+    (destination: Destination) => t(`data.region.${destination.region}`),
+    [t],
+  );
+  const kindLabel = useCallback(
+    (destination: Destination) => t(`data.kind.${destination.kind}`),
+    [t],
+  );
+  const description = useCallback(
+    (destination: Destination) =>
+      t("data.description", {
+        name: destination.name,
+        kind: kindLabel(destination).toLocaleLowerCase(locale),
+        region: regionLabel(destination),
+      }),
+    [kindLabel, locale, regionLabel, t],
+  );
   const elementRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<import("leaflet").Map | null>(null);
   const markersRef = useRef<import("leaflet").LayerGroup | null>(null);
@@ -225,13 +250,13 @@ export default function DestinationMap({
             <header>
               <img src="${crowd.logo}" alt="" aria-hidden="true">
               <div>
-                <small>${safeText(destination.kind)} · ${safeText(destination.region)}</small>
+                <small>${safeText(kindLabel(destination))} · ${safeText(regionLabel(destination))}</small>
                 <h3>${safeText(destination.name)}</h3>
               </div>
-              <span class="map-popup-crowd"><i style="background:${crowd.color}"></i>${crowd.label}</span>
+              <span class="map-popup-crowd"><i style="background:${crowd.color}"></i>${safeText(t(crowd.labelKey))}</span>
             </header>
-            <p>${safeText(destination.description)}</p>
-            <a href="${routeLinkRef.current(destination)}" target="_blank" rel="noreferrer">Directions</a>
+            <p>${safeText(description(destination))}</p>
+            <a href="${routeLinkRef.current(destination)}" target="_blank" rel="noreferrer">${safeText(t("map.directions"))}</a>
           </article>`,
           { maxWidth: 390, minWidth: 280, closeButton: true },
         );
@@ -239,6 +264,16 @@ export default function DestinationMap({
           markerClickRef.current = true;
           onSelectRef.current(destination);
           marker.openPopup();
+        });
+        marker.on("popupopen", () => {
+          const close = marker
+            .getPopup()
+            ?.getElement()
+            ?.querySelector<HTMLAnchorElement>(".leaflet-popup-close-button");
+          if (close) {
+            close.title = t("global.close");
+            close.setAttribute("aria-label", t("global.close"));
+          }
         });
         marker.addTo(markerLayer);
         destinationMarkersRef.current.set(destination.id, marker);
@@ -259,7 +294,7 @@ export default function DestinationMap({
         const center = map.unproject([cluster.x, cluster.y], zoom);
         const icon = L.divIcon({
           className: "gemgo-cluster-shell",
-          html: `<span class="gemgo-cluster" style="--cluster-size:${size}px;--cluster-color:${crowd.color};--cluster-background:${crowd.clusterBackground}" aria-label="${cluster.destinations.length} places, mostly ${crowd.label.toLowerCase()}">${cluster.destinations.length}</span>`,
+          html: `<span class="gemgo-cluster" style="--cluster-size:${size}px;--cluster-color:${crowd.color};--cluster-background:${crowd.clusterBackground}" aria-label="${safeText(t("map.clusterLabel", { count: cluster.destinations.length, crowd: t(crowd.labelKey).toLocaleLowerCase(locale) }))}">${cluster.destinations.length}</span>`,
           iconSize: [size, size],
           iconAnchor: [size / 2, size / 2],
         });
@@ -294,7 +329,34 @@ export default function DestinationMap({
       disposed = true;
       map?.off("zoomend", renderMarkers);
     };
-  }, [destinations, mapReady]);
+  }, [
+    description,
+    destinations,
+    kindLabel,
+    locale,
+    mapReady,
+    regionLabel,
+    t,
+  ]);
+
+  useEffect(() => {
+    const mapElement = elementRef.current;
+    if (!mapElement || !mapReady) return;
+    const zoomIn = mapElement.querySelector<HTMLAnchorElement>(
+      ".leaflet-control-zoom-in",
+    );
+    const zoomOut = mapElement.querySelector<HTMLAnchorElement>(
+      ".leaflet-control-zoom-out",
+    );
+    if (zoomIn) {
+      zoomIn.title = t("map.zoomIn");
+      zoomIn.setAttribute("aria-label", t("map.zoomIn"));
+    }
+    if (zoomOut) {
+      zoomOut.title = t("map.zoomOut");
+      zoomOut.setAttribute("aria-label", t("map.zoomOut"));
+    }
+  }, [mapReady, t]);
 
   useEffect(() => {
     let frame = 0;
@@ -409,16 +471,13 @@ export default function DestinationMap({
       <div
         ref={elementRef}
         className="leaflet-map"
-        aria-label="Interactive map of all 58 destinations"
+        aria-label={t("map.interactive", { count: destinations.length })}
       />
       <div className="map-legend">
-        <span><i className="low" />Usually manageable</span>
-        <span><i className="moderate" />Often moderate</span>
-        <span><i className="busy" />Usually busy</span>
-        <small>
-          {destinations.length} places · clusters appear only above five nearby
-          pins · Crowds shows a map-anchored estimate, not live occupancy
-        </small>
+        <span><i className="low" />{t("map.legendLow")}</span>
+        <span><i className="moderate" />{t("map.legendModerate")}</span>
+        <span><i className="busy" />{t("map.legendBusy")}</span>
+        <small>{t("map.legendNote", { count: destinations.length })}</small>
       </div>
     </>
   );
