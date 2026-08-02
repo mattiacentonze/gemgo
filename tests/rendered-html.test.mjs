@@ -31,9 +31,8 @@ test("renders development preview metadata", async () => {
   );
   const html = await response.text();
   assert.match(html, developmentPreviewMeta);
-  assert.match(html, /How GemGo works/i);
-  assert.match(html, /Add to plan/i);
-  assert.match(html, /GemCredits/i);
-  assert.match(html, /GemXP history/i);
-  assert.match(html, /Saved Plans/i);
+  assert.match(html, /Welcome to GemGo/i);
+  assert.match(html, /Try the app now/i);
+  assert.match(html, /Meet the team/i);
+  assert.match(html, /href="\/app"/i);
 });

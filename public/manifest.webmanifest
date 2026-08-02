@@ -2,7 +2,7 @@
   "name": "GemGo",
   "short_name": "GemGo",
   "description": "Crowd-smart Alpine travel planner and rewards.",
-  "start_url": "/",
+  "start_url": "/app",
   "display": "standalone",
   "background_color": "#f6f4ed",
   "theme_color": "#123d35",

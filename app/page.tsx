@@ -9,6 +9,7 @@ import {
   useState,
 } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   ArrowRight,
   BadgePercent,
@@ -24,12 +25,14 @@ import {
   Clock3,
   CloudSun,
   Copy,
+  Download,
   ExternalLink,
   FolderOpen,
   Gem,
   Globe2,
   History,
   Info,
+  Linkedin,
   LoaderCircle,
   LogIn,
   MapPin,
@@ -41,7 +44,9 @@ import {
   Send,
   Settings,
   Share2,
+  ShieldCheck,
   Sparkles,
+  Star,
   Trash2,
   Undo2,
   UserPlus,
@@ -53,6 +58,12 @@ import {
 } from "lucide-react";
 import alpineData from "./data/destinations.json";
 import DestinationMap from "./components/DestinationMap";
+import DestinationPhoto from "./components/DestinationPhoto";
+import {
+  accommodations,
+  officialDestinationUrl,
+  team,
+} from "./content";
 import {
   canonicalCrowd,
   canonicalInterest,
@@ -640,6 +651,7 @@ function scoreDestination(
 }
 
 export default function Home() {
+  const pathname = usePathname();
   const [appPage, setAppPage] = useState<AppPage>("home");
   const [prompt, setPrompt] = useState("");
   const [days, setDays] = useState(3);
@@ -651,7 +663,9 @@ export default function Home() {
   const [startDate, setStartDate] = useState(today);
   const [controlsOverridePrompt, setControlsOverridePrompt] = useState(false);
   const [plan, setPlan] = useState<PlanDay[]>([]);
-  const [selected, setSelected] = useState<Destination>(destinations[0]);
+  const [selected, setSelected] = useState<Destination>(
+    destinations.find((destination) => destination.region === "aosta") ?? destinations[0],
+  );
   const [mapMode, setMapMode] = useState<"map" | "list">("map");
   const [showCrowdLayer, setShowCrowdLayer] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -682,6 +696,10 @@ export default function Home() {
   const [savedPlans, setSavedPlans] = useState<SavedPlan[]>([]);
   const [activeSavedPlanId, setActiveSavedPlanId] = useState<string | null>(null);
   const [hidePlanned, setHidePlanned] = useState(false);
+  const [maxDistanceKm, setMaxDistanceKm] = useState(100);
+  const [routeModes, setRouteModes] = useState<Transport[]>([]);
+  const [locationConsentOpen, setLocationConsentOpen] = useState(false);
+  const [privacyAction, setPrivacyAction] = useState<string | null>(null);
   const [planUndo, setPlanUndo] = useState<PlanUndo | null>(null);
   const [planNotice, setPlanNotice] = useState<LocalizedState | null>(null);
   const [whyPlanOpen, setWhyPlanOpen] = useState(false);
@@ -1182,7 +1200,7 @@ export default function Home() {
   };
 
   const navigate = (page: AppPage) => {
-    const href = page === "home" ? "/" : page === "points" ? "/points" : `/${page}`;
+    const href = page === "home" ? "/app" : page === "points" ? "/points" : `/${page}`;
     window.history.pushState({}, "", href);
     setAppPage(page);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -1219,15 +1237,30 @@ export default function Home() {
       ),
     [plan],
   );
+  const routeStops = useMemo(
+    () => plan.flatMap((day) => day.stops),
+    [plan],
+  );
+  const effectiveRouteModes = useMemo(
+    () =>
+      Array.from(
+        { length: Math.max(0, routeStops.length - 1) },
+        (_, index) => routeModes[index] ?? transport,
+      ),
+    [routeModes, routeStops.length, transport],
+  );
 
   const visibleDestinations = useMemo(() => {
     const scoped =
       region === "all"
         ? destinations
         : destinations.filter((destination) => destination.region === region);
+    const withinRadius = scoped.filter(
+      (destination) => destination.distanceKm <= maxDistanceKm,
+    );
     const ordered = !mockLocation
-      ? scoped
-      : [...scoped].sort(
+      ? withinRadius
+      : [...withinRadius].sort(
       (a, b) =>
         haversineKm(mockLocation.lat, mockLocation.lng, a.lat, a.lng) -
         haversineKm(mockLocation.lat, mockLocation.lng, b.lat, b.lng),
@@ -1235,7 +1268,20 @@ export default function Home() {
     return hidePlanned
       ? ordered.filter((destination) => !plannedDestinationIds.has(destination.id))
       : ordered;
-  }, [hidePlanned, mockLocation, plannedDestinationIds, region]);
+  }, [hidePlanned, maxDistanceKm, mockLocation, plannedDestinationIds, region]);
+
+  const nearbyAccommodations = useMemo(
+    () =>
+      accommodations
+        .filter((stay) => stay.region === selected.region)
+        .map((stay) => ({
+          ...stay,
+          distanceKm: haversineKm(selected.lat, selected.lng, stay.lat, stay.lng),
+        }))
+        .sort((a, b) => a.distanceKm - b.distanceKm)
+        .slice(0, 3),
+    [selected],
+  );
 
   const nearbyLabel = mockLocation ? t("map.nearYou") : t("map.areaPlaces");
   const crowdForExplore = (destination: Destination) =>
@@ -1371,10 +1417,13 @@ export default function Home() {
     if (parsed.startDate) setStartDate(parsed.startDate);
 
     const weather = await fetchWeather(nextRegion);
-    const eligible =
+    const regionEligible =
       nextRegion === "all"
         ? destinations
         : destinations.filter((destination) => destination.region === nextRegion);
+    const eligible = regionEligible.filter(
+      (destination) => destination.distanceKm <= maxDistanceKm,
+    );
     const ranked = [...eligible].sort(
       (a, b) =>
         scoreDestination(
@@ -1700,6 +1749,10 @@ export default function Home() {
       setCheckInMessage({ key: "points.geoUnsupported" });
       return;
     }
+    if (window.localStorage.getItem("gemgo-location-consent") !== "yes") {
+      setLocationConsentOpen(true);
+      return;
+    }
     setCheckInMessage({ key: "points.checking" });
     navigator.geolocation.getCurrentPosition(
       (position) => {
@@ -1790,10 +1843,190 @@ export default function Home() {
     }
   };
 
+  const exportLocalData = () => {
+    const data = Object.fromEntries(
+      Object.keys(window.localStorage)
+        .filter((key) => key.startsWith("gemgo-"))
+        .sort()
+        .map((key) => [key, window.localStorage.getItem(key)]),
+    );
+    const blob = new Blob([JSON.stringify(data, null, 2)], {
+      type: "application/json",
+    });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = `gemgo-local-data-${today()}.json`;
+    anchor.click();
+    URL.revokeObjectURL(url);
+    setPrivacyAction(t("privacy.exported"));
+  };
+
+  const deleteLocalData = () => {
+    Object.keys(window.localStorage)
+      .filter((key) => key.startsWith("gemgo-"))
+      .forEach((key) => window.localStorage.removeItem(key));
+    setXp(0);
+    setPlan([]);
+    setSavedPlans([]);
+    setNotifications([]);
+    setPointHistory([]);
+    setMockLocationId(null);
+    setPlanSaved(false);
+    setPrivacyAction(t("privacy.deleted"));
+  };
+
+  const publicHeader = (
+    <header className="public-header">
+      <Link className="brand" href="/" aria-label={t("global.home")}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img className="brand-logo" src="/assets/gemgo-logo-green.svg?v=2" alt="" aria-hidden="true" />
+        <span>GemGo</span>
+      </Link>
+      <nav aria-label={t("nav.public")}>
+        <Link href="/about">{t("nav.about")}</Link>
+        <Link href="/privacy">{t("nav.privacy")}</Link>
+      </nav>
+      <label className="public-language">
+        <span className="sr-only">{t("settings.language")}</span>
+        <Globe2 aria-hidden="true" size={17} />
+        <select value={locale} onChange={(event) => setLocale(event.target.value as Locale)}>
+          {languageOptions.map(([value, label]) => (
+            <option key={value} value={value}>{label}</option>
+          ))}
+        </select>
+      </label>
+    </header>
+  );
+
+  if (pathname === "/") {
+    return (
+      <main className="public-page welcome-page">
+        {publicHeader}
+        <section className="welcome-hero">
+          <div>
+            <p className="eyebrow">{t("welcome.eyebrow")}</p>
+            <h1>{t("welcome.title")}</h1>
+            <p>{t("welcome.body")}</p>
+            <div className="welcome-actions">
+              <Link className="primary-button" href="/app">
+                {t("welcome.try")}
+                <ArrowRight aria-hidden="true" size={19} />
+              </Link>
+              <Link className="outline-button" href="/about">{t("welcome.story")}</Link>
+            </div>
+          </div>
+          <div className="welcome-card" aria-label={t("welcome.previewAria")}>
+            <span className="welcome-map-dot dot-one">1</span>
+            <span className="welcome-map-dot dot-two">2</span>
+            <span className="welcome-map-dot dot-three">3</span>
+            <svg viewBox="0 0 500 360" role="img" aria-label={t("welcome.previewAria")}>
+              <path d="M22 292C118 219 113 107 221 127s110 128 249 35" fill="none" stroke="#35a66f" strokeWidth="12" strokeLinecap="round" />
+              <path d="M47 56c93 39 143-20 233 17s112 20 185-30" fill="none" stroke="#7cb9b2" strokeWidth="20" strokeLinecap="round" opacity=".45" />
+            </svg>
+            <div className="welcome-trip-card">
+              <small>{t("welcome.sampleEyebrow")}</small>
+              <strong>{t("welcome.sampleTitle")}</strong>
+              <span>{t("welcome.sampleMeta")}</span>
+            </div>
+          </div>
+        </section>
+      </main>
+    );
+  }
+
+  if (pathname === "/about") {
+    return (
+      <main className="public-page about-page">
+        {publicHeader}
+        <section className="public-intro">
+          <p className="eyebrow">{t("about.eyebrow")}</p>
+          <h1>{t("about.title")}</h1>
+          <p>{t("about.body")}</p>
+        </section>
+        <section className="origin-story">
+          <div className="origin-badge"><Sparkles aria-hidden="true" size={24} /></div>
+          <div>
+            <h2>{t("about.originTitle")}</h2>
+            <p>{t("about.originBody")}</p>
+            <div className="origin-links">
+              <a href="https://new.regione.vda.it/europa/linea-diretta/europe-direct/notizie-appuntamenti-ed/2026/due-studenti-dell-univda-premiati-all-eusalp-alpine-ai-hackathon-con-un-app-per-il-turismo-sostenibile-2" target="_blank" rel="noreferrer">
+                {t("about.winSource")} <ExternalLink aria-hidden="true" size={15} />
+              </a>
+              <a href="https://alpine-region.eu/alpine-youth/pitch-your-project/contest-rules" target="_blank" rel="noreferrer">
+                {t("about.contestSource")} <ExternalLink aria-hidden="true" size={15} />
+              </a>
+            </div>
+          </div>
+        </section>
+        <section className="team-section">
+          <div className="section-heading">
+            <div><p className="eyebrow">{t("about.teamEyebrow")}</p><h2>{t("about.teamTitle")}</h2></div>
+          </div>
+          <div className="team-grid">
+            {team.map((member) => (
+              <article key={member.name} className="team-card">
+                {member.photo ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={member.photo} alt={member.name} loading="lazy" />
+                ) : (
+                  <div className="team-initials" aria-label={member.name}>
+                    {member.name.split(" ").map((part) => part[0]).join("")}
+                  </div>
+                )}
+                <div>
+                  <span>{member.role}</span>
+                  <h3>{member.name}</h3>
+                  <p>{member.bio}</p>
+                  <a href={member.linkedin} target="_blank" rel="noreferrer" aria-label={`${member.name} · LinkedIn`}>
+                    <Linkedin aria-hidden="true" size={18} /> LinkedIn
+                  </a>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+        <div className="public-cta"><Link className="primary-button" href="/app">{t("welcome.try")}<ArrowRight aria-hidden="true" size={18} /></Link></div>
+      </main>
+    );
+  }
+
+  if (pathname === "/privacy") {
+    return (
+      <main className="public-page privacy-page">
+        {publicHeader}
+        <section className="public-intro">
+          <p className="eyebrow">{t("privacy.eyebrow")}</p>
+          <h1>{t("privacy.title")}</h1>
+          <p>{t("privacy.body")}</p>
+          <span className="privacy-updated">{t("privacy.updated")}</span>
+        </section>
+        <section className="privacy-grid">
+          <article><ShieldCheck aria-hidden="true" size={24} /><h2>{t("privacy.localTitle")}</h2><p>{t("privacy.localBody")}</p></article>
+          <article><MapPin aria-hidden="true" size={24} /><h2>{t("privacy.locationTitle")}</h2><p>{t("privacy.locationBody")}</p></article>
+          <article><Globe2 aria-hidden="true" size={24} /><h2>{t("privacy.servicesTitle")}</h2><p>{t("privacy.servicesBody")}</p></article>
+          <article><History aria-hidden="true" size={24} /><h2>{t("privacy.retentionTitle")}</h2><p>{t("privacy.retentionBody")}</p></article>
+        </section>
+        <section className="privacy-controls">
+          <div><p className="eyebrow">{t("privacy.controlsEyebrow")}</p><h2>{t("privacy.controlsTitle")}</h2><p>{t("privacy.controlsBody")}</p></div>
+          <div className="privacy-actions">
+            <button className="outline-button" onClick={exportLocalData}><Download aria-hidden="true" size={17} />{t("privacy.export")}</button>
+            <button className="danger-button" onClick={deleteLocalData}><Trash2 aria-hidden="true" size={17} />{t("privacy.delete")}</button>
+          </div>
+          {privacyAction && <p className="privacy-action" role="status">{privacyAction}</p>}
+        </section>
+        <section className="privacy-before-accounts">
+          <h2>{t("privacy.futureTitle")}</h2>
+          <p>{t("privacy.futureBody")}</p>
+        </section>
+      </main>
+    );
+  }
+
   return (
     <main className={`app-page page-${appPage}`}>
       <header className="site-header">
-        <Link className="brand" href="/" onClick={(event) => { event.preventDefault(); navigate("home"); }} aria-label={t("global.home")}>
+        <Link className="brand" href="/app" onClick={(event) => { event.preventDefault(); navigate("home"); }} aria-label={t("global.home")}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img className="brand-logo" src="/assets/gemgo-logo-green.svg?v=2" alt="" aria-hidden="true" />
           <span>GemGo</span>
@@ -1984,7 +2217,14 @@ export default function Home() {
                 type="button"
                 onClick={() => {
                   const index = regionCodes.indexOf(region);
-                  setRegion(regionCodes[(index + 1) % regionCodes.length]);
+                  const nextRegion = regionCodes[(index + 1) % regionCodes.length];
+                  setRegion(nextRegion);
+                  const nextSelected = destinations.find(
+                    (destination) =>
+                      (nextRegion === "all" || destination.region === nextRegion) &&
+                      destination.distanceKm <= maxDistanceKm,
+                  );
+                  if (nextSelected) setSelected(nextSelected);
                   setControlsOverridePrompt(true);
                 }}
               >
@@ -2043,7 +2283,14 @@ export default function Home() {
               <select
                 value={region}
                 onChange={(event) => {
-                  setRegion(event.target.value as Region);
+                  const nextRegion = event.target.value as Region;
+                  setRegion(nextRegion);
+                  const nextSelected = destinations.find(
+                    (destination) =>
+                      (nextRegion === "all" || destination.region === nextRegion) &&
+                      destination.distanceKm <= maxDistanceKm,
+                  );
+                  if (nextSelected) setSelected(nextSelected);
                   setControlsOverridePrompt(true);
                 }}
               >
@@ -2079,6 +2326,33 @@ export default function Home() {
                   setControlsOverridePrompt(true);
                 }}
               />
+            </label>
+            <label className="radius-setting">
+              <span>{t("planner.radius")}</span>
+              <select
+                value={maxDistanceKm}
+                onChange={(event) => {
+                  const nextRadius = Number(event.target.value);
+                  setMaxDistanceKm(nextRadius);
+                  if (
+                    selected.distanceKm > nextRadius ||
+                    (region !== "all" && selected.region !== region)
+                  ) {
+                    const nextSelected = destinations.find(
+                      (destination) =>
+                        (region === "all" || destination.region === region) &&
+                        destination.distanceKm <= nextRadius,
+                    );
+                    if (nextSelected) setSelected(nextSelected);
+                  }
+                  setControlsOverridePrompt(true);
+                }}
+              >
+                {[25, 50, 100, 250].map((value) => (
+                  <option key={value} value={value}>{t("planner.radiusValue", { count: value })}</option>
+                ))}
+              </select>
+              <small>{t("planner.radiusHelp")}</small>
             </label>
           </div>
 
@@ -2157,12 +2431,14 @@ export default function Home() {
           </div>
           {mapMode === "map" ? (
             <DestinationMap
-              destinations={destinations}
+              destinations={visibleDestinations}
               selected={selected}
               onSelect={setSelected}
               showCrowdLayer={showCrowdLayer}
               routeLink={routeLink}
               locale={locale}
+              routeStops={routeStops}
+              routeModes={effectiveRouteModes}
             />
           ) : (
             <div className="map-list">
@@ -2377,8 +2653,47 @@ export default function Home() {
                   </div>
                 </div>
                 <ol>
-                  {day.stops.map((stop) => (
-                    <li key={stop.id}>
+                  {day.stops.map((stop, stopIndex) => {
+                    const flatIndex =
+                      plan
+                        .slice(0, index)
+                        .reduce((total, previousDay) => total + previousDay.stops.length, 0) +
+                      stopIndex;
+                    const legIndex = flatIndex - 1;
+                    const legMode = legIndex >= 0 ? effectiveRouteModes[legIndex] ?? transport : transport;
+                    const previousStop = flatIndex > 0 ? routeStops[flatIndex - 1] : null;
+                    const travelMinutes = previousStop
+                      ? Math.max(
+                          8,
+                          Math.round(
+                            (haversineKm(previousStop.lat, previousStop.lng, stop.lat, stop.lng) /
+                              speedByMode[legMode]) *
+                              60,
+                          ),
+                        )
+                      : stop.travelMinutes;
+                    return <li key={stop.id}>
+                      {legIndex >= 0 && (
+                        <label className={`leg-selector leg-${legMode}`}>
+                          <span>{t("plan.leg", { from: previousStop?.name ?? "", to: stop.name })}</span>
+                          <select
+                            value={legMode}
+                            onChange={(event) => {
+                              const nextMode = event.target.value as Transport;
+                              setRouteModes(() =>
+                                effectiveRouteModes.map((mode, modeIndex) =>
+                                  modeIndex === legIndex ? nextMode : mode,
+                                ),
+                              );
+                            }}
+                            aria-label={t("plan.legTransport", { from: previousStop?.name ?? "", to: stop.name })}
+                          >
+                            {transportCodes.map((mode) => (
+                              <option key={mode} value={mode}>{transportLabel(mode)}</option>
+                            ))}
+                          </select>
+                        </label>
+                      )}
                       <button
                         className="stop-button"
                         onClick={() => {
@@ -2393,8 +2708,8 @@ export default function Home() {
                           <strong>{stop.name}</strong>
                           <small>
                             {t("plan.travelVisit", {
-                              travel: stop.travelMinutes,
-                              transport: transportLabel(transport).toLocaleLowerCase(locale),
+                              travel: travelMinutes,
+                              transport: transportLabel(legMode).toLocaleLowerCase(locale),
                               visit: stop.visitMinutes,
                             })}
                           </small>
@@ -2404,7 +2719,7 @@ export default function Home() {
                         </span>
                       </button>
                     </li>
-                  ))}
+                  })}
                 </ol>
                 <div className="day-footer">
                   <span>{t("plan.totalDistance", { distance: day.distanceKm })}</span>
@@ -2469,6 +2784,11 @@ export default function Home() {
               <div className="destination-index">
                 {String(visibleDestinations.indexOf(destination) + 1).padStart(2, "0")}
               </div>
+              <DestinationPhoto
+                name={destination.name}
+                region={regionLabel(destination.region)}
+                compact
+              />
               <span>{kindLabel(destination)}</span>
               <small>{regionLabel(destination.region)}</small>
               <h3>{destination.name}</h3>
@@ -2481,6 +2801,13 @@ export default function Home() {
                 </small>
               </div>
               <p>{destinationDescription(destination)}</p>
+              <div className="destination-facts">
+                <small><Clock3 aria-hidden="true" size={13} />{t("explore.hoursVariable")}</small>
+                <small><WalletCards aria-hidden="true" size={13} />{t("explore.priceVariable")}</small>
+                <a href={officialDestinationUrl(destination)} target="_blank" rel="noreferrer">
+                  {t("explore.officialInfo")} <ExternalLink aria-hidden="true" size={13} />
+                </a>
+              </div>
               <div className="destination-tags">
                 {Array.from(new Set(destination.tags))
                   .slice(0, 3)
@@ -2522,6 +2849,36 @@ export default function Home() {
             </article>
           ))}
         </div>}
+      </section>
+
+      <section className="stays-section home-only" id="stays">
+        <div className="section-heading">
+          <div>
+            <p className="eyebrow">{t("stays.eyebrow")}</p>
+            <h2>{t("stays.title", { place: selected.name })}</h2>
+          </div>
+          <p>{t("stays.intro")}</p>
+        </div>
+        <div className="stays-grid">
+          {nearbyAccommodations.map((stay) => (
+            <article className="stay-card" key={stay.id}>
+              <DestinationPhoto name={stay.photoQuery} region={stay.area} compact />
+              <div className="stay-card-body">
+                <small>{stay.area} · {t("stays.distance", { distance: stay.distanceKm.toFixed(1) })}</small>
+                <h3>{stay.name}</h3>
+                <div className="stay-meta">
+                  <span><Star aria-hidden="true" size={15} fill="currentColor" />{stay.rating}/10 · {t("stays.reviews", { count: stay.reviewCount })}</span>
+                  <span>{stay.priceBand} · {t("stays.indicativePrice")}</span>
+                </div>
+                <p>{t("stays.checked", { date: new Intl.DateTimeFormat(localeCodes[locale], { day: "numeric", month: "short", year: "numeric" }).format(new Date(`${stay.checkedAt}T12:00:00`)) })}</p>
+                <a className="primary-button small" href={stay.bookingUrl} target="_blank" rel="noreferrer">
+                  {t("stays.openBooking")} <ExternalLink aria-hidden="true" size={15} />
+                </a>
+              </div>
+            </article>
+          ))}
+        </div>
+        <p className="stays-disclosure">{t("stays.disclosure")}</p>
       </section>
 
       <section className="how-section home-only" id="how">
@@ -3066,7 +3423,7 @@ export default function Home() {
             opacity: mobileIndicator.width ? 1 : 0,
           }}
         />
-        <Link data-page="home" className={appPage === "home" ? "active" : ""} href="/" onClick={(event) => { event.preventDefault(); navigate("home"); }}><Search aria-hidden="true" size={19} />{t("nav.explore")}</Link>
+        <Link data-page="home" className={appPage === "home" ? "active" : ""} href="/app" onClick={(event) => { event.preventDefault(); navigate("home"); }}><Search aria-hidden="true" size={19} />{t("nav.explore")}</Link>
         <Link data-page="saved" className={appPage === "saved" ? "active" : ""} href="/saved" onClick={(event) => { event.preventDefault(); navigate("saved"); }}><FolderOpen aria-hidden="true" size={19} />{t("nav.saved")}</Link>
         <Link data-page="gemdrop" className={appPage === "gemdrop" ? "active" : ""} href="/gemdrop" onClick={(event) => { event.preventDefault(); navigate("gemdrop"); }}><MapPin aria-hidden="true" size={19} />{t("nav.gemdrop")}</Link>
         <Link data-page="points" className={appPage === "points" ? "active" : ""} href="/points" onClick={(event) => { event.preventDefault(); navigate("points"); }}><Gem aria-hidden="true" size={19} />{t("nav.points")}</Link>
@@ -3088,11 +3445,37 @@ export default function Home() {
           <span>GemGo</span>
         </Link>
         <p>{t("global.publicMvp")}</p>
+        <div className="footer-links">
+          <Link href="/about">{t("nav.about")}</Link>
+          <Link href="/privacy">{t("nav.privacy")}</Link>
+        </div>
         <button onClick={shareSite}>
           {t(shareLabel)}
           <Share2 aria-hidden="true" size={16} />
         </button>
       </footer>
+      {locationConsentOpen && (
+        <div className="settings-backdrop" role="presentation" onMouseDown={() => setLocationConsentOpen(false)}>
+          <section className="consent-dialog" role="dialog" aria-modal="true" aria-labelledby="location-consent-title" onMouseDown={(event) => event.stopPropagation()}>
+            <ShieldCheck aria-hidden="true" size={28} />
+            <h2 id="location-consent-title">{t("privacy.locationConsentTitle")}</h2>
+            <p>{t("privacy.locationConsentBody")}</p>
+            <div className="consent-actions">
+              <button className="outline-button" onClick={() => setLocationConsentOpen(false)}>{t("account.notNow")}</button>
+              <button
+                className="primary-button small"
+                onClick={() => {
+                  window.localStorage.setItem("gemgo-location-consent", "yes");
+                  setLocationConsentOpen(false);
+                  window.setTimeout(verifyLocation, 0);
+                }}
+              >
+                {t("privacy.allowOnce")}
+              </button>
+            </div>
+          </section>
+        </div>
+      )}
       {settingsOpen && (
         <div className="settings-backdrop" role="presentation" onMouseDown={() => setSettingsOpen(false)}>
           <section

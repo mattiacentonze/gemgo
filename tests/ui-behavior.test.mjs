@@ -149,3 +149,46 @@ test("map receives the active locale and translates generated popup HTML", () =>
   assert.match(map, /map\.legendNote/);
   assert.match(map, /data\.description/);
 });
+
+test("public routes, privacy controls and PWA shell are complete", () => {
+  const page = read("app/page.tsx");
+  const catalog = read("app/i18n/catalogs.mjs");
+  const worker = read("public/sw.js");
+  const manifest = JSON.parse(read("public/manifest.webmanifest"));
+  for (const route of ["app", "about", "privacy"]) {
+    assert.match(read(`app/${route}/page.tsx`), /export \{ default \}/);
+    assert.match(worker, new RegExp(`/${route}`));
+  }
+  assert.equal(manifest.start_url, "/app");
+  assert.match(page, /exportLocalData/);
+  assert.match(page, /deleteLocalData/);
+  assert.match(page, /gemgo-location-consent/);
+  assert.match(catalog, /Registration remains disabled/);
+});
+
+test("destination media is licence-filtered and official information stays linked", () => {
+  const media = read("app/components/DestinationPhoto.tsx");
+  const map = read("app/components/DestinationMap.tsx");
+  const page = read("app/page.tsx");
+  assert.match(media, /Wikimedia Commons/);
+  assert.match(media, /CC BY-SA/);
+  assert.match(map, /LicenseShortName/);
+  assert.match(page, /officialDestinationUrl/);
+  assert.match(page, /explore\.officialInfo/);
+});
+
+test("radius, accommodation ranking and multimodal route legs are implemented", () => {
+  const page = read("app/page.tsx");
+  const map = read("app/components/DestinationMap.tsx");
+  const content = read("app/content.ts");
+  assert.match(page, /maxDistanceKm/);
+  assert.match(page, /\[25, 50, 100, 250\]/);
+  assert.match(page, /nearbyAccommodations/);
+  assert.match(content, /booking\.com/);
+  for (const mode of ["walking", "cycling", "e_bike", "driving", "public_transport"]) {
+    assert.match(map, new RegExp(`${mode}: \\{ color:`));
+  }
+  assert.match(map, /L\.polyline/);
+  assert.match(map, /route-number/);
+  assert.match(page, /plan\.legTransport/);
+});

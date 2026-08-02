@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { Destination, Locale } from "../domain";
+import type { Destination, Locale, TransportCode } from "../domain";
 import { msg } from "../i18n/catalogs.mjs";
 
 type Props = {
@@ -11,6 +11,8 @@ type Props = {
   showCrowdLayer: boolean;
   routeLink: (destination: Destination) => string;
   locale: Locale;
+  routeStops?: Destination[];
+  routeModes?: TransportCode[];
 };
 
 type CrowdLevel = "manageable" | "moderate" | "busy";
@@ -84,6 +86,14 @@ const safeText = (value: string) =>
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
 
+const routeStyle: Record<TransportCode, { color: string; dashArray?: string }> = {
+  walking: { color: "#3178c6", dashArray: "3 8" },
+  cycling: { color: "#2f9e62" },
+  e_bike: { color: "#0b9fa5" },
+  driving: { color: "#7856a8" },
+  public_transport: { color: "#ef8f2f", dashArray: "9 8" },
+};
+
 export default function DestinationMap({
   destinations,
   selected,
@@ -91,6 +101,8 @@ export default function DestinationMap({
   showCrowdLayer,
   routeLink,
   locale,
+  routeStops = [],
+  routeModes = [],
 }: Props) {
   const t = useCallback(
     (key: string, params?: Record<string, string | number>) =>
@@ -118,6 +130,7 @@ export default function DestinationMap({
   const mapRef = useRef<import("leaflet").Map | null>(null);
   const markersRef = useRef<import("leaflet").LayerGroup | null>(null);
   const crowdCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const routeLayerRef = useRef<import("leaflet").LayerGroup | null>(null);
   const destinationMarkersRef = useRef(
     new Map<string, import("leaflet").Marker>(),
   );
@@ -125,6 +138,7 @@ export default function DestinationMap({
   const markerClickRef = useRef(false);
   const onSelectRef = useRef(onSelect);
   const routeLinkRef = useRef(routeLink);
+  const initialDestinationsRef = useRef(destinations);
   const [mapReady, setMapReady] = useState(false);
 
   useEffect(() => {
@@ -148,6 +162,7 @@ export default function DestinationMap({
       }).addTo(map);
       mapRef.current = map;
       markersRef.current = L.layerGroup().addTo(map);
+      routeLayerRef.current = L.layerGroup().addTo(map);
 
       const canvas = document.createElement("canvas");
       canvas.className = "crowd-veil";
@@ -155,10 +170,13 @@ export default function DestinationMap({
       map.getPanes().overlayPane.appendChild(canvas);
       crowdCanvasRef.current = canvas;
 
-      const bounds = L.latLngBounds(
-        destinations.map((destination) => [destination.lat, destination.lng]),
-      );
-      map.fitBounds(bounds, { padding: [36, 36] });
+      const initialDestinations = initialDestinationsRef.current;
+      if (initialDestinations.length > 0) {
+        const bounds = L.latLngBounds(
+          initialDestinations.map((destination) => [destination.lat, destination.lng]),
+        );
+        map.fitBounds(bounds, { padding: [36, 36] });
+      }
       setMapReady(true);
     });
     return () => {
@@ -167,8 +185,27 @@ export default function DestinationMap({
       crowdCanvasRef.current = null;
       mapRef.current?.remove();
       mapRef.current = null;
+      routeLayerRef.current = null;
+      markersRef.current = null;
     };
-  }, [destinations]);
+  }, []);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !mapReady || destinations.length === 0) return;
+    let disposed = false;
+    import("leaflet").then((module) => {
+      if (disposed || !mapRef.current) return;
+      const L = module.default;
+      const bounds = L.latLngBounds(
+        destinations.map((destination) => [destination.lat, destination.lng]),
+      );
+      map.fitBounds(bounds, { animate: false, padding: [36, 36] });
+    });
+    return () => {
+      disposed = true;
+    };
+  }, [destinations, mapReady]);
 
   useEffect(() => {
     const element = elementRef.current;
@@ -247,6 +284,7 @@ export default function DestinationMap({
         });
         marker.bindPopup(
           `<article class="map-popup">
+            <div class="map-popup-media" data-photo-name="${safeText(destination.name)}"><span>GemGo</span></div>
             <header>
               <img src="${crowd.logo}" alt="" aria-hidden="true">
               <div>
@@ -266,6 +304,7 @@ export default function DestinationMap({
           marker.openPopup();
         });
         marker.on("popupopen", () => {
+          const popupElement = marker.getPopup()?.getElement();
           const close = marker
             .getPopup()
             ?.getElement()
@@ -273,6 +312,50 @@ export default function DestinationMap({
           if (close) {
             close.title = t("global.close");
             close.setAttribute("aria-label", t("global.close"));
+          }
+          const media = popupElement?.querySelector<HTMLElement>(".map-popup-media");
+          if (media && !media.dataset.loaded) {
+            media.dataset.loaded = "true";
+            const params = new URLSearchParams({
+              action: "query",
+              format: "json",
+              origin: "*",
+              generator: "search",
+              gsrnamespace: "6",
+              gsrlimit: "6",
+              gsrsearch: `${destination.name} ${regionLabel(destination)}`,
+              prop: "imageinfo",
+              iiprop: "url|extmetadata",
+              iiurlwidth: "640",
+            });
+            fetch(`https://commons.wikimedia.org/w/api.php?${params}`)
+              .then((response) => response.json())
+              .then((payload) => {
+                const pages = Object.values(payload?.query?.pages ?? {}) as Array<{
+                  imageinfo?: Array<{
+                    thumburl?: string;
+                    descriptionurl?: string;
+                    extmetadata?: Record<string, { value?: string }>;
+                  }>;
+                }>;
+                const free = pages
+                  .map((page) => page.imageinfo?.[0])
+                  .find((info) => {
+                    const license = info?.extmetadata?.LicenseShortName?.value ?? "";
+                    return Boolean(
+                      info?.thumburl &&
+                        /^(CC0|CC BY|CC BY-SA|Public domain)/i.test(license),
+                    );
+                  });
+                if (!free?.thumburl || !media.isConnected) return;
+                const author = (free.extmetadata?.Artist?.value ?? t("media.contributor"))
+                  .replace(/<[^>]*>/g, " ")
+                  .replace(/\s+/g, " ")
+                  .trim();
+                const license = free.extmetadata?.LicenseShortName?.value ?? "CC";
+                media.innerHTML = `<img src="${safeText(free.thumburl)}" alt="${safeText(destination.name)}"><a href="${safeText(free.descriptionurl ?? "https://commons.wikimedia.org/")}" target="_blank" rel="noreferrer">${safeText(author)} · ${safeText(license)}</a>`;
+              })
+              .catch(() => undefined);
           }
         });
         marker.addTo(markerLayer);
@@ -338,6 +421,51 @@ export default function DestinationMap({
     regionLabel,
     t,
   ]);
+
+  useEffect(() => {
+    let disposed = false;
+    const drawRoute = async () => {
+      const map = mapRef.current;
+      const layer = routeLayerRef.current;
+      if (!map || !layer || disposed) return;
+      const L = (await import("leaflet")).default;
+      if (disposed) return;
+      layer.clearLayers();
+      routeStops.forEach((stop, index) => {
+        if (index > 0) {
+          const previous = routeStops[index - 1];
+          const style = routeStyle[routeModes[index - 1] ?? "public_transport"];
+          L.polyline(
+            [
+              [previous.lat, previous.lng],
+              [stop.lat, stop.lng],
+            ],
+            {
+              color: style.color,
+              weight: 5,
+              opacity: 0.88,
+              dashArray: style.dashArray,
+              lineCap: "round",
+              className: `gemgo-route gemgo-route-${routeModes[index - 1] ?? "public_transport"}`,
+            },
+          ).addTo(layer);
+        }
+        L.marker([stop.lat, stop.lng], {
+          interactive: false,
+          icon: L.divIcon({
+            className: "route-number-shell",
+            html: `<span class="route-number">${index + 1}</span>`,
+            iconSize: [28, 28],
+            iconAnchor: [14, 14],
+          }),
+        }).addTo(layer);
+      });
+    };
+    drawRoute();
+    return () => {
+      disposed = true;
+    };
+  }, [mapReady, routeModes, routeStops]);
 
   useEffect(() => {
     const mapElement = elementRef.current;
