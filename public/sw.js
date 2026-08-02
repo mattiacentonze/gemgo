@@ -1,4 +1,4 @@
-const CACHE = "gemgo-shell-v2";
+const CACHE = "gemgo-shell-v3";
 const SHELL = [
   "/",
   "/app",
@@ -11,6 +11,9 @@ const SHELL = [
   "/notifications",
   "/manifest.webmanifest",
   "/assets/gemgo-logo.png",
+  "/assets/team/mattia-centonze.png",
+  "/assets/team/killian-foloppe.png",
+  "/assets/team/martino-dalla-fontana.png",
 ];
 
 self.addEventListener("install", (event) => {

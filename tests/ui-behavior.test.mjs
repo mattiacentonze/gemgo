@@ -78,6 +78,14 @@ test("public docs do not expose the private backlog", () => {
   assert.doesNotMatch(workflow, /docs\.google|drive\.google|shared Google Doc/i);
 });
 
+test("all team portraits are authorised local assets", () => {
+  const content = read("app/content.ts");
+  assert.match(content, /\/assets\/team\/mattia-centonze\.png/);
+  assert.match(content, /\/assets\/team\/killian-foloppe\.png/);
+  assert.match(content, /\/assets\/team\/martino-dalla-fontana\.png/);
+  assert.doesNotMatch(content, /avatars\.githubusercontent|photo:\s*null/);
+});
+
 test("saved plans migrate the legacy plan and expose complete local controls", () => {
   const page = read("app/page.tsx");
   const route = read("app/saved/page.tsx");

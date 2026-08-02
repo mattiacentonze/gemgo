@@ -106,20 +106,20 @@ export const team = [
     role: "Development & product engineering",
     bio: "Full-stack developer at the Italian Institute of Technology and Software Security graduate student, building GemGo’s product and technical foundation.",
     linkedin: "https://www.linkedin.com/in/mattiacentonze/",
-    photo: "https://avatars.githubusercontent.com/u/93384261?v=4",
+    photo: "/assets/team/mattia-centonze.png",
   },
   {
     name: "Killian Foloppe",
     role: "AI governance & strategy",
     bio: "AI for Good researcher with experience across international institutions, AI governance, geopolitical risk and strategic partnerships.",
     linkedin: "https://www.linkedin.com/in/killianfoloppe/",
-    photo: null,
+    photo: "/assets/team/killian-foloppe.png",
   },
   {
     name: "Martino Dalla Fontana",
     role: "Tourism & field experience",
     bio: "Environmental hiking guide focused on group leadership, guest experience, languages and communication for sustainable tourism.",
     linkedin: "https://www.linkedin.com/in/martinodallafontana/",
-    photo: null,
+    photo: "/assets/team/martino-dalla-fontana.png",
   },
 ] as const;

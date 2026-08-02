@@ -43,3 +43,15 @@ technical behaviour.
 - Clustering intentionally remains limited to groups above five nearby pins.
 - Registration reminders are contextual, capped and snoozable; daily prompts
   are intentionally rejected.
+- Destination cards include freely licensed illustrative photography with
+  source attribution, licence details and a safe fallback.
+- Destination details include short descriptions, indicative logistics,
+  verification dates and links to current official information.
+- Welcome, About and Privacy pages are available as public routes.
+- The About page presents all three team members with authorised local
+  portraits and LinkedIn links.
+- Explore and planning support a maximum straight-line travel radius.
+- Plans are rendered on the map with numbered stops and transport-specific
+  coloured legs.
+- Nearby accommodation cards show indicative prices and ratings and link to
+  Booking.com; accommodation map markers remain future work.
