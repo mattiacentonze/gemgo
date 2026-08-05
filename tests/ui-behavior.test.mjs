@@ -217,7 +217,7 @@ test("radius, accommodation ranking and multimodal route legs are implemented", 
   const map = read("app/components/DestinationMap.tsx");
   const content = read("app/content.ts");
   assert.match(page, /maxDistanceKm/);
-  assert.match(page, /\[25, 50, 100, 250\]/);
+  assert.match(page, /type="range" min="5" max="300" step="5"/);
   assert.match(page, /nearbyAccommodations/);
   assert.match(page, /visibleAccommodations/);
   assert.match(page, /showAccommodations/);
@@ -228,6 +228,7 @@ test("radius, accommodation ranking and multimodal route legs are implemented", 
   for (const mode of ["walking", "cycling", "e_bike", "driving", "public_transport"]) {
     assert.match(map, new RegExp(`${mode}: \\{ color:`));
   }
+  assert.match(map, /fetchRoadGeometry/);
   assert.match(map, /L\.polyline/);
   assert.match(map, /route-number/);
   assert.match(page, /plan\.legTransport/);
