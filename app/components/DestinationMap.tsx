@@ -5,6 +5,7 @@ import type { Destination, Locale, TransportCode } from "../domain";
 import type { Accommodation } from "../content";
 import { msg } from "../i18n/catalogs.mjs";
 import { commonsImageParams } from "../lib/commons-media";
+import { fetchRoadGeometry } from "../lib/geo.mjs";
 
 type Props = {
   destinations: Destination[];
@@ -15,6 +16,7 @@ type Props = {
   locale: Locale;
   routeStops?: Destination[];
   routeModes?: TransportCode[];
+  routeOrigin?: { lat: number; lng: number } | null;
   accommodations: Accommodation[];
   showAccommodations: boolean;
   onToggleAccommodations: () => void;
@@ -108,6 +110,7 @@ export default function DestinationMap({
   locale,
   routeStops = [],
   routeModes = [],
+  routeOrigin = null,
   accommodations,
   showAccommodations,
   onToggleAccommodations,
@@ -504,41 +507,50 @@ export default function DestinationMap({
       const L = (await import("leaflet")).default;
       if (disposed) return;
       layer.clearLayers();
-      routeStops.forEach((stop, index) => {
+      const points = routeOrigin ? [{ ...routeOrigin, id: "origin", name: "Origin" } as Destination, ...routeStops] : routeStops;
+      for (let index = 0; index < points.length; index += 1) {
+        const stop = points[index];
         if (index > 0) {
-          const previous = routeStops[index - 1];
-          const style = routeStyle[routeModes[index - 1] ?? "public_transport"];
+          const previous = points[index - 1];
+          const modeIndex = routeOrigin ? Math.max(0, index - 2) : index - 1;
+          const mode = routeModes[modeIndex] ?? "public_transport";
+          const style = routeStyle[mode];
+          let coordinates: [number, number][] = [[previous.lat, previous.lng], [stop.lat, stop.lng]];
+          try {
+            const road = await fetchRoadGeometry(previous, stop, mode);
+            if (disposed) return;
+            if (road) coordinates = road.coordinates;
+          } catch {
+            // A direct, dashed fallback keeps the itinerary usable when routing is offline.
+          }
           L.polyline(
-            [
-              [previous.lat, previous.lng],
-              [stop.lat, stop.lng],
-            ],
+            coordinates,
             {
               color: style.color,
               weight: 5,
               opacity: 0.88,
-              dashArray: style.dashArray,
+              dashArray: coordinates.length === 2 ? (style.dashArray ?? "6 8") : style.dashArray,
               lineCap: "round",
-              className: `gemgo-route gemgo-route-${routeModes[index - 1] ?? "public_transport"}`,
+              className: `gemgo-route gemgo-route-${mode}`,
             },
           ).addTo(layer);
         }
-        L.marker([stop.lat, stop.lng], {
+        if (!(routeOrigin && index === 0)) L.marker([stop.lat, stop.lng], {
           interactive: false,
           icon: L.divIcon({
             className: "route-number-shell",
-            html: `<span class="route-number">${index + 1}</span>`,
+            html: `<span class="route-number">${routeOrigin ? index : index + 1}</span>`,
             iconSize: [28, 28],
             iconAnchor: [14, 14],
           }),
         }).addTo(layer);
-      });
+      }
     };
     drawRoute();
     return () => {
       disposed = true;
     };
-  }, [mapReady, routeModes, routeStops]);
+  }, [mapReady, routeModes, routeOrigin, routeStops]);
 
   useEffect(() => {
     const mapElement = elementRef.current;
