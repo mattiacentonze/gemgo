@@ -99,6 +99,7 @@ import {
 } from "./lib/prompt-parser.mjs";
 import { inferDestinationRegion } from "./lib/destination-region";
 import { formatDuration, regionOrigins, validStartDate } from "./lib/travel.mjs";
+import { geocodePlace } from "./lib/geo.mjs";
 
 type Transport = TransportCode;
 type Difficulty = DifficultyCode;
@@ -730,6 +731,9 @@ export default function Home() {
   const [activeSavedPlanId, setActiveSavedPlanId] = useState<string | null>(null);
   const [hidePlanned, setHidePlanned] = useState(false);
   const [maxDistanceKm, setMaxDistanceKm] = useState(100);
+  const [originQuery, setOriginQuery] = useState("");
+  const [travelOrigin, setTravelOrigin] = useState<{ label: string; lat: number; lng: number } | null>(null);
+  const [originStatus, setOriginStatus] = useState<"idle" | "loading" | "error">("idle");
   const [routeModes, setRouteModes] = useState<Transport[]>([]);
   const [locationConsentOpen, setLocationConsentOpen] = useState(false);
   const [privacyAction, setPrivacyAction] = useState<string | null>(null);
@@ -1285,8 +1289,10 @@ export default function Home() {
       region === "all"
         ? destinations
         : destinations.filter((destination) => destination.region === region);
-    const withinRadius = scoped.filter(
-      (destination) => destination.distanceKm <= maxDistanceKm,
+    const withinRadius = scoped.filter((destination) =>
+      travelOrigin
+        ? haversineKm(travelOrigin.lat, travelOrigin.lng, destination.lat, destination.lng) <= maxDistanceKm
+        : destination.distanceKm <= maxDistanceKm,
     );
     const ordered = !mockLocation
       ? withinRadius
@@ -1298,7 +1304,7 @@ export default function Home() {
     return hidePlanned
       ? ordered.filter((destination) => !plannedDestinationIds.has(destination.id))
       : ordered;
-  }, [hidePlanned, maxDistanceKm, mockLocation, plannedDestinationIds, region]);
+  }, [hidePlanned, maxDistanceKm, mockLocation, plannedDestinationIds, region, travelOrigin]);
 
   const visibleAccommodations = useMemo(() => {
     const regionCenters = {
@@ -1309,10 +1315,37 @@ export default function Home() {
 
     return accommodations.filter((stay) => {
       if (region !== "all" && stay.region !== region) return false;
-      const center = regionCenters[stay.region];
+      const center = travelOrigin ?? regionCenters[stay.region];
       return haversineKm(center.lat, center.lng, stay.lat, stay.lng) <= maxDistanceKm;
     });
-  }, [maxDistanceKm, region]);
+  }, [maxDistanceKm, region, travelOrigin]);
+
+  const searchOrigin = async () => {
+    if (!originQuery.trim()) return;
+    setOriginStatus("loading");
+    try {
+      const result = await geocodePlace(originQuery);
+      if (!result) throw new Error("not-found");
+      setTravelOrigin(result);
+      setOriginQuery(result.label);
+      setOriginStatus("idle");
+    } catch {
+      setOriginStatus("error");
+    }
+  };
+
+  const useGpsOrigin = () => {
+    setOriginStatus("loading");
+    navigator.geolocation.getCurrentPosition(
+      ({ coords }) => {
+        setTravelOrigin({ label: t("planner.currentLocation"), lat: coords.latitude, lng: coords.longitude });
+        setOriginQuery(t("planner.currentLocation"));
+        setOriginStatus("idle");
+      },
+      () => setOriginStatus("error"),
+      { enableHighAccuracy: true, timeout: 10000 },
+    );
+  };
 
   const nearbyAccommodations = useMemo(
     () =>
@@ -2436,8 +2469,18 @@ export default function Home() {
               />
             </label>
             <label className="radius-setting">
+              <span>{t("planner.origin")}</span>
+              <div className="origin-control">
+                <input value={originQuery} onChange={(event) => setOriginQuery(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); void searchOrigin(); } }} placeholder={t("planner.originPlaceholder")} />
+                <button type="button" onClick={() => void searchOrigin()} disabled={originStatus === "loading"}>{t("planner.searchOrigin")}</button>
+                <button type="button" onClick={useGpsOrigin} disabled={originStatus === "loading"}><Navigation aria-hidden="true" size={15} /> {t("planner.useGps")}</button>
+              </div>
+              {travelOrigin && <small>{t("planner.originActive", { place: travelOrigin.label })}</small>}
+              {originStatus === "error" && <small role="alert">{t("planner.originError")}</small>}
+            </label>
+            <label className="radius-setting">
               <span>{t("planner.radius")}</span>
-              <select
+              <input type="range" min="5" max="300" step="5"
                 value={maxDistanceKm}
                 onChange={(event) => {
                   const nextRadius = Number(event.target.value);
@@ -2455,11 +2498,8 @@ export default function Home() {
                   }
                   setControlsOverridePrompt(true);
                 }}
-              >
-                {[25, 50, 100, 250].map((value) => (
-                  <option key={value} value={value}>{t("planner.radiusValue", { count: value })}</option>
-                ))}
-              </select>
+              />
+              <output>{t("planner.radiusValue", { count: maxDistanceKm })}</output>
               <small>{t("planner.radiusHelp")}</small>
             </label>
           </div>
@@ -2547,6 +2587,7 @@ export default function Home() {
               locale={locale}
               routeStops={routeStops}
               routeModes={effectiveRouteModes}
+              routeOrigin={travelOrigin}
               accommodations={visibleAccommodations}
               showAccommodations={showAccommodations}
               onToggleAccommodations={() =>
@@ -2800,7 +2841,7 @@ export default function Home() {
                           ),
                         )
                       : stop.travelMinutes;
-                    const travelOrigin = previousStop?.name ?? mockLocation?.name ?? t(
+                    const travelOriginLabel = previousStop?.name ?? travelOrigin?.label ?? mockLocation?.name ?? t(
                       "plan.areaCentre",
                       { region: regionLabel(stop.region) },
                     );
@@ -2842,7 +2883,7 @@ export default function Home() {
                             {t("plan.travelVisitFrom", {
                               travel: formatDuration(travelMinutes, locale),
                               transport: transportLabel(legMode).toLocaleLowerCase(locale),
-                              origin: travelOrigin,
+                            origin: travelOriginLabel,
                               visit: stop.visitMinutes,
                             })}
                           </small>
