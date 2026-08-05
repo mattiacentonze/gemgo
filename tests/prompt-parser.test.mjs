@@ -4,6 +4,7 @@ import {
   isValidParseResult,
   parsePrompt,
 } from "../app/lib/prompt-parser.mjs";
+import { formatDuration, validStartDate } from "../app/lib/travel.mjs";
 
 const now = new Date("2026-07-29T12:00:00");
 
@@ -99,6 +100,23 @@ test("supports light fuzzy matching, mixed languages and hours", () => {
   assert(mixed.interests.includes("lakes"));
 
   assert.equal(parsePrompt("48 ore", { now }).days, 2);
+});
+
+test("keeps both days of a two-day trip and recognises Valle d’Aosta", () => {
+  const hyphenated = parsePrompt("a two-day trip in Valle d'Aosta", { now });
+  assert.equal(hyphenated.days, 2);
+  assert.equal(hyphenated.region, "aosta");
+
+  const italian = parsePrompt("due giorni in Valle d’Aosta", { now });
+  assert.equal(italian.days, 2);
+  assert.equal(italian.region, "aosta");
+});
+
+test("formats long travel times and repairs an empty planner start date", () => {
+  assert.equal(formatDuration(250, "en"), "4 h 10 min");
+  assert.equal(formatDuration(69, "it"), "1 h 9 min");
+  assert.equal(validStartDate("", "2026-08-04"), "2026-08-04");
+  assert.equal(validStartDate("2026-08-08", "2026-08-04"), "2026-08-08");
 });
 
 test("keeps incomplete input genuinely incomplete and flags ambiguity", () => {

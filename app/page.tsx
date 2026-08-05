@@ -16,6 +16,7 @@ import {
   Bell,
   BellOff,
   BookmarkPlus,
+  Camera,
   CalendarDays,
   Check,
   CheckCircle2,
@@ -59,6 +60,8 @@ import {
 import alpineData from "./data/destinations.json";
 import DestinationMap from "./components/DestinationMap";
 import DestinationPhoto from "./components/DestinationPhoto";
+import GemContributionForm from "./components/GemContributionForm";
+import LiquidMobileNav from "./components/LiquidMobileNav";
 import {
   accommodations,
   officialDestinationUrl,
@@ -94,6 +97,8 @@ import {
   isValidParseResult,
   parsePrompt,
 } from "./lib/prompt-parser.mjs";
+import { inferDestinationRegion } from "./lib/destination-region";
+import { formatDuration, regionOrigins, validStartDate } from "./lib/travel.mjs";
 
 type Transport = TransportCode;
 type Difficulty = DifficultyCode;
@@ -182,6 +187,13 @@ type LocalizedState = {
   key: string;
   params?: Record<string, string | number>;
 };
+
+type CrowdDiversion = {
+  avoided: Destination;
+  alternative: Destination;
+};
+
+type DealCategory = "bar" | "restaurant" | "experience" | "activity";
 
 const fussenDestinations = [
   {
@@ -354,6 +366,18 @@ const destinations: Destination[] = [
   ...alpineDestinations,
 ];
 
+const parseTripPrompt = (input: string, now?: Date): PromptParseResult => {
+  const parsed = parsePrompt(input, now ? { now } : undefined);
+  const inferredRegion = inferDestinationRegion(input, destinations);
+  return inferredRegion && !parsed.region
+    ? {
+        ...parsed,
+        region: inferredRegion,
+        confidence: Math.max(parsed.confidence, 0.5),
+      }
+    : parsed;
+};
+
 const migratePlan = (value: unknown): PlanDay[] => {
   if (!Array.isArray(value)) return [];
   return value
@@ -499,6 +523,7 @@ const gemDeals = [
     region: "fussen_allgau" as const,
     category: "deals.category.bikeHotel",
     offer: "deals.offer.lateCheckout",
+    subcategory: "bar" as const,
     creditCost: 25,
     url: "https://www.hotel-hechten.com/en/active/cycling-fussen-bavaria.html",
   },
@@ -507,6 +532,7 @@ const gemDeals = [
     region: "fussen_allgau" as const,
     category: "deals.category.stayCycle",
     offer: "deals.offer.rental",
+    subcategory: "activity" as const,
     creditCost: 35,
     url: "https://www.ameroncollection.com/en/neuschwanstein-alpsee-resort-spa/discover-the-allgaeu-alps/cycling",
   },
@@ -515,6 +541,7 @@ const gemDeals = [
     region: "bavaria" as const,
     category: "deals.category.ebikeStay",
     offer: "deals.offer.charging",
+    subcategory: "activity" as const,
     creditCost: 20,
     url: "https://die-gams.info/en/aktiv/",
   },
@@ -523,6 +550,7 @@ const gemDeals = [
     region: "aosta" as const,
     category: "deals.category.bikeHotel",
     offer: "deals.offer.rate",
+    subcategory: "restaurant" as const,
     creditCost: 30,
     url: "https://www.hotelcomtesdechallant.com/en/offers/discover-the-aosta-valley-by-e-bike",
   },
@@ -531,6 +559,7 @@ const gemDeals = [
     region: "aosta" as const,
     category: "deals.category.ecoStay",
     offer: "deals.offer.breakfast",
+    subcategory: "experience" as const,
     creditCost: 25,
     url: "https://ecobnb.com/IT-ao/hotel/eco-wellness-notre-maison/c0rl9",
   },
@@ -539,6 +568,7 @@ const gemDeals = [
     region: "aosta" as const,
     category: "deals.category.bikeHotel",
     offer: "deals.offer.storage",
+    subcategory: "bar" as const,
     creditCost: 20,
     url: "https://www.crabunhotel.it/en/bike-hotel",
   },
@@ -668,6 +698,7 @@ export default function Home() {
   );
   const [mapMode, setMapMode] = useState<"map" | "list">("map");
   const [showCrowdLayer, setShowCrowdLayer] = useState(false);
+  const [showAccommodations, setShowAccommodations] = useState(true);
   const [loading, setLoading] = useState(false);
   const [weatherSource, setWeatherSource] = useState<"live" | "unavailable">(
     "unavailable",
@@ -687,7 +718,9 @@ export default function Home() {
     key: "gemdrop.initial",
   });
   const [dealRegion, setDealRegion] = useState<Region>("all");
+  const [dealCategory, setDealCategory] = useState<DealCategory | "all">("all");
   const [unlockedDeal, setUnlockedDeal] = useState<string | null>(null);
+  const [activeGemDrop, setActiveGemDrop] = useState<Destination | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [mockLocationId, setMockLocationId] = useState<string | null>(null);
   const [notifications, setNotifications] = useState<GemNotification[]>([]);
@@ -702,6 +735,7 @@ export default function Home() {
   const [privacyAction, setPrivacyAction] = useState<string | null>(null);
   const [planUndo, setPlanUndo] = useState<PlanUndo | null>(null);
   const [planNotice, setPlanNotice] = useState<LocalizedState | null>(null);
+  const [crowdDiversion, setCrowdDiversion] = useState<CrowdDiversion | null>(null);
   const [whyPlanOpen, setWhyPlanOpen] = useState(false);
   const [howOpen, setHowOpen] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
@@ -715,9 +749,7 @@ export default function Home() {
   const toastTimerRef = useRef<number | null>(null);
   const highlightTimerRef = useRef<number | null>(null);
   const desktopNavRef = useRef<HTMLElement | null>(null);
-  const mobileNavRef = useRef<HTMLElement | null>(null);
   const [desktopIndicator, setDesktopIndicator] = useState({ left: 0, width: 0 });
-  const [mobileIndicator, setMobileIndicator] = useState({ left: 0, width: 0 });
   const [notificationPermission, setNotificationPermission] = useState<
     NotificationPermission | "unsupported"
   >("default");
@@ -738,7 +770,7 @@ export default function Home() {
       region: regionLabel(destination.region),
     });
   const currentPromptParse = useMemo(
-    () => parsePrompt(prompt, { now: new Date() }),
+    () => parseTripPrompt(prompt, new Date()),
     [prompt],
   );
   const promptRecognized =
@@ -975,8 +1007,7 @@ export default function Home() {
       }
       const navRect = nav.getBoundingClientRect();
       const itemRect = active.getBoundingClientRect();
-      const compact = nav.classList.contains("mobile-tabbar");
-      const width = compact ? itemRect.width * 0.56 : itemRect.width;
+      const width = itemRect.width;
       setter({
         left: itemRect.left - navRect.left + (itemRect.width - width) / 2,
         width,
@@ -984,7 +1015,6 @@ export default function Home() {
     };
     const update = () => {
       updateIndicator(desktopNavRef.current, setDesktopIndicator);
-      updateIndicator(mobileNavRef.current, setMobileIndicator);
     };
     const frame = window.requestAnimationFrame(update);
     window.addEventListener("resize", update);
@@ -1270,6 +1300,20 @@ export default function Home() {
       : ordered;
   }, [hidePlanned, maxDistanceKm, mockLocation, plannedDestinationIds, region]);
 
+  const visibleAccommodations = useMemo(() => {
+    const regionCenters = {
+      bavaria: { lat: 47.57, lng: 10.7 },
+      fussen_allgau: { lat: 47.57, lng: 10.7 },
+      aosta: { lat: 45.74, lng: 7.32 },
+    } as const;
+
+    return accommodations.filter((stay) => {
+      if (region !== "all" && stay.region !== region) return false;
+      const center = regionCenters[stay.region];
+      return haversineKm(center.lat, center.lng, stay.lat, stay.lng) <= maxDistanceKm;
+    });
+  }, [maxDistanceKm, region]);
+
   const nearbyAccommodations = useMemo(
     () =>
       accommodations
@@ -1281,6 +1325,16 @@ export default function Home() {
         .sort((a, b) => a.distanceKm - b.distanceKm)
         .slice(0, 3),
     [selected],
+  );
+
+  const visibleDeals = useMemo(
+    () =>
+      gemDeals.filter(
+        (deal) =>
+          (dealRegion === "all" || deal.region === dealRegion) &&
+          (dealCategory === "all" || deal.subcategory === dealCategory),
+      ),
+    [dealCategory, dealRegion],
   );
 
   const nearbyLabel = mockLocation ? t("map.nearYou") : t("map.areaPlaces");
@@ -1322,6 +1376,34 @@ export default function Home() {
     );
   };
 
+  const completeGemDropActivity = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !activeGemDrop) return;
+    window.localStorage.setItem(
+      `gemgo-activity-${activeGemDrop.id}-${today()}`,
+      JSON.stringify({ completedAt: new Date().toISOString(), photoName: file.name }),
+    );
+    setActiveGemDrop(null);
+    showToast(t("gemdrop.activityComplete"), "success");
+    event.target.value = "";
+  };
+
+  const rewardGemContribution = ({
+    id,
+    name,
+    reward,
+  }: {
+    id: string;
+    name: string;
+    reward: number;
+  }) => {
+    const rewardKey = `gemgo-gem-contribution-reward-${id}`;
+    if (window.localStorage.getItem(rewardKey)) return;
+    window.localStorage.setItem(rewardKey, "awarded");
+    addPoints(reward, "event.newGem", { place: name });
+    showToast(t("contribute.rewarded", { name }), "success");
+  };
+
   const previewDeal = (dealName: string) => {
     setUnlockedDeal(dealName);
     showToast(t("deals.opened", { name: dealName }), "info");
@@ -1336,13 +1418,10 @@ export default function Home() {
           : transport === "driving"
             ? "driving"
             : "transit";
-    const origin =
-      destination.region === "aosta"
-        ? "Aosta%2C%20Italy"
-        : destination.region === "bavaria"
-          ? "Munich%2C%20Germany"
-          : "F%C3%BCssen%2C%20Germany";
-    return `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination.lat},${destination.lng}&travelmode=${travelmode}`;
+    const origin = mockLocation
+      ? `${mockLocation.lat},${mockLocation.lng}`
+      : regionOrigins[destination.region].mapsQuery;
+    return `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(origin)}&destination=${destination.lat},${destination.lng}&travelmode=${travelmode}`;
   };
 
   const fetchWeather = async (requestedRegion: Region): Promise<WeatherDay[]> => {
@@ -1389,13 +1468,13 @@ export default function Home() {
           confidence: 1,
           ambiguous: [],
         }
-      : parsePrompt(prompt);
+      : parseTripPrompt(prompt);
     if (!isValidParseResult(parsed)) {
       showToast(t("planner.ambiguous"), "error");
       setLoading(false);
       return;
     }
-    const nextDays = parsed.days ?? days;
+    const nextDays = Math.max(1, Math.min(7, parsed.days ?? days));
     const nextTransport =
       parsed.transport && !parsed.excludedTransports.includes(parsed.transport)
         ? parsed.transport
@@ -1408,13 +1487,14 @@ export default function Home() {
     const nextDifficulty = parsed.difficulty ?? difficulty;
     const nextAvoidCrowds = parsed.avoidCrowds ?? avoidCrowds;
     const nextRegion = parsed.region ?? region;
+    const planStartDate = validStartDate(parsed.startDate ?? startDate, today());
     setDays(nextDays);
     setTransport(nextTransport);
     setInterests(nextInterests);
     setDifficulty(nextDifficulty);
     setAvoidCrowds(nextAvoidCrowds);
     setRegion(nextRegion);
-    if (parsed.startDate) setStartDate(parsed.startDate);
+    setStartDate(planStartDate);
 
     const weather = await fetchWeather(nextRegion);
     const regionEligible =
@@ -1443,7 +1523,7 @@ export default function Home() {
     );
     const usedDestinationIds = new Set<string>();
     const newPlan: PlanDay[] = Array.from({ length: nextDays }, (_, dayIndex) => {
-      const date = addDays(parsed.startDate ?? startDate, dayIndex);
+      const date = addDays(planStartDate, dayIndex);
       const dayWeather = weather.find((item) => item.date === date);
       const dayStops: Stop[] = [];
       for (const destination of ranked) {
@@ -1456,9 +1536,17 @@ export default function Home() {
           dayWeather,
         );
         if (crowd.crowd === "busy") continue;
+        const originDistance = mockLocation
+          ? haversineKm(
+              mockLocation.lat,
+              mockLocation.lng,
+              destination.lat,
+              destination.lng,
+            )
+          : destination.distanceKm;
         const travelMinutes = Math.max(
           8,
-          Math.round((destination.distanceKm / speedByMode[nextTransport]) * 60),
+          Math.round((originDistance / speedByMode[nextTransport]) * 60),
         );
         dayStops.push({ ...destination, ...crowd, travelMinutes });
         usedDestinationIds.add(destination.id);
@@ -1473,6 +1561,25 @@ export default function Home() {
         ),
       };
     });
+    const firstDayWeather = weather.find((item) => item.date === planStartDate);
+    const avoided = ranked.find(
+      (destination) =>
+        getCrowd(
+          destination,
+          planStartDate,
+          0,
+          nextAvoidCrowds,
+          firstDayWeather,
+        ).crowd === "busy",
+    );
+    const alternative = avoided
+      ? newPlan
+          .flatMap((day) => day.stops)
+          .find((destination) => destination.popularity < avoided.popularity)
+      : undefined;
+    setCrowdDiversion(
+      avoided && alternative ? { avoided, alternative } : null,
+    );
     setPlan(newPlan);
     setPlanSaved(false);
     setActiveSavedPlanId(null);
@@ -1499,7 +1606,7 @@ export default function Home() {
   const updatePrompt = (value: string) => {
     setPrompt(value);
     setControlsOverridePrompt(false);
-    const parsed = parsePrompt(value);
+    const parsed = parseTripPrompt(value);
     if (parsed.days !== undefined) setDays(parsed.days);
     if (parsed.transport !== undefined) setTransport(parsed.transport);
     if (parsed.interests.length > 0 || parsed.excludedInterests.length > 0) {
@@ -2006,6 +2113,7 @@ export default function Home() {
           <article><MapPin aria-hidden="true" size={24} /><h2>{t("privacy.locationTitle")}</h2><p>{t("privacy.locationBody")}</p></article>
           <article><Globe2 aria-hidden="true" size={24} /><h2>{t("privacy.servicesTitle")}</h2><p>{t("privacy.servicesBody")}</p></article>
           <article><History aria-hidden="true" size={24} /><h2>{t("privacy.retentionTitle")}</h2><p>{t("privacy.retentionBody")}</p></article>
+          <article><Gem aria-hidden="true" size={24} /><h2>{t("privacy.contributionTitle")}</h2><p>{t("privacy.contributionBody")}</p></article>
         </section>
         <section className="privacy-controls">
           <div><p className="eyebrow">{t("privacy.controlsEyebrow")}</p><h2>{t("privacy.controlsTitle")}</h2><p>{t("privacy.controlsBody")}</p></div>
@@ -2439,6 +2547,11 @@ export default function Home() {
               locale={locale}
               routeStops={routeStops}
               routeModes={effectiveRouteModes}
+              accommodations={visibleAccommodations}
+              showAccommodations={showAccommodations}
+              onToggleAccommodations={() =>
+                setShowAccommodations((value) => !value)
+              }
             />
           ) : (
             <div className="map-list">
@@ -2591,6 +2704,21 @@ export default function Home() {
           </div>
         )}
 
+        {crowdDiversion && (
+          <aside className="crowd-diversion-banner" aria-label={t("plan.diversionAria")}>
+            <span><UserRoundCheck aria-hidden="true" size={21} /></span>
+            <div>
+              <strong>{t("plan.diversionTitle", { place: crowdDiversion.avoided.name })}</strong>
+              <p>
+                {t("plan.diversionBody", {
+                  avoided: crowdDiversion.avoided.name,
+                  alternative: crowdDiversion.alternative.name,
+                })}
+              </p>
+            </div>
+          </aside>
+        )}
+
         {planNotice && (
           <div className="plan-notice" role="status">
             <CheckCircle2 aria-hidden="true" size={17} />
@@ -2614,7 +2742,7 @@ export default function Home() {
                     ? "day-card just-updated"
                     : "day-card"
                 }
-                key={day.date}
+                key={`${day.date}-${index}`}
               >
                 <div className="day-header">
                   <div>
@@ -2672,6 +2800,10 @@ export default function Home() {
                           ),
                         )
                       : stop.travelMinutes;
+                    const travelOrigin = previousStop?.name ?? mockLocation?.name ?? t(
+                      "plan.areaCentre",
+                      { region: regionLabel(stop.region) },
+                    );
                     return <li key={stop.id}>
                       {legIndex >= 0 && (
                         <label className={`leg-selector leg-${legMode}`}>
@@ -2707,9 +2839,10 @@ export default function Home() {
                         <span className="stop-copy">
                           <strong>{stop.name}</strong>
                           <small>
-                            {t("plan.travelVisit", {
-                              travel: travelMinutes,
+                            {t("plan.travelVisitFrom", {
+                              travel: formatDuration(travelMinutes, locale),
                               transport: transportLabel(legMode).toLocaleLowerCase(locale),
+                              origin: travelOrigin,
                               visit: stop.visitMinutes,
                             })}
                           </small>
@@ -3045,11 +3178,33 @@ export default function Home() {
             {t("gemdrop.intro")}
           </p>
         </div>
+        {activeGemDrop && (
+          <aside className="activity-banner" role="status">
+            <span className="activity-banner-icon"><MapPin aria-hidden="true" size={22} /></span>
+            <div>
+              <small>{t("gemdrop.activityEyebrow")}</small>
+              <strong>{t("gemdrop.activityTitle", { place: activeGemDrop.name })}</strong>
+              <p>{t("gemdrop.activityBody")}</p>
+            </div>
+            <label className="activity-photo-button">
+              <Camera aria-hidden="true" size={18} />
+              {t("gemdrop.arrivalPhoto")}
+              <input
+                type="file"
+                accept="image/*"
+                capture="environment"
+                aria-label={t("gemdrop.arrivalPhoto")}
+                onChange={completeGemDropActivity}
+              />
+            </label>
+          </aside>
+        )}
         <div className="feature-grid">
           {mockLocation && <article className="drop-control-card">
             <div className="location-status matched">
               <span>{t("gemdrop.current")}</span>
               <strong>{mockLocation.name}</strong>
+              <small>{t("gemdrop.alreadyHere")}</small>
             </div>
             <label className="crowd-slider">
               <span>{t("gemdrop.crowdQuestion", { value: crowdReport })}</span>
@@ -3093,12 +3248,23 @@ export default function Home() {
                   </span>
                   <span>{t("gemdrop.lower")}</span>
                 </div>
-                <button
-                  className="outline-button"
-                  onClick={() => setSelected(gemDropAlternative)}
-                >
-                  {t("gemdrop.showMap")}
-                </button>
+                <div className="drop-actions">
+                  <button
+                    className="primary-button small"
+                    onClick={() => {
+                      setSelected(gemDropAlternative);
+                      setActiveGemDrop(gemDropAlternative);
+                    }}
+                  >
+                    {t("gemdrop.startActivity")}
+                  </button>
+                  <button
+                    className="outline-button"
+                    onClick={() => setSelected(gemDropAlternative)}
+                  >
+                    {t("gemdrop.showMap")}
+                  </button>
+                </div>
               </>
             ) : (
               <p>{t("gemdrop.chooseAnother")}</p>
@@ -3139,6 +3305,7 @@ export default function Home() {
             <span><strong>+10</strong> {t("points.earnedTravel")}</span>
             <span><strong>+15</strong> {t("points.earnedPartner")}</span>
             <span><strong>+5</strong> {t("points.earnedPhoto")}</span>
+            <span><strong>+70</strong> {t("points.earnedGem")}</span>
           </div>
         </div>
         <div className="checkin-card">
@@ -3225,6 +3392,7 @@ export default function Home() {
             </ol>
           )}
         </div>
+        <GemContributionForm locale={locale} onAccepted={rewardGemContribution} />
       </section>
 
       <section className="feature-section deals-section page-section deals-only" id="deals">
@@ -3250,13 +3418,23 @@ export default function Home() {
             ),
           )}
         </div>
+        <div className="deal-filters deal-category-filters" aria-label={t("deals.categoryFilterAria")}>
+          {(["all", "bar", "restaurant", "experience", "activity"] as const).map((item) => (
+            <button
+              key={item}
+              className={dealCategory === item ? "chip active" : "chip"}
+              onClick={() => setDealCategory(item)}
+            >
+              {t(`deals.subcategory.${item}`)}
+            </button>
+          ))}
+        </div>
         <div className="deals-grid">
-          {gemDeals
-            .filter((deal) => dealRegion === "all" || deal.region === dealRegion)
-            .map((deal) => (
+          {visibleDeals.length === 0 && <p className="deals-empty">{t("deals.empty")}</p>}
+          {visibleDeals.map((deal) => (
               <article className="deal-card" key={deal.name}>
                 <span>{regionLabel(deal.region)}</span>
-                <small>{t(deal.category)}</small>
+                <small>{t(`deals.subcategory.${deal.subcategory}`)} · {t(deal.category)}</small>
                 <h3>{deal.name}</h3>
                 <p>
                   {unlockedDeal === deal.name
@@ -3413,22 +3591,18 @@ export default function Home() {
         </aside>
       )}
 
-      <nav className="mobile-tabbar" aria-label={t("nav.sections")} ref={mobileNavRef}>
-        <span
-          className="nav-flow-indicator"
-          aria-hidden="true"
-          style={{
-            left: mobileIndicator.left,
-            width: mobileIndicator.width,
-            opacity: mobileIndicator.width ? 1 : 0,
-          }}
-        />
-        <Link data-page="home" className={appPage === "home" ? "active" : ""} href="/app" onClick={(event) => { event.preventDefault(); navigate("home"); }}><Search aria-hidden="true" size={19} />{t("nav.explore")}</Link>
-        <Link data-page="saved" className={appPage === "saved" ? "active" : ""} href="/saved" onClick={(event) => { event.preventDefault(); navigate("saved"); }}><FolderOpen aria-hidden="true" size={19} />{t("nav.saved")}</Link>
-        <Link data-page="gemdrop" className={appPage === "gemdrop" ? "active" : ""} href="/gemdrop" onClick={(event) => { event.preventDefault(); navigate("gemdrop"); }}><MapPin aria-hidden="true" size={19} />{t("nav.gemdrop")}</Link>
-        <Link data-page="points" className={appPage === "points" ? "active" : ""} href="/points" onClick={(event) => { event.preventDefault(); navigate("points"); }}><Gem aria-hidden="true" size={19} />{t("nav.points")}</Link>
-        <Link data-page="gemdeals" className={appPage === "gemdeals" ? "active" : ""} href="/gemdeals" onClick={(event) => { event.preventDefault(); navigate("gemdeals"); }}><BadgePercent aria-hidden="true" size={19} />{t("nav.deals")}</Link>
-      </nav>
+      <LiquidMobileNav
+        activePage={appPage}
+        ariaLabel={t("nav.sections")}
+        onNavigate={navigate}
+        items={[
+          { page: "home", href: "/app", label: t("nav.explore"), icon: <Search size={19} /> },
+          { page: "saved", href: "/saved", label: t("nav.saved"), icon: <FolderOpen size={19} /> },
+          { page: "gemdrop", href: "/gemdrop", label: t("nav.gemdrop"), icon: <MapPin size={19} /> },
+          { page: "points", href: "/points", label: t("nav.points"), icon: <Gem size={19} /> },
+          { page: "gemdeals", href: "/gemdeals", label: t("nav.deals"), icon: <BadgePercent size={19} /> },
+        ]}
+      />
 
       <footer>
         <Link

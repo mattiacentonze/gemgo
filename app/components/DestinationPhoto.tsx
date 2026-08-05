@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { commonsImageParams } from "../lib/commons-media";
 
 type Media = {
   url: string;
@@ -38,7 +39,7 @@ export default function DestinationPhoto({
 
   useEffect(() => {
     let active = true;
-    const cacheKey = `gemgo-commons-${name}-${region}`;
+    const cacheKey = `gemgo-commons-v3-${name}-${region}`;
     try {
       const cached = window.sessionStorage.getItem(cacheKey);
       if (cached) {
@@ -54,18 +55,7 @@ export default function DestinationPhoto({
       // The image cache is optional.
     }
 
-    const params = new URLSearchParams({
-      action: "query",
-      format: "json",
-      origin: "*",
-      generator: "search",
-      gsrnamespace: "6",
-      gsrlimit: "8",
-      gsrsearch: `${name} ${region}`,
-      prop: "imageinfo",
-      iiprop: "url|extmetadata",
-      iiurlwidth: compact ? "520" : "900",
-    });
+    const params = commonsImageParams(name, region, compact ? 520 : 900);
 
     fetch(`https://commons.wikimedia.org/w/api.php?${params}`)
       .then((response) => {

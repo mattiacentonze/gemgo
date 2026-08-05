@@ -1,3 +1,5 @@
+import { featureCopy } from "./feature-copy.mjs";
+
 export const supportedLocales = ["en", "it", "de", "fr", "sl"];
 
 const en = {
@@ -74,6 +76,7 @@ const en = {
   "map.zoomIn": "Zoom in",
   "map.zoomOut": "Zoom out",
   "map.interactive": "Interactive map of {count} destinations",
+  "map.interactiveWithStays": "Interactive map of {count} destinations and {stays} visible stays",
   "map.legendLow": "Usually manageable",
   "map.legendModerate": "Often moderate",
   "map.legendBusy": "Usually busy",
@@ -492,6 +495,11 @@ Object.assign(en, {
   "stays.checked": "Rating checked {date}; verify current details before booking.",
   "stays.openBooking": "View on Booking.com",
   "stays.disclosure": "No stay is sponsored in this MVP. Future sponsored or GemPoints partner results must be labelled and kept separate from organic distance and review ranking.",
+  "stays.mapLayer": "Accommodations",
+  "stays.layerShown": "Shown",
+  "stays.layerHidden": "Hidden",
+  "stays.mapBadge": "Stay nearby",
+  "stays.mapMarker": "Accommodation: {name}",
   "plan.leg": "{from} → {to}",
   "plan.legTransport": "Transport from {from} to {to}",
 });
@@ -521,12 +529,37 @@ Object.assign(translations.sl, {
   "planner.radius":"Največja razdalja","planner.radiusValue":"Znotraj {count} km","planner.radiusHelp":"Zračna razdalja od središča, ne cestna.","explore.hoursVariable":"Urniki se spreminjajo — preveri pred obiskom","explore.priceVariable":"Cene se lahko spremenijo","explore.officialInfo":"Najnovejše uradne informacije","media.contributor":"Avtor Wikimedia Commons","stays.eyebrow":"Prenoči v bližini","stays.title":"Dobro ocenjene nastanitve blizu {place}","stays.intro":"Razvrščeno po zračni razdalji. Razpoložljivost in končna cena sta na Booking.com.","stays.distance":"približno {distance} km","stays.reviews":"{count} ocen","stays.indicativePrice":"okvirni cenovni razred","stays.checked":"Ocena preverjena {date}; pred rezervacijo preveri podatke.","stays.openBooking":"Odpri Booking.com","stays.disclosure":"V MVP nobena nastanitev ni sponzorirana. Prihodnji sponzorji in partnerji GemPoints morajo biti označeni in ločeni od organske razvrstitve.","plan.leg":"{from} → {to}","plan.legTransport":"Prevoz od {from} do {to}"
 });
 
+Object.assign(en, featureCopy.en);
+for (const locale of ["it", "de", "fr", "sl"]) {
+  Object.assign(translations[locale], featureCopy[locale]);
+}
+
 const intentionallyShared = new Set([
   "nav.gemdrop",
   "points.eyebrow",
   "data.transport.e_bike",
   "data.region.fussen_allgau",
 ]);
+
+Object.assign(translations.it, {
+  "map.interactiveWithStays":"Mappa interattiva con {count} destinazioni e {stays} alloggi visibili",
+  "stays.mapLayer":"Alloggi","stays.layerShown":"Visibili","stays.layerHidden":"Nascosti","stays.mapBadge":"Dormi nelle vicinanze","stays.mapMarker":"Alloggio: {name}",
+});
+
+Object.assign(translations.de, {
+  "map.interactiveWithStays":"Interaktive Karte mit {count} Zielen und {stays} sichtbaren Unterkünften",
+  "stays.mapLayer":"Unterkünfte","stays.layerShown":"Sichtbar","stays.layerHidden":"Ausgeblendet","stays.mapBadge":"In der Nähe übernachten","stays.mapMarker":"Unterkunft: {name}",
+});
+
+Object.assign(translations.fr, {
+  "map.interactiveWithStays":"Carte interactive avec {count} destinations et {stays} hébergements visibles",
+  "stays.mapLayer":"Hébergements","stays.layerShown":"Affichés","stays.layerHidden":"Masqués","stays.mapBadge":"Dormir à proximité","stays.mapMarker":"Hébergement : {name}",
+});
+
+Object.assign(translations.sl, {
+  "map.interactiveWithStays":"Interaktivni zemljevid z {count} destinacijami in {stays} vidnimi nastanitvami",
+  "stays.mapLayer":"Nastanitve","stays.layerShown":"Prikazane","stays.layerHidden":"Skrite","stays.mapBadge":"Prenoči v bližini","stays.mapMarker":"Nastanitev: {name}",
+});
 
 export const translationOverrides = translations;
 

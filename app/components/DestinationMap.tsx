@@ -2,7 +2,9 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Destination, Locale, TransportCode } from "../domain";
+import type { Accommodation } from "../content";
 import { msg } from "../i18n/catalogs.mjs";
+import { commonsImageParams } from "../lib/commons-media";
 
 type Props = {
   destinations: Destination[];
@@ -13,6 +15,9 @@ type Props = {
   locale: Locale;
   routeStops?: Destination[];
   routeModes?: TransportCode[];
+  accommodations: Accommodation[];
+  showAccommodations: boolean;
+  onToggleAccommodations: () => void;
 };
 
 type CrowdLevel = "manageable" | "moderate" | "busy";
@@ -103,6 +108,9 @@ export default function DestinationMap({
   locale,
   routeStops = [],
   routeModes = [],
+  accommodations,
+  showAccommodations,
+  onToggleAccommodations,
 }: Props) {
   const t = useCallback(
     (key: string, params?: Record<string, string | number>) =>
@@ -131,6 +139,7 @@ export default function DestinationMap({
   const markersRef = useRef<import("leaflet").LayerGroup | null>(null);
   const crowdCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const routeLayerRef = useRef<import("leaflet").LayerGroup | null>(null);
+  const accommodationLayerRef = useRef<import("leaflet").LayerGroup | null>(null);
   const destinationMarkersRef = useRef(
     new Map<string, import("leaflet").Marker>(),
   );
@@ -163,6 +172,7 @@ export default function DestinationMap({
       mapRef.current = map;
       markersRef.current = L.layerGroup().addTo(map);
       routeLayerRef.current = L.layerGroup().addTo(map);
+      accommodationLayerRef.current = L.layerGroup().addTo(map);
 
       const canvas = document.createElement("canvas");
       canvas.className = "crowd-veil";
@@ -186,6 +196,7 @@ export default function DestinationMap({
       mapRef.current?.remove();
       mapRef.current = null;
       routeLayerRef.current = null;
+      accommodationLayerRef.current = null;
       markersRef.current = null;
     };
   }, []);
@@ -316,18 +327,12 @@ export default function DestinationMap({
           const media = popupElement?.querySelector<HTMLElement>(".map-popup-media");
           if (media && !media.dataset.loaded) {
             media.dataset.loaded = "true";
-            const params = new URLSearchParams({
-              action: "query",
-              format: "json",
-              origin: "*",
-              generator: "search",
-              gsrnamespace: "6",
-              gsrlimit: "6",
-              gsrsearch: `${destination.name} ${regionLabel(destination)}`,
-              prop: "imageinfo",
-              iiprop: "url|extmetadata",
-              iiurlwidth: "640",
-            });
+            const params = commonsImageParams(
+              destination.name,
+              regionLabel(destination),
+              640,
+              6,
+            );
             fetch(`https://commons.wikimedia.org/w/api.php?${params}`)
               .then((response) => response.json())
               .then((payload) => {
@@ -421,6 +426,74 @@ export default function DestinationMap({
     regionLabel,
     t,
   ]);
+
+  useEffect(() => {
+    let disposed = false;
+
+    const renderAccommodations = async () => {
+      const layer = accommodationLayerRef.current;
+      if (!mapRef.current || !layer) return;
+      const L = (await import("leaflet")).default;
+      if (disposed) return;
+      layer.clearLayers();
+      if (!showAccommodations) return;
+
+      accommodations.forEach((stay) => {
+        const icon = L.divIcon({
+          className: "accommodation-marker-shell",
+          html: '<span class="accommodation-marker" aria-hidden="true"><span>⌂</span></span>',
+          iconSize: [34, 40],
+          iconAnchor: [17, 39],
+          popupAnchor: [0, -35],
+        });
+        const marker = L.marker([stay.lat, stay.lng], {
+          icon,
+          keyboard: true,
+          title: stay.name,
+          alt: t("stays.mapMarker", { name: stay.name }),
+          zIndexOffset: 1000,
+          riseOnHover: true,
+          riseOffset: 250,
+        });
+        const checkedDate = new Intl.DateTimeFormat(locale, {
+          day: "numeric",
+          month: "short",
+          year: "numeric",
+        }).format(new Date(`${stay.checkedAt}T12:00:00`));
+        marker.bindPopup(
+          `<article class="map-popup accommodation-popup">
+            <div class="accommodation-popup-badge">${safeText(t("stays.mapBadge"))}</div>
+            <small>${safeText(stay.area)} · ${safeText(t(`data.region.${stay.region}`))}</small>
+            <h3>${safeText(stay.name)}</h3>
+            <div class="accommodation-popup-meta">
+              <strong>★ ${stay.rating}/10</strong>
+              <span>${safeText(t("stays.reviews", { count: stay.reviewCount }))}</span>
+              <span>${safeText(stay.priceBand)} · ${safeText(t("stays.indicativePrice"))}</span>
+            </div>
+            <p>${safeText(t("stays.checked", { date: checkedDate }))}</p>
+            <a href="${safeText(stay.bookingUrl)}" target="_blank" rel="noreferrer">${safeText(t("stays.openBooking"))}</a>
+          </article>`,
+          { maxWidth: 340, minWidth: 260, closeButton: true },
+        );
+        marker.on("popupopen", () => {
+          const close = marker
+            .getPopup()
+            ?.getElement()
+            ?.querySelector<HTMLAnchorElement>(".leaflet-popup-close-button");
+          if (close) {
+            close.title = t("global.close");
+            close.setAttribute("aria-label", t("global.close"));
+          }
+        });
+        marker.addTo(layer);
+      });
+    };
+
+    renderAccommodations();
+    return () => {
+      disposed = true;
+    };
+  }, [accommodations, locale, mapReady, showAccommodations, t]);
 
   useEffect(() => {
     let disposed = false;
@@ -599,12 +672,25 @@ export default function DestinationMap({
       <div
         ref={elementRef}
         className="leaflet-map"
-        aria-label={t("map.interactive", { count: destinations.length })}
+        aria-label={t("map.interactiveWithStays", {
+          count: destinations.length,
+          stays: showAccommodations ? accommodations.length : 0,
+        })}
       />
       <div className="map-legend">
         <span><i className="low" />{t("map.legendLow")}</span>
         <span><i className="moderate" />{t("map.legendModerate")}</span>
         <span><i className="busy" />{t("map.legendBusy")}</span>
+        <button
+          type="button"
+          className="accommodation-layer-toggle"
+          aria-pressed={showAccommodations}
+          onClick={onToggleAccommodations}
+        >
+          <i className="accommodation" aria-hidden="true">⌂</i>
+          <span>{t("stays.mapLayer")}</span>
+          <small>{showAccommodations ? t("stays.layerShown") : t("stays.layerHidden")}</small>
+        </button>
         <small>{t("map.legendNote", { count: destinations.length })}</small>
       </div>
     </>

@@ -110,15 +110,42 @@ test("planned destinations stay visible by default and can be filtered explicitl
   assert.match(page, /explore\.inPlan/);
 });
 
-test("navigation uses one measured indicator and keeps the mobile bar fixed", () => {
+test("navigation keeps its desktop indicator and cuts a live inward cavity around a separate draggable pin", () => {
   const page = read("app/page.tsx");
+  const mobileNav = read("app/components/LiquidMobileNav.tsx");
   const css = read("app/globals.css");
   assert.match(page, /nav-flow-indicator/);
   assert.match(page, /getBoundingClientRect/);
+  assert.match(page, /LiquidMobileNav/);
   assert.match(css, /\.nav-flow-indicator/);
+  assert.doesNotMatch(mobileNav, /gemgo-logo-green\.svg/);
+  assert.match(mobileNav, /setPointerCapture/);
+  assert.match(mobileNav, /onPointerMove/);
+  assert.match(mobileNav, /aria-current=\{current \? "page"/);
+  assert.match(mobileNav, /createSurfacePath/);
+  assert.match(mobileNav, /requestAnimationFrame/);
+  assert.match(mobileNav, /className="liquid-nav-surface"/);
+  assert.match(mobileNav, /className="liquid-nav-body" d=\{surfacePath\}/);
+  assert.match(mobileNav, /const PIN_SURFACE_GAP = 5/);
+  assert.match(mobileNav, /const cavityTipY = PIN_TIP_Y \+ PIN_SURFACE_GAP/);
+  assert.match(mobileNav, /const leftCorner = clamp\(/);
+  assert.match(mobileNav, /const rightCorner = clamp\(/);
+  assert.doesNotMatch(mobileNav, /position - motion/);
+  assert.match(mobileNav, /className="liquid-nav-pin"/);
+  assert.match(mobileNav, /className="liquid-nav-pin-icon"/);
+  assert.doesNotMatch(mobileNav, /liquid-nav-track|liquid-nav-fluid/);
+  assert.match(css, /\.liquid-nav-surface/);
+  assert.match(css, /\.liquid-nav-pin path \{[\s\S]*fill: #fff/);
+  assert.match(css, /\.liquid-nav-links a\.active \.liquid-nav-icon \{[\s\S]*translateY\(-24px\)/);
+  assert.doesNotMatch(css, /\.liquid-nav-track|\.liquid-nav-fluid/);
+  assert.match(css, /prefers-reduced-motion/);
   assert.match(
     css,
-    /@media \(max-width: 820px\)[\s\S]*\.mobile-tabbar \{[\s\S]*position: fixed/,
+    /\.liquid-mobile-nav \{[\s\S]*position: fixed/,
+  );
+  assert.match(
+    css,
+    /@media \(max-width: 820px\)[\s\S]*\.liquid-mobile-nav \{[\s\S]*display: block/,
   );
 });
 
@@ -192,11 +219,52 @@ test("radius, accommodation ranking and multimodal route legs are implemented", 
   assert.match(page, /maxDistanceKm/);
   assert.match(page, /\[25, 50, 100, 250\]/);
   assert.match(page, /nearbyAccommodations/);
+  assert.match(page, /visibleAccommodations/);
+  assert.match(page, /showAccommodations/);
   assert.match(content, /booking\.com/);
+  assert.match(map, /accommodationLayerRef/);
+  assert.match(map, /accommodation-layer-toggle/);
+  assert.match(map, /stay\.bookingUrl/);
   for (const mode of ["walking", "cycling", "e_bike", "driving", "public_transport"]) {
     assert.match(map, new RegExp(`${mode}: \\{ color:`));
   }
   assert.match(map, /L\.polyline/);
   assert.match(map, /route-number/);
   assert.match(page, /plan\.legTransport/);
+});
+
+test("planner, GemDrop, offers and community gems cover the new product flows", () => {
+  const page = read("app/page.tsx");
+  const parser = read("app/lib/prompt-parser.mjs");
+  const media = read("app/lib/commons-media.ts");
+  const api = read("app/api/gems/route.ts");
+  const schema = read("db/schema.ts");
+  const migration = read("drizzle/0000_flimsy_killmonger.sql");
+
+  assert.match(parser, /replace\(\/\[’'\]\/g, " "\)/);
+  assert.match(page, /inferDestinationRegion/);
+  assert.match(page, /validStartDate/);
+  assert.match(page, /key=\{`\$\{day\.date\}-\$\{index\}`\}/);
+  assert.match(page, /formatDuration\(travelMinutes, locale\)/);
+  assert.match(page, /plan\.travelVisitFrom/);
+  assert.match(page, /crowd-diversion-banner/);
+  assert.match(page, /gemdrop\.startActivity/);
+  assert.match(page, /capture="environment"/);
+  assert.match(page, /dealCategory/);
+  assert.match(page, /visibleDeals/);
+
+  for (const filename of [
+    "Torgnon.JPG",
+    "Châtillon vista dal castello di Ussel..JPG",
+    "Gressoney-St-Jean - été.JPG",
+    "Piccolo S Bernardo.jpg",
+    "Fénis Castle.jpg",
+  ]) {
+    assert.match(media, new RegExp(filename.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+  }
+
+  assert.match(api, /reward: 70/);
+  assert.match(api, /duplicate_contribution/);
+  assert.match(schema, /gemSuggestions/);
+  assert.match(migration, /CREATE TABLE `gem_suggestions`/);
 });

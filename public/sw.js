@@ -1,4 +1,4 @@
-const CACHE = "gemgo-shell-v3";
+const CACHE = "gemgo-shell-v4";
 const SHELL = [
   "/",
   "/app",

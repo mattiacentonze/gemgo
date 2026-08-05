@@ -15,7 +15,7 @@ const normalize = (value) =>
     .toLocaleLowerCase()
     .normalize("NFD")
     .replace(/\p{Diacritic}/gu, "")
-    .replace(/[’']/g, "")
+    .replace(/[’']/g, " ")
     .replace(/[-_/]/g, " ")
     .replace(/[^\p{L}\p{N}\s.]/gu, " ")
     .replace(/\s+/g, " ")
