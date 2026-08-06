@@ -1,4 +1,34 @@
 const preferredFiles: Record<string, string[]> = {
+  "Valpelline river villages": [
+    "File:Valpelline 001.JPG",
+    "File:Aosta - Buthier de Valpelline.jpg",
+    "File:Panor cc oyace.jpg",
+  ],
+  "Weißensee lakeside loop": [
+    "File:Weißensee (Füssen).jpg",
+    "File:Weißensee1.JPG",
+    "File:Weissensee (Fuessen) 2013-07-22.JPG",
+  ],
+  "Hall old-town culture walk": [
+    "File:Stadtplatz Hall in Tirol.jpg",
+    "File:Hall in Tirol 1993 - Old Town Street.jpg",
+    "File:AUT Hall in Tirol, Schmiedgasse 003.jpg",
+  ],
+  "Mostnica gorge and Stara Fužina": [
+    "File:Mostnica Gorge.jpg",
+    "File:Mostnica Gorge 3.jpg",
+    "File:Stara Fužina - Mostnica.jpg",
+  ],
+  "Lower Engadin village rail day": [
+    "File:Engadinerhaus und hölzener Brunnen in Guarda.jpg",
+    "File:Sent Engadin.jpg",
+    "File:Unterengadin Ardez.jpg",
+  ],
+  "Vercors winter village circuit": [
+    "File:Gresse en Vercors - Hiver.jpg",
+    "File:Gresse en Vercors enneigé.jpg",
+    "File:Place de l'Ours de Villard-de-Lans (France) en hiver.jpg",
+  ],
   Torgnon: ["File:Torgnon.JPG"],
   "Châtillon": ["File:Châtillon vista dal castello di Ussel..JPG"],
   "Gressoney-Saint-Jean": ["File:Gressoney-St-Jean - été.JPG"],
