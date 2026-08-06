@@ -1,6 +1,7 @@
 import CurrentLocationControl from "../components/CurrentLocationControl";
 import GemDropPhotoEnhancer from "../components/GemDropPhotoEnhancer";
 import IntegratedAppShell from "../components/IntegratedAppShell";
+import LiquidAppNavigation from "../components/LiquidAppNavigation";
 import MobileResultsMode from "../components/MobileResultsMode";
 import NotificationCenter from "../components/NotificationCenter";
 import PrivacyControls from "../components/PrivacyControls";
@@ -13,6 +14,7 @@ export default function GemGoApplicationPage() {
       <IntegratedAppShell />
       <CurrentLocationControl />
       <GemDropPhotoEnhancer />
+      <LiquidAppNavigation />
       <NotificationCenter />
       <MobileResultsMode />
       <PrivacyControls />
