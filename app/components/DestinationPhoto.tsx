@@ -1,5 +1,6 @@
 "use client";
 
+import { ImageIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { commonsImageParams } from "../lib/commons-media";
 
@@ -39,7 +40,15 @@ export default function DestinationPhoto({
 
   useEffect(() => {
     let active = true;
+    const controller = new AbortController();
     const cacheKey = `gemgo-commons-v3-${name}-${region}`;
+
+    queueMicrotask(() => {
+      if (!active) return;
+      setMedia(null);
+      setFailed(false);
+    });
+
     try {
       const cached = window.sessionStorage.getItem(cacheKey);
       if (cached) {
@@ -49,6 +58,7 @@ export default function DestinationPhoto({
         });
         return () => {
           active = false;
+          controller.abort();
         };
       }
     } catch {
@@ -57,7 +67,9 @@ export default function DestinationPhoto({
 
     const params = commonsImageParams(name, region, compact ? 520 : 900);
 
-    fetch(`https://commons.wikimedia.org/w/api.php?${params}`)
+    fetch(`https://commons.wikimedia.org/w/api.php?${params}`, {
+      signal: controller.signal,
+    })
       .then((response) => {
         if (!response.ok) throw new Error("Commons unavailable");
         return response.json();
@@ -95,19 +107,33 @@ export default function DestinationPhoto({
           // The image cache is optional.
         }
       })
-      .catch(() => {
-        if (active) setFailed(true);
+      .catch((error: unknown) => {
+        if (!active || (error instanceof DOMException && error.name === "AbortError")) return;
+        setFailed(true);
       });
 
     return () => {
       active = false;
+      controller.abort();
     };
   }, [compact, name, region]);
 
   if (!media) {
     return (
-      <div className={`destination-photo destination-photo-fallback ${className}`}>
-        <span>{failed ? name : "GemGo"}</span>
+      <div
+        className={`destination-photo destination-photo-fallback ${failed ? "is-failed" : "is-loading"} ${className}`}
+        role="img"
+        aria-label={failed ? `No licensed photo available for ${name}` : `Loading a licensed photo of ${name}`}
+      >
+        <span className="destination-photo-brand" aria-hidden="true">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/assets/gemgo-logo.png" alt="" />
+        </span>
+        <span className="destination-photo-status">
+          <ImageIcon size={18} />
+          <strong>{name}</strong>
+          <small>{failed ? "Licensed image unavailable" : "Loading licensed destination image"}</small>
+        </span>
       </div>
     );
   }
@@ -115,7 +141,13 @@ export default function DestinationPhoto({
   return (
     <figure className={`destination-photo ${className}`}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={media.url} alt={`${name}, ${region}`} loading="lazy" />
+      <img
+        src={media.url}
+        alt={`${name}, ${region}`}
+        loading="lazy"
+        decoding="async"
+        onError={() => setFailed(true)}
+      />
       <figcaption>
         <a href={media.source} target="_blank" rel="noreferrer">
           {media.author} · {media.license}
