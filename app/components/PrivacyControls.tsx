@@ -9,7 +9,9 @@ const GEMGO_KEYS = [
   "gemgo-active-trip-v3",
   "gemgo-points-ledger-v3",
   "gemgo-reward-unlocks-v1",
+  "gemgo-visit-feedback-v1",
   "gemgo-locale-v3",
+  "gemgo-sound",
   "gemgo-notifications-read-at-v1",
   "gemgo-demo-trip",
   "gemgo-demo-points",
@@ -67,6 +69,10 @@ export default function PrivacyControls() {
 
   const deleteData = () => {
     GEMGO_KEYS.forEach((key) => window.localStorage.removeItem(key));
+    for (let index = window.sessionStorage.length - 1; index >= 0; index -= 1) {
+      const key = window.sessionStorage.key(index);
+      if (key?.startsWith("gemgo-commons-")) window.sessionStorage.removeItem(key);
+    }
     setConfirming(false);
     window.location.assign("/app");
   };
@@ -98,7 +104,7 @@ export default function PrivacyControls() {
             <X size={17} />
           </button>
           <strong>Delete GemGo data from this browser?</strong>
-          <p>Saved trips, GemPoints history, reward codes and local preferences will be removed. This cannot be undone.</p>
+          <p>Saved trips, GemPoints history, visit feedback, reward codes and local preferences will be removed. This cannot be undone.</p>
           <div>
             <button type="button" className="button button-secondary" onClick={() => setConfirming(false)}>Cancel</button>
             <button type="button" className="button privacy-delete-confirm" onClick={deleteData}>Delete data</button>
