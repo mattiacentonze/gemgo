@@ -7,4 +7,5 @@ This document applies only to `agent/pan-alpine-product-redesign`.
 - Public/private Site audience is selected in the ChatGPT Work/Sites publishing flow.
 - Live weather and supported road routes use external providers.
 - Crowd, public transport, parking, partner rewards and institutional metrics remain estimated or demonstration data unless an operational source is explicitly documented.
+- `Redesign CI` runs on branch pushes and executes dependency installation, lint, the production build and tests.
 - The pull request must remain draft until build, lint, tests, desktop/mobile review and Sites preview are confirmed.
