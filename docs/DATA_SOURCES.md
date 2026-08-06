@@ -4,22 +4,40 @@ GemGo must distinguish operational facts from estimates and demonstration conten
 
 | Feature | Current source | Classification | Product rule |
 |---|---|---|---|
-| Pan-Alpine homepage regions | Curated redesign catalogue | Demonstration coverage | Counts correspond only to experiences actually present in the branch. |
-| Experience content | `app/product/data.ts` | Curated demonstration content | Copy, itinerary, mobility and safety fields must be locally validated before production. |
-| Recommendation ranking | Deterministic client score | Demonstration logic | Explainable and reproducible; not described as a trained production AI model. |
-| Crowd windows | Curated values and intended future factors | Demonstration prediction | Always show freshness, confidence and a demonstration/estimate label. |
-| Weather condition in the redesigned journey | Fixed scenario | Demonstration condition | Used to demonstrate recommendation behaviour, not a live forecast. |
+| Pan-Alpine homepage regions | Existing public pilot catalogue plus curated redesign experiences | Mixed public catalogue and demonstration coverage | Counts correspond only to experiences actually present in the branch. |
+| Experience content | `app/product/integrated-data.ts` and `app/product/data.ts` | Existing pilot metadata plus curated demonstration content | Copy, itinerary, mobility and safety fields must be locally validated before production. |
+| Recommendation ranking | Deterministic client score | Operational prototype logic | Explainable and reproducible; not described as a trained production AI model. |
+| Crowd windows | Curated values and intended future factors | Demonstration prediction | Always display them as estimated unless an operational provider is explicitly connected. |
+| Weather context | Open-Meteo through `app/product/live-context.ts` | Live external data when available | Show the live source state and fall back conservatively when unavailable. |
 | Validation level | Product metadata | Demonstration classification | `Data-based suggestion`, `Locally reviewed` and `Verified Gem` must reflect real review depth in production. |
-| Travel times | Curated per transport mode | Demonstration estimate | Must be replaced or verified through real routing before operational use. |
-| GemDrop trigger | User-invoked jury scenario | Demonstration event | Represents future live crowd, parking, weather, road and schedule triggers. |
-| Visit verification | Device-local interaction | Demonstration flow | No real GPS attestation or partner QR validation is performed in this branch. |
-| GemPoints | Browser storage | Local demonstration state | Not money, not synchronised and not a production redeemable ledger. |
+| Car route time and geometry | Public OSRM service where supported | Live external routing | Display fallback estimates when routing is unavailable; do not imply live public-transport routing. |
+| Other travel times | Curated values or distance-based estimates | Estimate | Public transport, walking and mixed-mobility times require operational validation before use in safety-critical planning. |
+| GemDrop trigger | User-invoked condition-change scenario | Demonstration event | Represents future live crowd, parking, weather, road and schedule triggers. |
+| Visit verification | Browser geolocation radius, demonstration partner code or explicit demo path | Mixed prototype and demonstration verification | GPS checks proximity only; QR codes and anti-fraud controls are not production-grade. |
+| GemPoints | Device-local event ledger | Local prototype state | Not money, not synchronised and not a production redeemable balance. |
 | Reward catalogue | Curated sample offers | Demonstration partner concepts | No partnership or discount is implied unless explicitly confirmed. |
-| Personal impact | Verified demo-state counters | Local demonstration metric | Reports only actions represented in the demo; no invented CO₂ or visitor-removal claim. |
-| Territory dashboard | Fixed illustrative values | Demonstration data | Must always display the `Demonstration data` label. |
-| OpenStreetMap/Leaflet legacy modules | OpenStreetMap | Live external context | Existing attribution and provider requirements remain applicable when reused. |
-| Open-Meteo legacy modules | Open-Meteo | Live external data | Existing provider availability and forecast limitations remain applicable when reused. |
-| Legacy destination photos | Wikimedia Commons | Live licensed media | Attribution and accepted licences remain mandatory. |
+| Personal impact | Device-local trip, ledger and feedback events | Local prototype metric | Reports only recorded actions; no invented CO₂ or visitor-removal claim. |
+| Territory dashboard | Device-local counters and clearly labelled demonstration concepts | Local prototype and demonstration data | Production use requires anonymisation and minimum sample thresholds. |
+| Map tiles and geography | OpenStreetMap through Leaflet | Live external context | Attribution and provider usage requirements remain applicable. |
+| Destination photography | Wikimedia Commons API | Live licensed media | Accept only CC0, CC BY, CC BY-SA or public-domain files; display attribution and a source link. |
+
+## Destination media policy
+
+GemGo does not silently use attractive web images merely because they are available online.
+
+The current prototype:
+
+- requests metadata directly from the Wikimedia Commons API;
+- validates `LicenseShortName` against CC0, CC BY, CC BY-SA and public-domain licences;
+- rejects obvious maps, flags, logos, diagrams, signs and other unsuitable media by filename;
+- scores candidates against the destination name, region and a curated search alias;
+- favours landscape and higher-resolution files for travel cards;
+- uses manually reviewed Commons filenames for the six flagship pan-Alpine experiences;
+- exposes up to three images in compact recommendation cards and up to five in full detail views;
+- displays the author, licence and Commons source link for the active image;
+- falls back to a branded non-photographic state rather than using an unverified copyrighted image.
+
+A production media pipeline should store the reviewed file identifier, licence, attribution and review timestamp in the database instead of relying on a live search for every destination.
 
 ## Crowd prediction production model
 
