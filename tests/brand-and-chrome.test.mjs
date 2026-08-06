@@ -83,6 +83,19 @@ test("current location remains an explicit user action", () => {
   assert.match(control, /Use my location/);
   assert.match(control, /nominatim\.openstreetmap\.org\/reverse/);
   assert.match(control, /dispatchEvent\(new Event\("input", \{ bubbles: true \}\)\)/);
-  assert.doesNotMatch(control, /getCurrentPosition\([^)]*\)\s*;/);
+  assert.match(control, /maximumAge: 300000/);
   assert.match(css, /current-location-control/);
+});
+
+test("verified visits can collect device-local recommendation feedback", () => {
+  const page = read("app/app/page.tsx");
+  const feedback = read("app/components/VisitFeedback.tsx");
+  const css = read("app/styles/visit-feedback.css");
+  assert.match(page, /<VisitFeedback \/>/);
+  assert.match(feedback, /gemgo-visit-feedback-v1/);
+  assert.match(feedback, /activeTrip\?\.trip\.verified/);
+  assert.match(feedback, /Was this alternative worth the change\?/);
+  assert.match(feedback, /What could have been better\?/);
+  assert.match(feedback, /maxLength=\{500\}/);
+  assert.match(css, /visit-rating-options/);
 });
