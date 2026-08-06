@@ -55,6 +55,8 @@ test("privacy controls export and delete only GemGo device data", () => {
   assert.match(page, /<PrivacyControls \/>/);
   assert.match(controls, /gemgo-trips-v3/);
   assert.match(controls, /gemgo-points-ledger-v3/);
+  assert.match(controls, /gemgo-visit-feedback-v1/);
+  assert.match(controls, /gemgo-sound/);
   assert.match(controls, /new Blob/);
   assert.match(controls, /download = `gemgo-local-data-/);
   assert.match(controls, /GEMGO_KEYS\.forEach\(\(key\) => window\.localStorage\.removeItem\(key\)\)/);
@@ -62,16 +64,63 @@ test("privacy controls export and delete only GemGo device data", () => {
   assert.match(css, /privacy-delete-confirm/);
 });
 
-test("destination photos reset between places and keep a branded licensed fallback", () => {
+test("destination photos are relevant licensed multi-image galleries", () => {
   const photo = read("app/components/DestinationPhoto.tsx");
+  const media = read("app/lib/commons-media.ts");
   const css = read("app/styles/photo-polish.css");
-  assert.match(photo, /setMedia\(null\)/);
-  assert.match(photo, /controller\.abort\(\)/);
+  assert.match(photo, /useState<Media\[]>\(\[\]\)/);
   assert.match(photo, /allowedLicense/);
+  assert.match(photo, /rejectedTitle/);
+  assert.match(photo, /relevanceScore/);
+  assert.match(photo, /slice\(0, compact \? 3 : 5\)/);
+  assert.match(photo, /Previous photo of/);
+  assert.match(photo, /Next photo of/);
+  assert.match(photo, /gallery-dots/);
   assert.match(photo, /src="\/assets\/gemgo-logo\.png"/);
-  assert.match(photo, /decoding="async"/);
-  assert.match(photo, /onError=\{\(\) => \{[\s\S]*setMedia\(null\)[\s\S]*setFailed\(true\)/);
-  assert.match(css, /destination-photo-shimmer/);
+  assert.match(photo, /onError=\{handleImageError\}/);
+  assert.match(media, /iiprop: "url\|size\|extmetadata"/);
+  assert.match(media, /Mostnica Gorge Stara Fuzina Bohinj/);
+  assert.match(css, /destination-gallery-enter/);
+  assert.match(css, /gallery-arrow-previous/);
+});
+
+test("GemDrop shows galleries for the original and proposed alternative", () => {
+  const page = read("app/app/page.tsx");
+  const enhancer = read("app/components/GemDropPhotoEnhancer.tsx");
+  const css = read("app/styles/gemdrop-gallery.css");
+  assert.match(page, /<GemDropPhotoEnhancer \/>/);
+  assert.match(enhancer, /gemdrop-panel \.gemdrop-option/);
+  assert.match(enhancer, /allExperiences\.find/);
+  assert.match(enhancer, /DestinationPhoto/);
+  assert.match(css, /gemdrop-destination-gallery/);
+  assert.match(css, /alternative-option/);
+});
+
+test("optional sounds preserve the main branch preference contract", () => {
+  const page = read("app/app/page.tsx");
+  const sound = read("app/components/UiSoundController.tsx");
+  const css = read("app/styles/sound-control.css");
+  assert.match(page, /<UiSoundController \/>/);
+  assert.match(sound, /const SOUND_KEY = "gemgo-sound"/);
+  assert.match(sound, /window\.localStorage\.getItem\(SOUND_KEY\) !== "off"/);
+  assert.match(sound, /AudioContext/);
+  assert.match(sound, /Volume2/);
+  assert.match(sound, /VolumeX/);
+  assert.match(sound, /prefers-reduced-motion|optional enhancement|Sound is an optional enhancement/);
+  assert.match(css, /sound-control\[aria-pressed="true"\]/);
+});
+
+test("motion is restrained and respects reduced-motion preferences", () => {
+  const layout = read("app/layout.tsx");
+  const enhancer = read("app/components/MotionEnhancer.tsx");
+  const css = read("app/styles/motion-and-spacing.css");
+  assert.match(layout, /<MotionEnhancer \/>/);
+  assert.match(enhancer, /IntersectionObserver/);
+  assert.match(enhancer, /prefers-reduced-motion: reduce/);
+  assert.match(enhancer, /MutationObserver/);
+  assert.match(css, /motion-item\.is-revealed/);
+  assert.match(css, /@media \(prefers-reduced-motion: reduce\)/);
+  assert.match(css, /detail-metric-strip[\s\S]*repeat\(2/);
 });
 
 test("current location remains an explicit user action", () => {
@@ -97,5 +146,6 @@ test("verified visits can collect device-local recommendation feedback", () => {
   assert.match(feedback, /Was this alternative worth the change\?/);
   assert.match(feedback, /What could have been better\?/);
   assert.match(feedback, /maxLength=\{500\}/);
+  assert.match(feedback, /lastSnapshotRef/);
   assert.match(css, /visit-rating-options/);
 });
