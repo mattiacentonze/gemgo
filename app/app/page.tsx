@@ -6,6 +6,7 @@ import MobileResultsMode from "../components/MobileResultsMode";
 import NotificationCenter from "../components/NotificationCenter";
 import PrivacyControls from "../components/PrivacyControls";
 import UiSoundController from "../components/UiSoundController";
+import UndoActionController from "../components/UndoActionController";
 import VisitFeedback from "../components/VisitFeedback";
 
 export default function GemGoApplicationPage() {
@@ -19,6 +20,7 @@ export default function GemGoApplicationPage() {
       <MobileResultsMode />
       <PrivacyControls />
       <UiSoundController />
+      <UndoActionController />
       <VisitFeedback />
     </>
   );
