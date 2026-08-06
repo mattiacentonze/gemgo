@@ -20,8 +20,10 @@ export const useOriginPoint = (query: string) => {
   useEffect(() => {
     const trimmed = query.trim();
     if (trimmed.length < 2) {
-      setOrigin(null);
-      setStatus("idle");
+      queueMicrotask(() => {
+        setOrigin(null);
+        setStatus("idle");
+      });
       return;
     }
     const controller = new AbortController();
@@ -57,7 +59,7 @@ export const useLiveWeather = (origin: OriginPoint | null) => {
 
   useEffect(() => {
     if (!origin) {
-      setWeather({ source: "unavailable" });
+      queueMicrotask(() => setWeather({ source: "unavailable" }));
       return;
     }
     const controller = new AbortController();
@@ -98,7 +100,7 @@ export const useRoadTimes = (
 
   useEffect(() => {
     if (!origin || transport === "public" || experiences.length === 0) {
-      setRouteTimes({});
+      queueMicrotask(() => setRouteTimes({}));
       return;
     }
     const controller = new AbortController();
@@ -139,7 +141,7 @@ export const useSelectedRoute = (
 
   useEffect(() => {
     if (!origin || !experience || transport === "public") {
-      setCoordinates([]);
+      queueMicrotask(() => setCoordinates([]));
       return;
     }
     const controller = new AbortController();
