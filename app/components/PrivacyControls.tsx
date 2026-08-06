@@ -7,6 +7,7 @@ import { createPortal } from "react-dom";
 const GEMGO_KEYS = [
   "gemgo-trips-v3",
   "gemgo-active-trip-v3",
+  "gemgo-multiday-itinerary-v1",
   "gemgo-points-ledger-v3",
   "gemgo-reward-unlocks-v1",
   "gemgo-visit-feedback-v1",
@@ -104,7 +105,7 @@ export default function PrivacyControls() {
             <X size={17} />
           </button>
           <strong>Delete GemGo data from this browser?</strong>
-          <p>Saved trips, GemPoints history, visit feedback, reward codes and local preferences will be removed. This cannot be undone.</p>
+          <p>Saved trips, multi-day plans, GemPoints history, visit feedback, reward codes and local preferences will be removed. This cannot be undone.</p>
           <div>
             <button type="button" className="button button-secondary" onClick={() => setConfirming(false)}>Cancel</button>
             <button type="button" className="button privacy-delete-confirm" onClick={deleteData}>Delete data</button>
