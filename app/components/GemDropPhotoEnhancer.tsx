@@ -44,16 +44,19 @@ export default function GemDropPhotoEnhancer() {
 
   return (
     <>
-      {slots.map((slot) => createPortal(
-        <DestinationPhoto
-          key={`${slot.role}-${slot.experience.id}`}
-          name={slot.experience.name}
-          region={slot.experience.region}
-          compact
-          className={`gemdrop-destination-gallery is-${slot.role}`}
-        />,
-        slot.target,
-      ))}
+      {slots.map((slot) => {
+        const key = `${slot.role}-${slot.experience.id}`;
+        return createPortal(
+          <DestinationPhoto
+            name={slot.experience.name}
+            region={slot.experience.region}
+            compact
+            className={`gemdrop-destination-gallery is-${slot.role}`}
+          />,
+          slot.target,
+          key,
+        );
+      })}
     </>
   );
 }
