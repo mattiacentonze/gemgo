@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Experience } from "../product/types";
 import type { OriginPoint } from "../product/recommendation-engine";
 
@@ -40,6 +40,7 @@ export default function ExperienceMap({
   const markerLayerRef = useRef<import("leaflet").LayerGroup | null>(null);
   const routeLayerRef = useRef<import("leaflet").LayerGroup | null>(null);
   const onSelectRef = useRef(onSelect);
+  const [mapReady, setMapReady] = useState(false);
 
   useEffect(() => {
     onSelectRef.current = onSelect;
@@ -64,6 +65,7 @@ export default function ExperienceMap({
       routeLayerRef.current = L.layerGroup().addTo(map);
       mapRef.current = map;
       map.setView([46.7, 9.8], 6);
+      setMapReady(true);
     });
     return () => {
       active = false;
@@ -75,6 +77,7 @@ export default function ExperienceMap({
   }, []);
 
   useEffect(() => {
+    if (!mapReady) return;
     let disposed = false;
     const render = async () => {
       const map = mapRef.current;
@@ -171,9 +174,10 @@ export default function ExperienceMap({
       disposed = true;
       map?.off("zoomend moveend", render);
     };
-  }, [experiences, origin, routeCoordinates, selectedId]);
+  }, [experiences, mapReady, origin, routeCoordinates, selectedId]);
 
   useEffect(() => {
+    if (!mapReady) return;
     let disposed = false;
     const fit = async () => {
       const map = mapRef.current;
@@ -189,16 +193,17 @@ export default function ExperienceMap({
     return () => {
       disposed = true;
     };
-  }, [experiences, origin]);
+  }, [experiences, mapReady, origin]);
 
   useEffect(() => {
+    if (!mapReady) return;
     const element = containerRef.current;
     const map = mapRef.current;
     if (!element || !map || typeof ResizeObserver === "undefined") return;
     const observer = new ResizeObserver(() => map.invalidateSize({ animate: false }));
     observer.observe(element);
     return () => observer.disconnect();
-  }, []);
+  }, [mapReady]);
 
   return <div ref={containerRef} className={`experience-map ${className}`} aria-label="Map of GemGo recommendations" />;
 }
