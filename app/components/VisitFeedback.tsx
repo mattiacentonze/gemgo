@@ -1,7 +1,7 @@
 "use client";
 
 import { CheckCircle2, MessageSquareText, Send } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import type { SavedTrip } from "../product/storage";
 
@@ -42,20 +42,34 @@ export default function VisitFeedback() {
   const [rating, setRating] = useState<Rating | null>(null);
   const [comment, setComment] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const lastSnapshotRef = useRef("");
 
   useEffect(() => {
     const resolve = () => {
       const activeTrip = readActiveTrip();
       const nextTarget = document.querySelector(".integrated-app .trip-side");
-      const existing = activeTrip ? readFeedback().some((item) => item.tripId === activeTrip.id) : false;
-      setTrip(activeTrip?.trip.verified ? activeTrip : null);
-      setTarget(activeTrip?.trip.verified && nextTarget ? nextTarget : null);
+      const visibleTrip = activeTrip?.trip.verified ? activeTrip : null;
+      const existing = visibleTrip ? readFeedback().some((item) => item.tripId === visibleTrip.id) : false;
+      const snapshot = JSON.stringify({
+        target: Boolean(nextTarget),
+        tripId: visibleTrip?.id ?? null,
+        updatedAt: visibleTrip?.updatedAt ?? null,
+        existing,
+      });
+      if (snapshot === lastSnapshotRef.current) return;
+      lastSnapshotRef.current = snapshot;
+      setTrip(visibleTrip);
+      setTarget(visibleTrip && nextTarget ? nextTarget : null);
       setSubmitted(existing);
     };
     resolve();
     const observer = new MutationObserver(resolve);
-    observer.observe(document.body, { childList: true, subtree: true, characterData: true });
-    return () => observer.disconnect();
+    observer.observe(document.body, { childList: true, subtree: true });
+    window.addEventListener("storage", resolve);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("storage", resolve);
+    };
   }, []);
 
   const submit = () => {
