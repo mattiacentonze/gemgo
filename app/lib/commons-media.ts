@@ -32,7 +32,7 @@ export const commonsImageParams = (
     format: "json",
     origin: "*",
     prop: "imageinfo",
-    iiprop: "url|extmetadata",
+    iiprop: "url|size|extmetadata",
     iiurlwidth: String(width),
   });
   if (preferred.length > 0) {
