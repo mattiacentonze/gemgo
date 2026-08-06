@@ -1,0 +1,15 @@
+.sound-control[aria-pressed="true"] {
+  border-color: rgba(38, 116, 95, 0.24);
+  background: var(--mint);
+  color: var(--green);
+}
+
+.sound-control[aria-pressed="false"] {
+  color: var(--slate);
+}
+
+@media (max-width: 430px) {
+  .sound-control {
+    display: none;
+  }
+}
