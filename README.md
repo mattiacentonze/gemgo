@@ -1,8 +1,10 @@
 # GemGo
 
-GemGo is a mobile-first pan-Alpine recommendation and visitor-flow redistribution product. It helps a traveller turn an intended crowded plan into a comparable, personalised and locally useful alternative, then makes the trip executable, verifies the visit, awards one clear reward currency and exposes aggregated impact for Alpine territories.
+GemGo is a mobile-first pan-Alpine recommendation and visitor-flow redistribution product. It helps a traveller turn an intended crowded plan into a comparable, personalised and locally useful alternative, then makes the trip executable, verifies the visit, awards one clear reward currency and exposes privacy-preserving impact for Alpine territories.
 
-Live MVP: [gemgo-mvp.aloneeagle.chatgpt.site](https://gemgo-mvp.aloneeagle.chatgpt.site)
+Production MVP currently published from `main`: [gemgo-mvp.aloneeagle.chatgpt.site](https://gemgo-mvp.aloneeagle.chatgpt.site)
+
+The integrated redesign is developed separately on `agent/pan-alpine-product-redesign` and must be reviewed through a private Sites preview before the production Site is updated.
 
 ## Product model
 
@@ -10,37 +12,48 @@ GemGo follows one measurable cycle:
 
 **Predict → Recommend → Redirect → Verify → Reward → Measure**
 
-The redesign keeps the tourist interface focused on four destinations:
+The tourist interface is focused on four destinations:
 
-- **Explore** — natural-language briefing plus explicit location, mobility, time, interests, difficulty and accessibility controls;
-- **My Trip** — an executable timeline, mobility information, offline essentials and contextual GemDrop changes;
-- **Rewards** — one GemPoints balance, usable nearby rewards and personal measurable impact;
+- **Explore** — multilingual natural-language briefing plus explicit location, mobility, time, interests, difficulty and accessibility controls;
+- **My Trip** — active and saved trips, an executable timeline, routed map, offline essentials and contextual GemDrop changes;
+- **Rewards** — one GemPoints event ledger, local reward codes and measurable personal impact;
 - **About** — mission, methodology, privacy and the institutional dashboard.
 
 GemDrop is not a standalone menu page. It is a contextual intervention shown when changed crowd, weather or access conditions make a comparable alternative useful.
 
-## Demonstration journey
+## Integrated branch capabilities
 
-The jury-facing flow is:
-
-1. pan-Alpine homepage;
-2. visitor brief in Explore;
-3. three motivated alternatives;
-4. full experience detail and honest comparison;
-5. My Trip operational plan;
-6. contextual GemDrop;
-7. visit verification;
-8. GemPoints and personal impact;
-9. territory dashboard.
+- real OpenStreetMap/Leaflet maps on the homepage, results, experience detail and My Trip;
+- gentler mouse-wheel zoom and clustering when more than two nearby markers overlap;
+- the existing 50-place public pilot catalogue retained and adapted to the new product model;
+- six deeper pan-Alpine demonstration experiences for jury storytelling;
+- natural-language parsing in English, Italian, German, French and Slovenian;
+- editable structured controls after parsing;
+- geocoding through local pilot aliases and OpenStreetMap Nominatim;
+- live Open-Meteo context with conservative fallback behaviour;
+- OSRM road routing and routed journey geometry where supported;
+- three genuinely distinct recommendation roles: Best match, Quietest choice and Most local impact;
+- freely licensed Wikimedia Commons destination photography;
+- multiple saved trips, rename, duplicate, delete and legacy-trip migration;
+- device-local offline essentials;
+- contextual GemDrop switching;
+- GPS-radius verification, partner-code verification and an explicitly labelled demo path;
+- one GemPoints ledger with idempotent event IDs and reward deductions;
+- temporary reward codes and device-local impact metrics;
+- responsive desktop and mobile layouts;
+- source and regression tests for the integrated product boundaries.
 
 ## Data honesty
 
-The branch deliberately separates product behaviour from unsupported claims:
+The branch deliberately separates operational data from estimates and demonstration content:
 
+- names and coordinates in the 50-place catalogue are retained from the existing public dataset;
 - recommendation ranking is deterministic and explainable;
-- demonstration crowd values, confidence, partner rewards and institutional metrics are visibly labelled;
+- weather is requested live from Open-Meteo when available;
+- road routes are requested from the public OSRM service where supported;
+- public-transport times, crowd values, parking, partner offers and institutional metrics remain estimates or demonstration data unless an operational source is connected;
 - the interface never presents demonstration values as observed field results;
-- personal impact reports only verifiable actions and does not invent CO₂ savings or an exact number of visitors removed from a hotspot;
+- personal impact reports only recorded actions and does not invent CO₂ savings or an exact number of visitors removed from a hotspot;
 - the three validation levels are `Data-based suggestion`, `Locally reviewed` and `Verified Gem`;
 - fragile places may be excluded, seasonally limited or shown without exact coordinates.
 
@@ -58,7 +71,7 @@ npm ci
 npm run dev
 ```
 
-Then open the URL shown by Vite.
+Open `/` for the public product story and `/app` for the integrated application.
 
 ## Quality checks
 
@@ -67,27 +80,33 @@ npm run lint
 npm test
 ```
 
-`npm test` builds and validates the Cloudflare/OpenAI Sites artifact before running rendered-output tests.
+`npm test` builds and validates the Cloudflare/OpenAI Sites artifact before running rendered-output and source regression tests.
+
+CI runs for pull requests, `main`, and the redesign branch while it is under active development.
 
 ## Architecture
 
 ```text
 app/
-  page.tsx                         pan-Alpine marketing homepage and /app handoff
-  components/AppShell.tsx          complete tourist and institutional journey
-  components/AlpineOverview.tsx    pan-Alpine pressure and coverage visualisation
-  components/ExperienceCard.tsx    explainable recommendation cards
-  product/types.ts                 product domain types
-  product/data.ts                  curated demonstration catalogue
-  styles/                          modular desktop/mobile design system
+  page.tsx                              public pan-Alpine homepage
+  app/page.tsx                          integrated application route
+  components/IntegratedAppShell.tsx     tourist and institutional product journey
+  components/ExperienceMap.tsx          Leaflet maps, clusters, origin and route geometry
+  components/AlpineOverview.tsx         real pan-Alpine catalogue map
+  components/DestinationPhoto.tsx       licensed Wikimedia destination media
+  product/integrated-data.ts            existing catalogue adapter plus curated experiences
+  product/recommendation-engine.ts      parsing, compatibility gates and distinct ranking roles
+  product/live-context.ts               geocoding, weather and route context
+  product/storage.ts                    trips, GemPoints ledger and reward codes
+  styles/                               modular desktop/mobile design system
 public/
-  manifest.webmanifest             PWA manifest
-  sw.js                            service worker
-.openai/hosting.json               OpenAI Sites hosting identity
+  manifest.webmanifest                  PWA manifest
+  sw.js                                 service worker and network fallback
+.openai/hosting.json                    OpenAI Sites hosting identity
 ```
 
 See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for state boundaries and the production migration path.
 
 ## Deployment
 
-The public MVP is deployed through OpenAI Sites. The hosting identity remains in `.openai/hosting.json`; the Vinext/Vite output contract must remain valid. A branch should pass CI before it is merged into `main` and deployed to the production domain.
+OpenAI Sites publishing and access visibility are controlled from the Work/Sites preview and publishing flow. GitHub commits do not make the existing Site public by themselves. The branch must pass CI, be reviewed in a private Sites preview, and then be published with public access from the Site controls. `main` remains unchanged until that review is complete.
