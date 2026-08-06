@@ -61,3 +61,15 @@ test("privacy controls export and delete only GemGo device data", () => {
   assert.doesNotMatch(controls, /localStorage\.clear\(/);
   assert.match(css, /privacy-delete-confirm/);
 });
+
+test("destination photos reset between places and keep a branded licensed fallback", () => {
+  const photo = read("app/components/DestinationPhoto.tsx");
+  const css = read("app/styles/photo-polish.css");
+  assert.match(photo, /setMedia\(null\)/);
+  assert.match(photo, /controller\.abort\(\)/);
+  assert.match(photo, /allowedLicense/);
+  assert.match(photo, /src="\/assets\/gemgo-logo\.png"/);
+  assert.match(photo, /decoding="async"/);
+  assert.match(photo, /onError=\{\(\) => \{[\s\S]*setMedia\(null\)[\s\S]*setFailed\(true\)/);
+  assert.match(css, /destination-photo-shimmer/);
+});
