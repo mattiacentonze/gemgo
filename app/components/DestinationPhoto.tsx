@@ -146,7 +146,10 @@ export default function DestinationPhoto({
         alt={`${name}, ${region}`}
         loading="lazy"
         decoding="async"
-        onError={() => setFailed(true)}
+        onError={() => {
+          setMedia(null);
+          setFailed(true);
+        }}
       />
       <figcaption>
         <a href={media.source} target="_blank" rel="noreferrer">
