@@ -1,4 +1,5 @@
 import CurrentLocationControl from "../components/CurrentLocationControl";
+import GemDropPhotoEnhancer from "../components/GemDropPhotoEnhancer";
 import IntegratedAppShell from "../components/IntegratedAppShell";
 import MobileResultsMode from "../components/MobileResultsMode";
 import NotificationCenter from "../components/NotificationCenter";
@@ -11,6 +12,7 @@ export default function GemGoApplicationPage() {
     <>
       <IntegratedAppShell />
       <CurrentLocationControl />
+      <GemDropPhotoEnhancer />
       <NotificationCenter />
       <MobileResultsMode />
       <PrivacyControls />
