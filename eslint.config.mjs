@@ -15,6 +15,7 @@ const eslintConfig = defineConfig([
       "app/components/NotificationCenter.tsx",
       "app/components/PrivacyControls.tsx",
       "app/components/UiSoundController.tsx",
+      "app/components/UndoActionController.tsx",
       "app/components/VisitFeedback.tsx",
     ],
     rules: {
