@@ -1,7 +1,7 @@
 "use client";
 
 import { ChevronLeft, ChevronRight, ImageIcon } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { commonsImageParams, commonsSearchText } from "../lib/commons-media";
 
 type Media = {
@@ -65,6 +65,7 @@ export default function DestinationPhoto({
   const [activeIndex, setActiveIndex] = useState(0);
   const [failed, setFailed] = useState(false);
   const [imageFailed, setImageFailed] = useState(false);
+  const touchStartRef = useRef<number | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -196,6 +197,19 @@ export default function DestinationPhoto({
     setActiveIndex(0);
   };
 
+  const handleTouchStart = (event: React.TouchEvent<HTMLElement>) => {
+    touchStartRef.current = event.touches[0]?.clientX ?? null;
+  };
+
+  const handleTouchEnd = (event: React.TouchEvent<HTMLElement>) => {
+    const start = touchStartRef.current;
+    touchStartRef.current = null;
+    if (start === null) return;
+    const end = event.changedTouches[0]?.clientX;
+    if (typeof end !== "number" || Math.abs(start - end) < 44) return;
+    move(start > end ? 1 : -1);
+  };
+
   if (!activeMedia || imageFailed) {
     return (
       <div
@@ -217,7 +231,23 @@ export default function DestinationPhoto({
   }
 
   return (
-    <figure className={`destination-photo destination-gallery ${compact ? "is-compact" : ""} ${className}`}>
+    <figure
+      className={`destination-photo destination-gallery ${compact ? "is-compact" : ""} ${className}`}
+      tabIndex={gallery.length > 1 ? 0 : undefined}
+      aria-label={`${name} photo gallery, photo ${activeIndex + 1} of ${gallery.length}`}
+      onKeyDown={(event) => {
+        if (event.key === "ArrowLeft") {
+          event.preventDefault();
+          move(-1);
+        }
+        if (event.key === "ArrowRight") {
+          event.preventDefault();
+          move(1);
+        }
+      }}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+    >
       <div className="destination-gallery-stage">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
