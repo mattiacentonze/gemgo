@@ -1,4 +1,5 @@
 import CurrentLocationControl from "../components/CurrentLocationControl";
+import FeedbackImpactMetric from "../components/FeedbackImpactMetric";
 import GemDropPhotoEnhancer from "../components/GemDropPhotoEnhancer";
 import IntegratedAppShell from "../components/IntegratedAppShell";
 import LiquidAppNavigation from "../components/LiquidAppNavigation";
@@ -15,6 +16,7 @@ export default function GemGoApplicationPage() {
     <>
       <IntegratedAppShell />
       <CurrentLocationControl />
+      <FeedbackImpactMetric />
       <GemDropPhotoEnhancer />
       <LiquidAppNavigation />
       <MobileResultsMode />
