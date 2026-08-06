@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @import "leaflet/dist/leaflet.css";
 @import "./styles/foundation.css";
+@import "./styles/compatibility.css";
 @import "./styles/product.css";
 @import "./styles/institutional.css";
 @import "./styles/integration.css";
