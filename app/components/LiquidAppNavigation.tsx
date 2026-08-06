@@ -1,7 +1,7 @@
 "use client";
 
 import { CalendarDays, Compass, Gift, Info } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import LiquidMobileNav from "./LiquidMobileNav";
 
 type AppPage = "explore" | "trip" | "rewards" | "about";
@@ -14,27 +14,34 @@ const icons = {
   about: <Info size={20} />,
 };
 
+const defaultLabels: Record<AppPage, string> = {
+  explore: "Explore",
+  trip: "My Trip",
+  rewards: "Rewards",
+  about: "About",
+};
+
 export default function LiquidAppNavigation() {
   const [ready, setReady] = useState(false);
   const [activePage, setActivePage] = useState<AppPage>("explore");
-  const [labels, setLabels] = useState<Record<AppPage, string>>({
-    explore: "Explore",
-    trip: "My Trip",
-    rewards: "Rewards",
-    about: "About",
-  });
+  const [labels, setLabels] = useState<Record<AppPage, string>>(defaultLabels);
+  const snapshotRef = useRef("");
 
   useEffect(() => {
     const resolve = () => {
       const buttons = [...document.querySelectorAll<HTMLButtonElement>(".integrated-app .mobile-bottom-nav > button")];
       if (buttons.length < pages.length) return;
-      const nextLabels = { ...labels };
+      const nextLabels = { ...defaultLabels };
       buttons.slice(0, pages.length).forEach((button, index) => {
         nextLabels[pages[index]] = button.textContent?.trim() || nextLabels[pages[index]];
       });
       const activeIndex = buttons.findIndex((button) => button.classList.contains("is-active"));
+      const nextPage = pages[Math.max(0, activeIndex)] ?? "explore";
+      const snapshot = `${nextPage}|${pages.map((page) => nextLabels[page]).join("|")}`;
+      if (snapshot === snapshotRef.current) return;
+      snapshotRef.current = snapshot;
       setLabels(nextLabels);
-      setActivePage(pages[Math.max(0, activeIndex)] ?? "explore");
+      setActivePage(nextPage);
       setReady(true);
       document.documentElement.classList.add("has-liquid-app-nav");
     };
