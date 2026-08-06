@@ -21,10 +21,10 @@ const safeText = (value: string) =>
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
 
-const markerColor = (experience: Experience) => {
-  if (experience.crowd === "high") return "#d95b48";
-  if (experience.crowd === "moderate") return "#d89b35";
-  return "#2f8b68";
+const markerLogo = (experience: Experience) => {
+  if (experience.crowd === "high") return "/assets/gemgo-logo-red.svg?v=2";
+  if (experience.crowd === "moderate") return "/assets/gemgo-logo-orange.svg?v=2";
+  return "/assets/gemgo-logo-green.svg?v=2";
 };
 
 export default function ExperienceMap({
@@ -124,11 +124,12 @@ export default function ExperienceMap({
           const cluster = L.marker([latitude, longitude], {
             icon: L.divIcon({
               className: "gemgo-map-cluster-wrap",
-              html: `<span class="gemgo-map-cluster">${group.items.length}</span>`,
+              html: `<span class="gemgo-map-cluster"><img src="/assets/gemgo-logo-green.svg?v=2" alt=""/><strong>${group.items.length}</strong></span>`,
               iconSize: [46, 46],
               iconAnchor: [23, 23],
             }),
           });
+          cluster.bindTooltip(`${group.items.length} GemGo experiences`);
           cluster.on("click", () => {
             map.fitBounds(
               L.latLngBounds(group.items.map((item) => [item.latitude, item.longitude])),
@@ -144,17 +145,18 @@ export default function ExperienceMap({
           const marker = L.marker([experience.latitude, experience.longitude], {
             icon: L.divIcon({
               className: "gemgo-map-marker-wrap",
-              html: `<span class="gemgo-map-marker${selected ? " is-selected" : ""}" style="--marker:${markerColor(experience)}"><i></i></span>`,
+              html: `<span class="gemgo-map-marker${selected ? " is-selected" : ""}"><img src="${markerLogo(experience)}" alt=""/><i></i></span>`,
               iconSize: selected ? [42, 50] : [34, 42],
               iconAnchor: selected ? [21, 47] : [17, 39],
             }),
             title: experience.name,
           });
           marker.bindPopup(
-            `<strong>${safeText(experience.name)}</strong><br/><span>${safeText(experience.region)} · ${safeText(experience.crowd)} crowd</span>`,
+            `<div class="gemgo-map-popup"><strong>${safeText(experience.name)}</strong><span>${safeText(experience.region)} · ${safeText(experience.country)}</span><small>${safeText(experience.crowd)} crowd · ${safeText(experience.validation)}</small></div>`,
           );
           marker.on("click", () => onSelectRef.current?.(experience));
           marker.addTo(markerLayer);
+          if (selected) marker.openPopup();
         });
       });
 
