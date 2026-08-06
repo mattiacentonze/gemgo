@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import MotionEnhancer from "./components/MotionEnhancer";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -22,6 +23,7 @@ export const metadata: Metadata = {
   icons: {
     icon: "/favicon.svg",
     shortcut: "/favicon.svg",
+    apple: "/assets/gemgo-logo-green.svg?v=2",
   },
   manifest: "/manifest.webmanifest",
 };
@@ -35,6 +37,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         {children}
+        <MotionEnhancer />
         <script
           dangerouslySetInnerHTML={{
             __html:
