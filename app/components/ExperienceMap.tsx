@@ -1,5 +1,6 @@
 "use client";
 
+import { LoaderCircle } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { Experience } from "../product/types";
 import type { OriginPoint } from "../product/recommendation-engine";
@@ -152,7 +153,7 @@ export default function ExperienceMap({
             title: experience.name,
           });
           marker.bindPopup(
-            `<div class="gemgo-map-popup"><strong>${safeText(experience.name)}</strong><span>${safeText(experience.region)} · ${safeText(experience.country)}</span><small>${safeText(experience.crowd)} crowd · ${safeText(experience.validation)}</small></div>`,
+            `<div class="gemgo-map-popup"><strong>${safeText(experience.name)}</strong><span>${safeText(experience.region)} · ${safeText(experience.country)}</span><small>${safeText(experience.crowd)} estimated crowd · ${safeText(experience.validation)}</small></div>`,
           );
           marker.on("click", () => onSelectRef.current?.(experience));
           marker.addTo(markerLayer);
@@ -207,5 +208,21 @@ export default function ExperienceMap({
     return () => observer.disconnect();
   }, [mapReady]);
 
-  return <div ref={containerRef} className={`experience-map ${className}`} aria-label="Map of GemGo recommendations" />;
+  return (
+    <div className={`experience-map-shell ${className}`}>
+      <div ref={containerRef} className="experience-map" aria-label="Map of GemGo recommendations" />
+      {!mapReady && (
+        <div className="experience-map-loading" role="status">
+          <LoaderCircle size={22} />
+          <span>Loading Alpine map…</span>
+        </div>
+      )}
+      <div className="experience-map-legend" aria-label="Estimated crowd legend">
+        <strong>Estimated crowd</strong>
+        <span><img src="/assets/gemgo-logo-green.svg?v=2" alt="" /> Lower pressure</span>
+        <span><img src="/assets/gemgo-logo-orange.svg?v=2" alt="" /> Moderate</span>
+        <span><img src="/assets/gemgo-logo-red.svg?v=2" alt="" /> Higher pressure</span>
+      </div>
+    </div>
+  );
 }
