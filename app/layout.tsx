@@ -13,9 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "GemGo — More Alps. Fewer queues.",
+  title: "GemGo — Better Alpine choices",
   description:
-    "Mobile-first Alpine planner with live weather, crowd-smart itineraries, GemDrop, GemPoints and GemDeals across Bavaria and Valle d’Aosta.",
+    "A pan-Alpine recommendation and visitor-flow redistribution system that turns crowded plans into personalised alternatives, verified visits and local rewards.",
   other: {
     "codex-preview": "development",
   },
@@ -33,9 +33,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      <body className={`${geistSans.variable} ${geistMono.variable}`}>
         {children}
         <script
           dangerouslySetInnerHTML={{
