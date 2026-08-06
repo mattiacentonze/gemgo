@@ -1,0 +1,46 @@
+.gemdrop-option {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  overflow: hidden;
+}
+
+.gemdrop-option > small {
+  order: 1;
+}
+
+.gemdrop-option > h3 {
+  order: 2;
+  margin: 0;
+}
+
+.gemdrop-option .gemdrop-destination-gallery {
+  order: 3;
+  height: 170px;
+  min-height: 170px;
+  margin: 4px 0 6px;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 10px 24px rgba(8, 40, 33, 0.16);
+}
+
+.gemdrop-option > p {
+  order: 4;
+  margin: 0;
+}
+
+.gemdrop-option .gemdrop-destination-gallery figcaption {
+  display: none;
+}
+
+.gemdrop-option.alternative-option .gemdrop-destination-gallery {
+  outline: 2px solid rgba(43, 155, 104, 0.25);
+  outline-offset: -2px;
+}
+
+@media (max-width: 720px) {
+  .gemdrop-option .gemdrop-destination-gallery {
+    height: 190px;
+    min-height: 190px;
+  }
+}
