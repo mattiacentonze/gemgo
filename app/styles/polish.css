@@ -145,6 +145,22 @@ button:disabled,
   font-size: 0.95rem;
 }
 
+.gemgo-map-popup {
+  display: grid;
+  gap: 4px;
+  min-width: 180px;
+  color: var(--forest-deep);
+}
+
+.gemgo-map-popup strong {
+  font-size: 0.9rem;
+}
+
+.gemgo-map-popup span,
+.gemgo-map-popup small {
+  color: var(--slate);
+}
+
 .app-header,
 .marketing-header {
   box-shadow: 0 1px 0 rgba(11, 44, 37, 0.04);
@@ -162,6 +178,143 @@ button:disabled,
 .action-toast {
   border: 1px solid rgba(255, 255, 255, 0.13);
   backdrop-filter: blur(14px);
+}
+
+.integrated-app .header-actions > .icon-button[aria-label="Notifications"] {
+  display: none;
+}
+
+.notification-center {
+  position: relative;
+}
+
+.notification-button {
+  position: relative;
+}
+
+.notification-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  display: grid;
+  min-width: 18px;
+  height: 18px;
+  place-items: center;
+  padding: 0 5px;
+  border: 2px solid var(--paper);
+  border-radius: 999px;
+  background: var(--coral);
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 850;
+}
+
+.notification-popover {
+  position: absolute;
+  z-index: 500;
+  top: calc(100% + 12px);
+  right: 0;
+  width: min(420px, calc(100vw - 24px));
+  max-height: min(620px, calc(100vh - 90px));
+  overflow: hidden;
+  border: 1px solid rgba(11, 44, 37, 0.12);
+  border-radius: 24px;
+  background: rgba(255, 253, 248, 0.98);
+  box-shadow: 0 28px 70px rgba(10, 45, 37, 0.22);
+  backdrop-filter: blur(18px);
+}
+
+.notification-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 20px 20px 14px;
+  border-bottom: 1px solid var(--line);
+}
+
+.notification-heading > div {
+  display: grid;
+  gap: 2px;
+}
+
+.notification-heading span {
+  color: var(--green);
+  font-size: 0.68rem;
+  font-weight: 850;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.notification-heading strong {
+  font-size: 1.2rem;
+}
+
+.notification-list {
+  display: grid;
+  max-height: 460px;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
+.notification-item {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 12px;
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(11, 44, 37, 0.08);
+}
+
+.notification-icon {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border-radius: 13px;
+  background: var(--mint);
+  color: var(--green);
+}
+
+.notification-reward .notification-icon {
+  background: #fff0e9;
+  color: var(--coral);
+}
+
+.notification-points .notification-icon {
+  background: #fff6dd;
+  color: #9b6a12;
+}
+
+.notification-item > div {
+  display: grid;
+  gap: 4px;
+}
+
+.notification-item p {
+  margin: 0;
+  color: var(--slate);
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.notification-item time {
+  color: color-mix(in srgb, var(--slate) 70%, transparent);
+  font-size: 0.68rem;
+}
+
+.notification-footnote {
+  display: block;
+  padding: 13px 20px 16px;
+  color: var(--slate);
+  background: #f7f4eb;
+}
+
+.notification-empty {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  padding: 44px 20px;
+  color: var(--slate);
 }
 
 .mobile-bottom-nav {
@@ -197,6 +350,19 @@ button:disabled,
 
   .integrated-app {
     padding-bottom: calc(82px + env(safe-area-inset-bottom));
+  }
+
+  .notification-popover {
+    position: fixed;
+    top: 70px;
+    right: 10px;
+    left: 10px;
+    width: auto;
+    max-height: calc(100vh - 158px - env(safe-area-inset-bottom));
+  }
+
+  .notification-list {
+    max-height: calc(100vh - 275px - env(safe-area-inset-bottom));
   }
 }
 
