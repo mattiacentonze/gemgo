@@ -8,6 +8,7 @@ const eslintConfig = defineConfig([
   {
     files: [
       "app/components/IntegratedAppShell.tsx",
+      "app/components/MobileResultsMode.tsx",
       "app/components/NotificationCenter.tsx",
     ],
     rules: {
