@@ -4,13 +4,13 @@ import test from "node:test";
 const developmentPreviewMeta =
   /<meta(?=[^>]*\bname=["']codex-preview["'])(?=[^>]*\bcontent=["']development["'])[^>]*>/i;
 
-const renderHomepage = async () => {
+const renderPage = async (pathname = "/") => {
   const workerUrl = new URL("../dist/server/index.js", import.meta.url);
-  workerUrl.searchParams.set("test", `${process.pid}-${Date.now()}`);
+  workerUrl.searchParams.set("test", `${process.pid}-${Date.now()}-${pathname}`);
   const { default: worker } = await import(workerUrl.href);
 
   const response = await worker.fetch(
-    new Request("http://localhost/", {
+    new Request(`http://localhost${pathname}`, {
       headers: { accept: "text/html" },
     }),
     {
@@ -28,7 +28,7 @@ const renderHomepage = async () => {
 };
 
 test("renders the pan-Alpine public product story", async () => {
-  const { response, html } = await renderHomepage();
+  const { response, html } = await renderPage();
 
   assert.equal(response.status, 200);
   assert.match(
@@ -48,8 +48,18 @@ test("renders the pan-Alpine public product story", async () => {
   assert.match(html, /href="\/app"/i);
 });
 
+test("renders the integrated application route", async () => {
+  const { response, html } = await renderPage("/app");
+  assert.equal(response.status, 200);
+  assert.match(html, /What would you like to experience/i);
+  assert.match(html, /Show my best alternatives/i);
+  assert.match(html, /My Trip/i);
+  assert.match(html, /GemPoints/i);
+  assert.match(html, /Current catalogue/i);
+});
+
 test("does not lead with the retired XP and credits vocabulary", async () => {
-  const { html } = await renderHomepage();
+  const { html } = await renderPage();
   assert.doesNotMatch(html, /GemCredits/i);
   assert.doesNotMatch(html, /GemXP/i);
   assert.match(html, /GemPoints/i);
