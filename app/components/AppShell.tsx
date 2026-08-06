@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import {
   AlertTriangle,
   ArrowLeft,
@@ -149,9 +150,11 @@ export default function AppShell() {
       const storedTrip = window.localStorage.getItem("gemgo-demo-trip");
       const storedPoints = window.localStorage.getItem("gemgo-demo-points");
       const storedSaved = window.localStorage.getItem("gemgo-demo-saved");
-      if (storedTrip) setTrip(JSON.parse(storedTrip) as TripState);
-      if (storedPoints) setPoints(Number(storedPoints) || 0);
-      if (storedSaved) setSaved(JSON.parse(storedSaved) as string[]);
+      queueMicrotask(() => {
+        if (storedTrip) setTrip(JSON.parse(storedTrip) as TripState);
+        if (storedPoints) setPoints(Number(storedPoints) || 0);
+        if (storedSaved) setSaved(JSON.parse(storedSaved) as string[]);
+      });
     } catch {
       // The demo remains fully usable without local persistence.
     }
@@ -232,10 +235,10 @@ export default function AppShell() {
   return (
     <main className="product-app">
       <header className="app-header">
-        <a className="brand brand-compact" href="/" aria-label="GemGo homepage">
+        <Link className="brand brand-compact" href="/" aria-label="GemGo homepage">
           <span className="brand-mark"><Mountain size={21} /></span>
           <span><strong>GemGo</strong><small>Better Alpine choices</small></span>
-        </a>
+        </Link>
 
         <nav className="desktop-nav" aria-label="Primary navigation">
           {navItems.map((item) => (
