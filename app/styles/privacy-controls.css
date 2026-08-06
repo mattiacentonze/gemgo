@@ -1,0 +1,102 @@
+.privacy-hero {
+  position: relative;
+}
+
+.privacy-controls {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 16px 22px;
+  align-items: center;
+  width: 100%;
+  margin-top: 18px;
+  padding: 18px;
+  border: 1px solid rgba(11, 44, 37, 0.12);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.privacy-control-heading {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.privacy-control-heading > svg {
+  flex: 0 0 auto;
+  margin-top: 2px;
+  color: var(--green);
+}
+
+.privacy-control-heading > div {
+  display: grid;
+  gap: 3px;
+}
+
+.privacy-control-heading span {
+  color: var(--slate);
+  font-size: 0.82rem;
+}
+
+.privacy-control-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 9px;
+}
+
+.privacy-delete-button,
+.privacy-delete-confirm {
+  border: 1px solid rgba(176, 63, 47, 0.25);
+  background: #fff1ed;
+  color: #a13c2e;
+}
+
+.privacy-delete-confirm {
+  color: #fff;
+  background: #a13c2e;
+}
+
+.privacy-confirm {
+  position: relative;
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 10px;
+  padding: 18px;
+  border: 1px solid rgba(176, 63, 47, 0.2);
+  border-radius: 15px;
+  background: #fff8f5;
+}
+
+.privacy-confirm > .icon-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+
+.privacy-confirm p {
+  max-width: 760px;
+  margin: 0;
+  color: var(--slate);
+  line-height: 1.5;
+}
+
+.privacy-confirm > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+
+@media (max-width: 760px) {
+  .privacy-controls {
+    grid-template-columns: 1fr;
+  }
+
+  .privacy-control-actions {
+    justify-content: stretch;
+  }
+
+  .privacy-control-actions .button {
+    flex: 1 1 180px;
+  }
+}
