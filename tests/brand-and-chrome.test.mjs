@@ -47,3 +47,17 @@ test("mobile results provide an explicit list and map switch", () => {
   assert.match(css, /\.integrated-app\.mobile-results-map-mode \.results-map-panel/);
   assert.match(css, /\.integrated-app\.mobile-results-map-mode \.result-cards/);
 });
+
+test("privacy controls export and delete only GemGo device data", () => {
+  const page = read("app/app/page.tsx");
+  const controls = read("app/components/PrivacyControls.tsx");
+  const css = read("app/styles/privacy-controls.css");
+  assert.match(page, /<PrivacyControls \/>/);
+  assert.match(controls, /gemgo-trips-v3/);
+  assert.match(controls, /gemgo-points-ledger-v3/);
+  assert.match(controls, /new Blob/);
+  assert.match(controls, /download = `gemgo-local-data-/);
+  assert.match(controls, /GEMGO_KEYS\.forEach\(\(key\) => window\.localStorage\.removeItem\(key\)\)/);
+  assert.doesNotMatch(controls, /localStorage\.clear\(/);
+  assert.match(css, /privacy-delete-confirm/);
+});
