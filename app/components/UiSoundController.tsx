@@ -1,7 +1,7 @@
 "use client";
 
 import { Volume2, VolumeX } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 type SoundTone = "tap" | "success" | "info" | "error";
@@ -31,23 +31,30 @@ export default function UiSoundController() {
   }, [enabled]);
 
   useEffect(() => {
-    setEnabled(window.localStorage.getItem(SOUND_KEY) !== "off");
+    const storedEnabled = window.localStorage.getItem(SOUND_KEY) !== "off";
+    enabledRef.current = storedEnabled;
+    setEnabled(storedEnabled);
     const resolveTarget = () => setTarget(document.querySelector(".integrated-app .header-actions"));
     resolveTarget();
     const observer = new MutationObserver(resolveTarget);
     observer.observe(document.body, { childList: true, subtree: true });
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+      const context = contextRef.current;
+      contextRef.current = null;
+      if (context && context.state !== "closed") void context.close();
+    };
   }, []);
 
-  const audioContext = () => {
+  const audioContext = useCallback(() => {
     if (contextRef.current) return contextRef.current;
     const AudioContextClass = window.AudioContext ?? (window as AudioWindow).webkitAudioContext;
     if (!AudioContextClass) return null;
     contextRef.current = new AudioContextClass();
     return contextRef.current;
-  };
+  }, []);
 
-  const play = (tone: SoundTone) => {
+  const play = useCallback((tone: SoundTone) => {
     if (!enabledRef.current) return;
     try {
       const context = audioContext();
@@ -72,7 +79,7 @@ export default function UiSoundController() {
     } catch {
       // Sound is an optional enhancement and must never block an action.
     }
-  };
+  }, [audioContext]);
 
   useEffect(() => {
     const onClick = (event: MouseEvent) => {
@@ -82,7 +89,7 @@ export default function UiSoundController() {
     };
     document.addEventListener("click", onClick, { capture: true });
     return () => document.removeEventListener("click", onClick, { capture: true });
-  });
+  }, [play]);
 
   useEffect(() => {
     const observer = new MutationObserver(() => {
@@ -91,12 +98,12 @@ export default function UiSoundController() {
       if (!text || text === lastToastRef.current) return;
       lastToastRef.current = text;
       if (/denied|unavailable|not available|invalid|could not|error/i.test(text)) play("error");
-      else if (/verified|saved|added|switched|unlocked|duplicated/i.test(text)) play("success");
+      else if (/verified|saved|added|switched|unlocked|duplicated|feedback/i.test(text)) play("success");
       else play("info");
     });
     observer.observe(document.body, { childList: true, subtree: true, characterData: true });
     return () => observer.disconnect();
-  });
+  }, [play]);
 
   const toggle = () => {
     const next = !enabled;
