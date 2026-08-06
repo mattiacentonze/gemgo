@@ -1,4 +1,5 @@
 import IntegratedAppShell from "../components/IntegratedAppShell";
+import MobileResultsMode from "../components/MobileResultsMode";
 import NotificationCenter from "../components/NotificationCenter";
 
 export default function GemGoApplicationPage() {
@@ -6,6 +7,7 @@ export default function GemGoApplicationPage() {
     <>
       <IntegratedAppShell />
       <NotificationCenter />
+      <MobileResultsMode />
     </>
   );
 }
