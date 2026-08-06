@@ -73,3 +73,16 @@ test("destination photos reset between places and keep a branded licensed fallba
   assert.match(photo, /onError=\{\(\) => \{[\s\S]*setMedia\(null\)[\s\S]*setFailed\(true\)/);
   assert.match(css, /destination-photo-shimmer/);
 });
+
+test("current location remains an explicit user action", () => {
+  const page = read("app/app/page.tsx");
+  const control = read("app/components/CurrentLocationControl.tsx");
+  const css = read("app/styles/location-control.css");
+  assert.match(page, /<CurrentLocationControl \/>/);
+  assert.match(control, /navigator\.geolocation\.getCurrentPosition/);
+  assert.match(control, /Use my location/);
+  assert.match(control, /nominatim\.openstreetmap\.org\/reverse/);
+  assert.match(control, /dispatchEvent\(new Event\("input", \{ bubbles: true \}\)\)/);
+  assert.doesNotMatch(control, /getCurrentPosition\([^)]*\)\s*;/);
+  assert.match(css, /current-location-control/);
+});
