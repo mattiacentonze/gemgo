@@ -13,6 +13,7 @@ const eslintConfig = defineConfig([
       "app/components/IntegratedAppShell.tsx",
       "app/components/LiquidAppNavigation.tsx",
       "app/components/MobileResultsMode.tsx",
+      "app/components/MultiDayTripPlanner.tsx",
       "app/components/NotificationCenter.tsx",
       "app/components/PrivacyControls.tsx",
       "app/components/UiSoundController.tsx",
