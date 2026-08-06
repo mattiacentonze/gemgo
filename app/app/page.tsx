@@ -1,2 +1,5 @@
-export { default } from "../page";
+import IntegratedAppShell from "../components/IntegratedAppShell";
 
+export default function GemGoApplicationPage() {
+  return <IntegratedAppShell />;
+}
