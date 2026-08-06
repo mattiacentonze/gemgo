@@ -1,7 +1,7 @@
 "use client";
 
 import { MessageSquareText } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 type Rating = "definitely" | "mostly" | "not-really";
@@ -28,11 +28,17 @@ const loadFeedback = () => {
 export default function FeedbackImpactMetric() {
   const [target, setTarget] = useState<Element | null>(null);
   const [feedback, setFeedback] = useState<FeedbackEntry[]>([]);
+  const snapshotRef = useRef("");
 
   useEffect(() => {
     const resolve = () => {
-      setTarget(document.querySelector(".integrated-app .dashboard-metrics"));
-      setFeedback(loadFeedback());
+      const nextTarget = document.querySelector(".integrated-app .dashboard-metrics");
+      const nextFeedback = loadFeedback();
+      const snapshot = `${Boolean(nextTarget)}|${JSON.stringify(nextFeedback)}`;
+      if (snapshot === snapshotRef.current) return;
+      snapshotRef.current = snapshot;
+      setTarget(nextTarget);
+      setFeedback(nextFeedback);
     };
     resolve();
     const observer = new MutationObserver(resolve);
