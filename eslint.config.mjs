@@ -8,6 +8,7 @@ const eslintConfig = defineConfig([
   {
     files: [
       "app/components/CurrentLocationControl.tsx",
+      "app/components/FeedbackImpactMetric.tsx",
       "app/components/GemDropPhotoEnhancer.tsx",
       "app/components/IntegratedAppShell.tsx",
       "app/components/LiquidAppNavigation.tsx",
