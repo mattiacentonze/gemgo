@@ -35,3 +35,15 @@ test("notification bell opens device-local history rather than being decorative"
   assert.match(center, /aria-expanded=\{open\}/);
   assert.match(css, /notification-popover/);
 });
+
+test("mobile results provide an explicit list and map switch", () => {
+  const page = read("app/app/page.tsx");
+  const switcher = read("app/components/MobileResultsMode.tsx");
+  const css = read("app/styles/mobile-results.css");
+  assert.match(page, /<MobileResultsMode \/>/);
+  assert.match(switcher, /mobile-results-map-mode/);
+  assert.match(switcher, /aria-pressed=\{mode === "list"\}/);
+  assert.match(switcher, /aria-pressed=\{mode === "map"\}/);
+  assert.match(css, /\.integrated-app\.mobile-results-map-mode \.results-map-panel/);
+  assert.match(css, /\.integrated-app\.mobile-results-map-mode \.result-cards/);
+});
