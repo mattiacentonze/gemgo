@@ -5,6 +5,7 @@ import IntegratedAppShell from "../components/IntegratedAppShell";
 import LiquidAppNavigation from "../components/LiquidAppNavigation";
 import MobileResultsMode from "../components/MobileResultsMode";
 import ModalExperienceEnhancer from "../components/ModalExperienceEnhancer";
+import MultiDayTripPlanner from "../components/MultiDayTripPlanner";
 import NotificationCenter from "../components/NotificationCenter";
 import PrivacyControls from "../components/PrivacyControls";
 import UiSoundController from "../components/UiSoundController";
@@ -21,6 +22,7 @@ export default function GemGoApplicationPage() {
       <LiquidAppNavigation />
       <MobileResultsMode />
       <ModalExperienceEnhancer />
+      <MultiDayTripPlanner />
       <NotificationCenter />
       <PrivacyControls />
       <UiSoundController />
