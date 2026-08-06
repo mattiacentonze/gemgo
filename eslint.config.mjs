@@ -7,6 +7,7 @@ const eslintConfig = defineConfig([
   ...nextTs,
   {
     files: [
+      "app/components/CurrentLocationControl.tsx",
       "app/components/IntegratedAppShell.tsx",
       "app/components/MobileResultsMode.tsx",
       "app/components/NotificationCenter.tsx",
