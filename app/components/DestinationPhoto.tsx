@@ -20,6 +20,7 @@ type Props = {
 };
 
 const allowedLicense = /^(CC0|CC BY|CC BY-SA|Public domain)/i;
+const rejectedTitle = /\b(map|karte|plan|locator|flag|coat of arms|logo|icon|poster|diagram|sign|signage|stamp|emblem)\b/i;
 
 const plainText = (value?: { value?: string }) =>
   (value?.value ?? "")
@@ -68,7 +69,7 @@ export default function DestinationPhoto({
   useEffect(() => {
     let active = true;
     const controller = new AbortController();
-    const cacheKey = `gemgo-commons-gallery-v1-${name}-${region}-${compact ? "compact" : "full"}`;
+    const cacheKey = `gemgo-commons-gallery-v2-${name}-${region}-${compact ? "compact" : "full"}`;
 
     queueMicrotask(() => {
       if (!active) return;
@@ -111,6 +112,8 @@ export default function DestinationPhoto({
           imageinfo?: Array<{
             thumburl?: string;
             descriptionurl?: string;
+            width?: number;
+            height?: number;
             extmetadata?: Record<string, { value?: string }>;
           }>;
         }>;
@@ -120,7 +123,9 @@ export default function DestinationPhoto({
             const info = page.imageinfo?.[0];
             const title = page.title?.replace(/^File:/i, "") ?? name;
             const license = plainText(info?.extmetadata?.LicenseShortName);
-            if (!info?.thumburl || !allowedLicense.test(license)) return null;
+            if (!info?.thumburl || !allowedLicense.test(license) || rejectedTitle.test(title)) return null;
+            const landscapeBonus = info.width && info.height && info.width >= info.height ? 2 : 0;
+            const resolutionBonus = info.width && info.height && info.width * info.height >= 1_000_000 ? 1 : 0;
             return {
               media: {
                 url: info.thumburl,
@@ -132,14 +137,14 @@ export default function DestinationPhoto({
                 license: license || "Free licence",
                 title,
               } satisfies Media,
-              score: relevanceScore(title, name, region),
+              score: relevanceScore(title, name, region) + landscapeBonus + resolutionBonus,
             };
           })
           .filter((item): item is { media: Media; score: number } => Boolean(item))
           .sort((first, second) => second.score - first.score);
 
-        const positive = candidates.filter((item) => item.score > 0);
-        const selectedPool = positive.length >= 2 ? positive : candidates;
+        const relevant = candidates.filter((item) => item.score >= 3);
+        const selectedPool = relevant.length > 0 ? relevant : candidates;
         const unique = selectedPool.filter(
           (item, index, items) => items.findIndex((candidate) => candidate.media.url === item.media.url) === index,
         );
@@ -182,6 +187,15 @@ export default function DestinationPhoto({
     setActiveIndex((current) => (current + direction + gallery.length) % gallery.length);
   };
 
+  const handleImageError = () => {
+    if (gallery.length <= 1) {
+      setImageFailed(true);
+      return;
+    }
+    setGallery((current) => current.filter((_, index) => index !== activeIndex));
+    setActiveIndex(0);
+  };
+
   if (!activeMedia || imageFailed) {
     return (
       <div
@@ -213,7 +227,7 @@ export default function DestinationPhoto({
           alt={`${name}, ${region} — photo ${activeIndex + 1} of ${gallery.length}`}
           loading="lazy"
           decoding="async"
-          onError={() => setImageFailed(true)}
+          onError={handleImageError}
         />
         {gallery.length > 1 && (
           <>
