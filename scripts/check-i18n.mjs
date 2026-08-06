@@ -42,7 +42,8 @@ for (const locale of supportedLocales) {
 }
 
 const components = [
-  "app/page.tsx",
+  // The pan-Alpine marketing page is intentionally English-only in this
+  // redesign branch. Keep enforcing i18n on the localized product surface.
   "app/components/DestinationMap.tsx",
 ];
 const allowedVisibleLiterals = new Set(["GemGo"]);
