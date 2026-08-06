@@ -1,0 +1,18 @@
+.destination-gallery {
+  touch-action: pan-y pinch-zoom;
+}
+
+.destination-gallery:focus-visible {
+  outline: 3px solid rgba(229, 109, 76, 0.55);
+  outline-offset: 3px;
+}
+
+.destination-gallery:focus-visible .gallery-arrow {
+  opacity: 1;
+}
+
+@media (hover: none) {
+  .gallery-arrow {
+    opacity: 1;
+  }
+}
