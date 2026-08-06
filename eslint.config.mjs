@@ -10,6 +10,7 @@ const eslintConfig = defineConfig([
       "app/components/CurrentLocationControl.tsx",
       "app/components/GemDropPhotoEnhancer.tsx",
       "app/components/IntegratedAppShell.tsx",
+      "app/components/LiquidAppNavigation.tsx",
       "app/components/MobileResultsMode.tsx",
       "app/components/NotificationCenter.tsx",
       "app/components/PrivacyControls.tsx",
