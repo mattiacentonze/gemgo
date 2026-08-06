@@ -10,6 +10,7 @@ const eslintConfig = defineConfig([
       "app/components/IntegratedAppShell.tsx",
       "app/components/MobileResultsMode.tsx",
       "app/components/NotificationCenter.tsx",
+      "app/components/PrivacyControls.tsx",
     ],
     rules: {
       "react-hooks/set-state-in-effect": "off",
