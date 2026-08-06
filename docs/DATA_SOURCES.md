@@ -1,33 +1,52 @@
 # Data sources and confidence
 
-| Feature | Current source | Classification | Notes |
+GemGo must distinguish operational facts from estimates and demonstration content at every layer. The redesign exposes confidence and validation instead of presenting every Alpine region as equally mature.
+
+| Feature | Current source | Classification | Product rule |
 |---|---|---|---|
-| Weather | Open-Meteo forecast API | Live external data | Availability and forecast horizon depend on the provider. |
-| Map | OpenStreetMap tiles via Leaflet | Live external data | Map attribution is displayed in the UI. |
-| Destinations | Shared GemGo dataset plus eight Füssen pilot entries | Curated pilot data | Coordinates and descriptions should be individually validated before production. |
-| Destination photos | Wikimedia Commons API with exact-file overrides for reviewed places | Live, freely licensed media | Only CC0, CC BY, CC BY-SA and public-domain results are displayed with attribution. |
-| Travel distance | Geographic distance and mode speed assumptions | Estimate | Not turn-by-turn routing. |
-| Crowd label | Popularity, weekday, time and weather heuristics | Estimate | Not live occupancy and not Google Popular Times. |
-| User crowd report | Device-local rating after location gate | Local pilot signal | Not aggregated across users yet. |
-| GemDeals businesses | Public business websites | Real entities | Discount terms are mocked partnership concepts. |
-| GemXP, ledger and notifications | Browser storage | Local MVP data | No account sync or monetary value. |
-| GemCredits | Not issued in MVP | Future account data | Reserved for verified, redeemable rewards. |
-| Saved plans | Browser storage | Local MVP data | A local collection, available only on the same device. |
-| Simulated location | Settings selection | Explicit mock | Presentation-only; always labelled. |
-| Community gem suggestions | Cloudflare D1 | User-submitted moderation queue | Name, description, region, category and optional public map link only; no live GPS or photo is submitted. |
+| Pan-Alpine homepage regions | Curated redesign catalogue | Demonstration coverage | Counts correspond only to experiences actually present in the branch. |
+| Experience content | `app/product/data.ts` | Curated demonstration content | Copy, itinerary, mobility and safety fields must be locally validated before production. |
+| Recommendation ranking | Deterministic client score | Demonstration logic | Explainable and reproducible; not described as a trained production AI model. |
+| Crowd windows | Curated values and intended future factors | Demonstration prediction | Always show freshness, confidence and a demonstration/estimate label. |
+| Weather condition in the redesigned journey | Fixed scenario | Demonstration condition | Used to demonstrate recommendation behaviour, not a live forecast. |
+| Validation level | Product metadata | Demonstration classification | `Data-based suggestion`, `Locally reviewed` and `Verified Gem` must reflect real review depth in production. |
+| Travel times | Curated per transport mode | Demonstration estimate | Must be replaced or verified through real routing before operational use. |
+| GemDrop trigger | User-invoked jury scenario | Demonstration event | Represents future live crowd, parking, weather, road and schedule triggers. |
+| Visit verification | Device-local interaction | Demonstration flow | No real GPS attestation or partner QR validation is performed in this branch. |
+| GemPoints | Browser storage | Local demonstration state | Not money, not synchronised and not a production redeemable ledger. |
+| Reward catalogue | Curated sample offers | Demonstration partner concepts | No partnership or discount is implied unless explicitly confirmed. |
+| Personal impact | Verified demo-state counters | Local demonstration metric | Reports only actions represented in the demo; no invented CO₂ or visitor-removal claim. |
+| Territory dashboard | Fixed illustrative values | Demonstration data | Must always display the `Demonstration data` label. |
+| OpenStreetMap/Leaflet legacy modules | OpenStreetMap | Live external context | Existing attribution and provider requirements remain applicable when reused. |
+| Open-Meteo legacy modules | Open-Meteo | Live external data | Existing provider availability and forecast limitations remain applicable when reused. |
+| Legacy destination photos | Wikimedia Commons | Live licensed media | Attribution and accepted licences remain mandatory. |
 
-## Crowd data
+## Crowd prediction production model
 
-Google Places does not expose Popular Times or live busyness through its normal
-official Places API. A production crowd layer therefore needs one or more of:
+A production crowd score may combine:
 
-- aggregated GemGo user reports with time decay and abuse controls;
-- local authority, attraction or mobility-provider feeds;
-- a licensed crowd-data provider such as BestTime where coverage exists;
-- calibrated predictions from historical visits, calendar, weather and events.
+- calibrated historical visitor patterns;
+- day, time and season;
+- weather;
+- known local events;
+- attraction, parking or mobility feeds;
+- aggregated GemGo verification/report signals;
+- licensed crowd-data feeds where appropriate.
 
-Every crowd result should expose its source, freshness and confidence.
+Every result must expose source class, timestamp and confidence. A destination should not be recommended merely because it is quiet: it must also pass quality, safety, access, compatibility and territorial-capacity gates.
 
-In Explore, the MVP therefore shows a categorical estimate for the selected
-trip date, names GemGo as the estimator and labels confidence as medium. It
-never presents the value as live occupancy.
+## Validation depth
+
+- **Data-based suggestion** — generated from structured data and documented rules.
+- **Locally reviewed** — checked by a responsible territorial contributor or partner.
+- **Verified Gem** — operationally tested and connected to a functioning visit/verification flow.
+
+Coverage may be broad while validation depth grows progressively. The interface must not conceal the difference.
+
+## Fragile-place protection
+
+GemGo may exclude a place, restrict its visibility, hide exact coordinates, apply seasonal limits or suspend promotion. A place being little known is not sufficient reason to promote it.
+
+## Institutional data
+
+Production territory metrics must be aggregated and anonymised. They must not reveal an individual's movement history and should be displayed only above a sufficient sample threshold. Demonstration, estimated and observed values must remain visually and technically separable.
