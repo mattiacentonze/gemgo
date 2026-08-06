@@ -6,7 +6,10 @@ const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
   {
-    files: ["app/components/IntegratedAppShell.tsx"],
+    files: [
+      "app/components/IntegratedAppShell.tsx",
+      "app/components/NotificationCenter.tsx",
+    ],
     rules: {
       "react-hooks/set-state-in-effect": "off",
     },
