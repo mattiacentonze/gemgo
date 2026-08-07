@@ -18,19 +18,10 @@ export default function AlpineOverview({ compact = false, selectedRegion, onSele
   const [localRegion, setLocalRegion] = useState<string | null>(null);
   const activeRegion = selectedRegion === undefined ? localRegion : selectedRegion;
   const text = marketingCopy[locale].map;
-  const visibleExperiences = activeRegion
-    ? allExperiences.filter((experience) => experience.region === activeRegion)
-    : allExperiences;
-
   const selectRegion = (region: string) => {
     const nextRegion = activeRegion === region ? null : region;
     if (selectedRegion === undefined) setLocalRegion(nextRegion);
     onSelectRegion?.(nextRegion ?? "");
-  };
-
-  const focusRegion = (region: string) => {
-    if (selectedRegion === undefined) setLocalRegion(region);
-    onSelectRegion?.(region);
   };
 
   return (
@@ -41,11 +32,11 @@ export default function AlpineOverview({ compact = false, selectedRegion, onSele
       </div>
       <div className="alpine-real-map-wrap">
         <ExperienceMap
-          experiences={visibleExperiences}
-          onSelect={(experience) => focusRegion(experience.region)}
+          experiences={allExperiences}
           className={compact ? "homepage-map-compact" : "homepage-map"}
           locale={locale}
           showLegend={false}
+          focusRegion={activeRegion}
         />
         <div className="pressure-legend" aria-label="Tourism pressure legend">
           <span><i className="pressure-dot low" /> {text.lower}</span>
