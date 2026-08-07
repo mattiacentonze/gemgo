@@ -4,6 +4,8 @@ import { LoaderCircle } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { Experience } from "../product/types";
 import type { OriginPoint } from "../product/recommendation-engine";
+import type { Locale } from "../domain";
+import { msg } from "../i18n/catalogs.mjs";
 
 type Props = {
   experiences: Experience[];
@@ -12,6 +14,7 @@ type Props = {
   routeCoordinates?: Array<[number, number]>;
   onSelect?: (experience: Experience) => void;
   className?: string;
+  locale?: Locale;
 };
 
 const safeText = (value: string) =>
@@ -35,6 +38,7 @@ export default function ExperienceMap({
   routeCoordinates = [],
   onSelect,
   className = "",
+  locale: localeProp,
 }: Props) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<import("leaflet").Map | null>(null);
@@ -42,6 +46,17 @@ export default function ExperienceMap({
   const routeLayerRef = useRef<import("leaflet").LayerGroup | null>(null);
   const onSelectRef = useRef(onSelect);
   const [mapReady, setMapReady] = useState(false);
+  const [observedLocale, setObservedLocale] = useState<Locale>("en");
+  const locale = localeProp ?? observedLocale;
+
+  useEffect(() => {
+    if (localeProp) return;
+    const sync = () => setObservedLocale((document.documentElement.lang || "en") as Locale);
+    queueMicrotask(sync);
+    const observer = new MutationObserver(sync);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["lang"] });
+    return () => observer.disconnect();
+  }, [localeProp]);
 
   useEffect(() => {
     onSelectRef.current = onSelect;
@@ -98,7 +113,7 @@ export default function ExperienceMap({
           fillColor: "#ffffff",
           fillOpacity: 1,
         })
-          .bindTooltip(`Starting from ${safeText(origin.label)}`)
+          .bindTooltip(`${safeText(msg(locale, "planner.start"))}: ${safeText(origin.label)}`)
           .addTo(markerLayer);
       }
 
@@ -130,7 +145,7 @@ export default function ExperienceMap({
               iconAnchor: [23, 23],
             }),
           });
-          cluster.bindTooltip(`${group.items.length} GemGo experiences`);
+          cluster.bindTooltip(msg(locale, "map.clusterLabel", { count: group.items.length, crowd: msg(locale, "map.legendLow") }));
           cluster.on("click", () => {
             map.fitBounds(
               L.latLngBounds(group.items.map((item) => [item.latitude, item.longitude])),
@@ -153,7 +168,7 @@ export default function ExperienceMap({
             title: experience.name,
           });
           marker.bindPopup(
-            `<div class="gemgo-map-popup"><strong>${safeText(experience.name)}</strong><span>${safeText(experience.region)} · ${safeText(experience.country)}</span><small>${safeText(experience.crowd)} estimated crowd · ${safeText(experience.validation)}</small></div>`,
+            `<div class="gemgo-map-popup"><strong>${safeText(experience.name)}</strong><span>${safeText(experience.region)} · ${safeText(experience.country)}</span><small>${safeText(msg(locale, experience.crowd === "low" ? "map.legendLow" : experience.crowd === "moderate" ? "map.legendModerate" : "map.legendBusy"))} · ${safeText(experience.validation)}</small></div>`,
           );
           marker.on("click", () => onSelectRef.current?.(experience));
           marker.addTo(markerLayer);
@@ -177,7 +192,7 @@ export default function ExperienceMap({
       disposed = true;
       map?.off("zoomend moveend", render);
     };
-  }, [experiences, mapReady, origin, routeCoordinates, selectedId]);
+  }, [experiences, locale, mapReady, origin, routeCoordinates, selectedId]);
 
   useEffect(() => {
     if (!mapReady) return;
@@ -210,18 +225,18 @@ export default function ExperienceMap({
 
   return (
     <div className={`experience-map-shell ${className}`}>
-      <div ref={containerRef} className="experience-map" aria-label="Map of GemGo recommendations" />
+      <div ref={containerRef} className="experience-map" aria-label={msg(locale, "map.interactive", { count: experiences.length })} />
       {!mapReady && (
         <div className="experience-map-loading" role="status">
           <LoaderCircle size={22} />
-          <span>Loading Alpine map…</span>
+          <span>{msg(locale, "map.destinationMap")}…</span>
         </div>
       )}
-      <div className="experience-map-legend" aria-label="Estimated crowd legend">
-        <strong>Estimated crowd</strong>
-        <span><img src="/assets/gemgo-logo-green.svg?v=2" alt="" /> Lower pressure</span>
-        <span><img src="/assets/gemgo-logo-orange.svg?v=2" alt="" /> Moderate</span>
-        <span><img src="/assets/gemgo-logo-red.svg?v=2" alt="" /> Higher pressure</span>
+      <div className="experience-map-legend" aria-label={msg(locale, "map.crowds")}>
+        <strong>{msg(locale, "plan.crowdPredicted")}</strong>
+        <span><img src="/assets/gemgo-logo-green.svg?v=2" alt="" /> {msg(locale, "map.legendLow")}</span>
+        <span><img src="/assets/gemgo-logo-orange.svg?v=2" alt="" /> {msg(locale, "map.legendModerate")}</span>
+        <span><img src="/assets/gemgo-logo-red.svg?v=2" alt="" /> {msg(locale, "map.legendBusy")}</span>
       </div>
     </div>
   );

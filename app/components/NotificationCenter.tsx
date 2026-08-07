@@ -4,6 +4,8 @@ import { Bell, Check, Coins, Gift, MapPin, Route, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import type { GemPointEvent, RewardUnlock, SavedTrip } from "../product/storage";
+import type { Locale } from "../domain";
+import { msg } from "../i18n/catalogs.mjs";
 
 type NotificationItem = {
   id: string;
@@ -27,15 +29,15 @@ const readJson = <T,>(key: string, fallback: T): T => {
   }
 };
 
-const buildNotifications = (): NotificationItem[] => {
+const buildNotifications = (locale: Locale): NotificationItem[] => {
   const activeTrip = readJson<SavedTrip | null>(ACTIVE_TRIP_KEY, null);
   const ledger = readJson<GemPointEvent[]>(LEDGER_KEY, []);
   const rewards = readJson<RewardUnlock[]>(REWARDS_KEY, []);
   const items: NotificationItem[] = [
     {
       id: "system-data-honesty",
-      title: "Know what is live",
-      detail: "Weather and supported road routes can be live. Crowd, parking, public transport and partner rewards remain estimated or demonstrative where labelled.",
+      title: msg(locale, "how.threeTitle"),
+      detail: msg(locale, "how.threeBody"),
       createdAt: "2026-08-07T00:00:00.000Z",
       kind: "system",
     },
@@ -44,10 +46,10 @@ const buildNotifications = (): NotificationItem[] => {
   if (activeTrip) {
     items.push({
       id: `trip-${activeTrip.id}`,
-      title: activeTrip.trip.verified ? "Visit verified" : "Your trip is ready",
+      title: activeTrip.trip.verified ? msg(locale, "points.earnedVisit") : msg(locale, "plan.saved"),
       detail: activeTrip.trip.verified
-        ? `${activeTrip.name} has been recorded on this device.`
-        : `${activeTrip.name} is available in My Trip, including offline essentials and verification.`,
+        ? `${activeTrip.name} · ${msg(locale, "notifications.intro")}`
+        : `${activeTrip.name} · ${msg(locale, "plan.savedDevice")}`,
       createdAt: activeTrip.updatedAt,
       kind: "trip",
     });
@@ -56,8 +58,8 @@ const buildNotifications = (): NotificationItem[] => {
   ledger.forEach((event) => {
     items.push({
       id: `ledger-${event.id}`,
-      title: event.amount >= 0 ? `${event.amount} GemPoints added` : `${Math.abs(event.amount)} GemPoints used`,
-      detail: `${event.label}${event.status === "demo" ? " · Demonstration event" : ""}`,
+      title: event.amount >= 0 ? msg(locale, "notifications.earned", { count: event.amount }) : msg(locale, "notifications.used", { count: Math.abs(event.amount) }),
+      detail: `${event.type === "visit" ? msg(locale, "points.earnedVisit") : event.type === "gemdrop" ? msg(locale, "gemdrop.alternative") : event.type === "mobility" ? msg(locale, "points.earnedTravel") : event.type === "partner" ? msg(locale, "points.earnedPartner") : event.label}${event.status === "demo" ? ` · ${msg(locale, "settings.simulated")}` : ""}`,
       createdAt: event.createdAt,
       kind: "points",
     });
@@ -66,8 +68,8 @@ const buildNotifications = (): NotificationItem[] => {
   rewards.forEach((reward) => {
     items.push({
       id: `reward-${reward.id}`,
-      title: "Reward code unlocked",
-      detail: `${reward.code} · Expires ${new Date(reward.expiresAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`,
+      title: msg(locale, "points.getCredits"),
+      detail: `${reward.code} · ${new Date(reward.expiresAt).toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" })}`,
       createdAt: reward.createdAt,
       kind: "reward",
     });
@@ -88,6 +90,7 @@ export default function NotificationCenter() {
   const [open, setOpen] = useState(false);
   const [items, setItems] = useState<NotificationItem[]>([]);
   const [readAt, setReadAt] = useState(0);
+  const [locale, setLocale] = useState<Locale>("en");
 
   useEffect(() => {
     const resolveTarget = () => {
@@ -101,9 +104,24 @@ export default function NotificationCenter() {
   }, []);
 
   useEffect(() => {
+    const close = () => setOpen(false);
+    window.addEventListener("gemgo:close-overlays", close);
+    return () => window.removeEventListener("gemgo:close-overlays", close);
+  }, []);
+
+  useEffect(() => {
     const storedReadAt = Number(window.localStorage.getItem(READ_KEY) ?? 0);
     setReadAt(Number.isFinite(storedReadAt) ? storedReadAt : 0);
-    setItems(buildNotifications());
+    const currentLocale = (document.documentElement.lang || "en") as Locale;
+    setLocale(currentLocale);
+    setItems(buildNotifications(currentLocale));
+    const observer = new MutationObserver(() => {
+      const next = (document.documentElement.lang || "en") as Locale;
+      setLocale(next);
+      setItems(buildNotifications(next));
+    });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["lang"] });
+    return () => observer.disconnect();
   }, []);
 
   const unread = useMemo(
@@ -113,7 +131,8 @@ export default function NotificationCenter() {
 
   const toggle = () => {
     const nextOpen = !open;
-    setItems(buildNotifications());
+    if (nextOpen) window.dispatchEvent(new Event("gemgo:close-overlays"));
+    setItems(buildNotifications(locale));
     setOpen(nextOpen);
     if (nextOpen) {
       const now = Date.now();
@@ -129,7 +148,7 @@ export default function NotificationCenter() {
       <button
         type="button"
         className="icon-button notification-button"
-        aria-label="Notifications"
+        aria-label={msg(locale, "notifications.title")}
         aria-expanded={open}
         onClick={toggle}
       >
@@ -137,19 +156,19 @@ export default function NotificationCenter() {
         {unread > 0 && <span className="notification-badge">{Math.min(unread, 9)}</span>}
       </button>
       {open && (
-        <div className="notification-popover" role="dialog" aria-label="GemGo notifications">
+        <div className="notification-popover" role="dialog" aria-label={msg(locale, "notifications.title")}>
           <div className="notification-heading">
             <div>
-              <span>Updates</span>
-              <strong>Notifications</strong>
+              <span>{msg(locale, "notifications.eyebrow")}</span>
+              <strong>{msg(locale, "notifications.title")}</strong>
             </div>
-            <button type="button" className="icon-button" aria-label="Close notifications" onClick={() => setOpen(false)}>
+            <button type="button" className="icon-button" aria-label={msg(locale, "global.close")} onClick={() => setOpen(false)}>
               <X size={18} />
             </button>
           </div>
           <div className="notification-list">
             {items.length === 0 ? (
-              <div className="notification-empty"><Check size={22} /><span>You are up to date.</span></div>
+              <div className="notification-empty"><Check size={22} /><span>{msg(locale, "notifications.emptyTitle")}</span></div>
             ) : (
               items.map((item) => (
                 <article key={item.id} className={`notification-item notification-${item.kind}`}>
@@ -157,13 +176,13 @@ export default function NotificationCenter() {
                   <div>
                     <strong>{item.title}</strong>
                     <p>{item.detail}</p>
-                    <time dateTime={item.createdAt}>{new Date(item.createdAt).toLocaleString([], { dateStyle: "medium", timeStyle: "short" })}</time>
+                    <time dateTime={item.createdAt}>{new Date(item.createdAt).toLocaleString(locale, { dateStyle: "medium", timeStyle: "short" })}</time>
                   </div>
                 </article>
               ))
             )}
           </div>
-          <small className="notification-footnote">Stored on this device. Account synchronisation is not active.</small>
+          <small className="notification-footnote">{msg(locale, "notifications.intro")}</small>
         </div>
       )}
     </div>,

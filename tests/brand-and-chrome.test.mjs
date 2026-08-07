@@ -96,18 +96,18 @@ test("GemDrop shows galleries for the original and proposed alternative", () => 
   assert.match(css, /alternative-option/);
 });
 
-test("optional sounds preserve the main branch preference contract", () => {
+test("optional sounds are opt-in and controlled from the local profile", () => {
   const page = read("app/app/page.tsx");
   const sound = read("app/components/UiSoundController.tsx");
-  const css = read("app/styles/sound-control.css");
+  const profile = read("app/components/LocalProfilePanel.tsx");
   assert.match(page, /<UiSoundController \/>/);
   assert.match(sound, /const SOUND_KEY = "gemgo-sound"/);
-  assert.match(sound, /window\.localStorage\.getItem\(SOUND_KEY\) !== "off"/);
+  assert.match(sound, /window\.localStorage\.getItem\(SOUND_KEY\) === "on"/);
   assert.match(sound, /AudioContext/);
-  assert.match(sound, /Volume2/);
-  assert.match(sound, /VolumeX/);
+  assert.match(profile, /Volume2/);
+  assert.match(profile, /VolumeX/);
+  assert.match(profile, /gemgo:sound-setting/);
   assert.match(sound, /prefers-reduced-motion|optional enhancement|Sound is an optional enhancement/);
-  assert.match(css, /sound-control\[aria-pressed="true"\]/);
 });
 
 test("motion is restrained and respects reduced-motion preferences", () => {

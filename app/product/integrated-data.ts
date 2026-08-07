@@ -1,4 +1,5 @@
 import destinationData from "../data/destinations.json";
+import bavariaTransitData from "../data/gtfs-bavaria-regional-stops.json";
 import { experiences as curatedExperiences } from "./data";
 import type {
   CrowdLevel,
@@ -187,3 +188,19 @@ export const catalogueSummary = publicDestinations.reduce<Record<string, number>
 }, {});
 
 export const totalCatalogueEntries = allExperiences.length;
+
+type TransitStop = { id: string; name: string; lat: number; lon: number };
+
+export const nearestGtfsStop = (experience: Experience) => {
+  if (experience.country !== "Germany") return null;
+  let nearest: (TransitStop & { distanceKm: number }) | null = null;
+  for (const stop of (bavariaTransitData as { stops: TransitStop[] }).stops) {
+    const latitude = (stop.lat - experience.latitude) * 111;
+    const longitude = (stop.lon - experience.longitude) * 111 * Math.cos((experience.latitude * Math.PI) / 180);
+    const distanceKm = Math.hypot(latitude, longitude);
+    if (!nearest || distanceKm < nearest.distanceKm) nearest = { ...stop, distanceKm };
+  }
+  return nearest;
+};
+
+export const gtfsMetadata = (bavariaTransitData as { meta: Record<string, string> }).meta;

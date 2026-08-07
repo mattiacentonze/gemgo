@@ -7,12 +7,11 @@ const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf
 test("maps expose loading state and an honest branded crowd legend", () => {
   const map = read("app/components/ExperienceMap.tsx");
   const css = read("app/styles/map-ui.css");
-  assert.match(map, /Loading Alpine map/);
-  assert.match(map, /Estimated crowd/);
-  assert.match(map, /Lower pressure/);
-  assert.match(map, /Moderate/);
-  assert.match(map, /Higher pressure/);
-  assert.match(map, /estimated crowd/);
+  assert.match(map, /msg\(locale, "map\.destinationMap"\)/);
+  assert.match(map, /msg\(locale, "plan\.crowdPredicted"\)/);
+  assert.match(map, /msg\(locale, "map\.legendLow"\)/);
+  assert.match(map, /msg\(locale, "map\.legendModerate"\)/);
+  assert.match(map, /msg\(locale, "map\.legendBusy"\)/);
   assert.match(css, /experience-map-loading/);
   assert.match(css, /experience-map-legend/);
 });

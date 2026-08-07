@@ -18,6 +18,12 @@ export type GemPointEvent = {
   createdAt: string;
   balanceAfter: number;
   status: "demo" | "verified";
+  metadata?: {
+    transport?: SearchPreferences["transport"];
+    crowd?: "low" | "moderate" | "high";
+    experienceId?: string;
+    region?: string;
+  };
 };
 
 export type RewardUnlock = {

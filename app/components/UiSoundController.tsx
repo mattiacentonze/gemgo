@@ -1,8 +1,6 @@
 "use client";
 
-import { Volume2, VolumeX } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { createPortal } from "react-dom";
+import { useCallback, useEffect, useRef } from "react";
 
 type SoundTone = "tap" | "success" | "info" | "error";
 
@@ -20,26 +18,19 @@ const frequencies: Record<SoundTone, number[]> = {
 };
 
 export default function UiSoundController() {
-  const [target, setTarget] = useState<Element | null>(null);
-  const [enabled, setEnabled] = useState(true);
   const contextRef = useRef<AudioContext | null>(null);
   const lastToastRef = useRef("");
-  const enabledRef = useRef(true);
+  const enabledRef = useRef(false);
 
   useEffect(() => {
-    enabledRef.current = enabled;
-  }, [enabled]);
-
-  useEffect(() => {
-    const storedEnabled = window.localStorage.getItem(SOUND_KEY) !== "off";
+    const storedEnabled = window.localStorage.getItem(SOUND_KEY) === "on";
     enabledRef.current = storedEnabled;
-    setEnabled(storedEnabled);
-    const resolveTarget = () => setTarget(document.querySelector(".integrated-app .header-actions"));
-    resolveTarget();
-    const observer = new MutationObserver(resolveTarget);
-    observer.observe(document.body, { childList: true, subtree: true });
+    const onSetting = (event: Event) => {
+      enabledRef.current = Boolean((event as CustomEvent<boolean>).detail);
+    };
+    window.addEventListener("gemgo:sound-setting", onSetting);
     return () => {
-      observer.disconnect();
+      window.removeEventListener("gemgo:sound-setting", onSetting);
       const context = contextRef.current;
       contextRef.current = null;
       if (context && context.state !== "closed") void context.close();
@@ -105,27 +96,5 @@ export default function UiSoundController() {
     return () => observer.disconnect();
   }, [play]);
 
-  const toggle = () => {
-    const next = !enabled;
-    setEnabled(next);
-    enabledRef.current = next;
-    window.localStorage.setItem(SOUND_KEY, next ? "on" : "off");
-    if (next) window.setTimeout(() => play("success"), 0);
-  };
-
-  if (!target) return null;
-
-  return createPortal(
-    <button
-      type="button"
-      className="icon-button sound-control"
-      aria-label={enabled ? "Turn interface sounds off" : "Turn interface sounds on"}
-      aria-pressed={enabled}
-      title={enabled ? "Sounds on" : "Sounds off"}
-      onClick={toggle}
-    >
-      {enabled ? <Volume2 size={19} /> : <VolumeX size={19} />}
-    </button>,
-    target,
-  );
+  return null;
 }

@@ -6,7 +6,6 @@ import {
   ArrowLeft,
   ArrowRight,
   BadgeCheck,
-  Bell,
   Bike,
   Bus,
   CalendarDays,
@@ -27,7 +26,6 @@ import {
   Info,
   Languages,
   LocateFixed,
-  Map,
   MapPin,
   Menu,
   Mountain,
@@ -40,7 +38,6 @@ import {
   Sparkles,
   Target,
   Trash2,
-  UserPlus,
   Users,
   WalletCards,
   X,
@@ -48,7 +45,9 @@ import {
 import { useEffect, useMemo, useState } from "react";
 import DestinationPhoto from "./DestinationPhoto";
 import ExperienceMap from "./ExperienceMap";
-import { allExperiences, catalogueSummary, totalCatalogueEntries } from "../product/integrated-data";
+import LocalProfilePanel from "./LocalProfilePanel";
+import { difficultyLabel, kindLabel, panUi, transportLabel } from "../i18n/pan-ui";
+import { allExperiences, catalogueSummary, nearestGtfsStop, totalCatalogueEntries } from "../product/integrated-data";
 import {
   applyPromptToPreferences,
   haversineKm,
@@ -178,9 +177,9 @@ export default function IntegratedAppShell() {
   const [verificationMessage, setVerificationMessage] = useState("");
   const [qrCode, setQrCode] = useState("");
   const [toast, setToast] = useState("");
-  const [accountOpen, setAccountOpen] = useState(false);
 
   const t = copy[locale];
+  const u = panUi[locale];
   const { origin, status: originStatus } = useOriginPoint(preferences.origin);
   const weather = useLiveWeather(origin);
 
@@ -202,6 +201,7 @@ export default function IntegratedAppShell() {
   const activeExperience = activeTrip
     ? allExperiences.find((experience) => experience.id === activeTrip.trip.experienceId) ?? null
     : null;
+  const activeTransitStop = activeExperience ? nearestGtfsStop(activeExperience) : null;
   const selectedRoute = useSelectedRoute(origin, selected ?? null, preferences.transport);
   const activeRoute = useSelectedRoute(origin, activeExperience, activeTrip?.preferences.transport ?? preferences.transport);
   const balance = pointBalance(ledger);
@@ -213,7 +213,7 @@ export default function IntegratedAppShell() {
       .slice(0, 6);
   }, [preferences.kinds, ranked]);
 
-  const gemDropAlternative = useMemo(() => {
+  const gemDropAlternative = (() => {
     if (!activeExperience || !activeTrip) return null;
     return allExperiences
       .filter((experience) => experience.id !== activeExperience.id && overlap(experience.kind, activeExperience.kind))
@@ -221,7 +221,7 @@ export default function IntegratedAppShell() {
         const crowd = { low: 0, moderate: 1, high: 2 };
         return crowd[first.crowd] - crowd[second.crowd] || first.durationMinutes - second.durationMinutes;
       })[0] ?? null;
-  }, [activeExperience, activeTrip]);
+  })();
 
   useEffect(() => {
     const storedLocale = window.localStorage.getItem("gemgo-locale-v3") as Locale | null;
@@ -251,7 +251,17 @@ export default function IntegratedAppShell() {
     return () => window.clearTimeout(timer);
   }, [toast]);
 
+  useEffect(() => {
+    const closeOverlays = () => {
+      setMobileMenuOpen(false);
+      setLanguageOpen(false);
+    };
+    window.addEventListener("gemgo:close-overlays", closeOverlays);
+    return () => window.removeEventListener("gemgo:close-overlays", closeOverlays);
+  }, []);
+
   const chooseSection = (next: AppSection) => {
+    window.dispatchEvent(new Event("gemgo:close-overlays"));
     setSection(next);
     setMobileMenuOpen(false);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -340,6 +350,12 @@ export default function IntegratedAppShell() {
       label: `Verified visit: ${activeExperience.name}`,
       createdAt: new Date().toISOString(),
       status,
+      metadata: {
+        transport: activeTrip.preferences.transport,
+        crowd: activeExperience.crowd,
+        experienceId: activeExperience.id,
+        region: activeExperience.region,
+      },
     });
     if (activeTrip.trip.acceptedGemDrop) {
       nextLedger = appendPointEvent(nextLedger, {
@@ -348,7 +364,13 @@ export default function IntegratedAppShell() {
         type: "gemdrop",
         label: "Accepted a lower-pressure GemDrop",
         createdAt: new Date().toISOString(),
-        status,
+      status,
+        metadata: {
+          transport: activeTrip.preferences.transport,
+          crowd: activeExperience.crowd,
+          experienceId: activeExperience.id,
+          region: activeExperience.region,
+        },
       });
     }
     setLedger(nextLedger);
@@ -421,40 +443,46 @@ export default function IntegratedAppShell() {
       <header className="app-header">
         <Link className="brand brand-compact" href="/" aria-label="GemGo homepage">
           <span className="brand-mark"><Mountain size={21} /></span>
-          <span><strong>GemGo</strong><small>Better Alpine choices</small></span>
+          <span><strong>GemGo</strong><small>{u.tagline}</small></span>
         </Link>
-        <nav className="desktop-nav" aria-label="Primary navigation">
+        <nav className="desktop-nav" aria-label={t.explore}>
           {navItems.map((item) => <button type="button" key={item.id} className={section === item.id ? "is-active" : ""} onClick={() => chooseSection(item.id)}>{item.label}</button>)}
         </nav>
         <div className="header-actions">
           <div className="language-menu">
-            <button type="button" className="icon-text-button" onClick={() => setLanguageOpen((value) => !value)}><Languages size={18} /> {locale.toUpperCase()}</button>
-            {languageOpen && <div className="language-popover"><strong>Interface language</strong>{locales.map((item) => <button type="button" key={item} onClick={() => { setLocale(item); setLanguageOpen(false); }}>{item === locale ? <Check size={15} /> : <span />}{localeNames[item]}</button>)}</div>}
+            <button type="button" className="icon-text-button" onClick={() => { window.dispatchEvent(new Event("gemgo:close-overlays")); setLanguageOpen((value) => !value); }}><Languages size={18} /> {locale.toUpperCase()}</button>
+            {languageOpen && <div className="language-popover"><strong>{u.language}</strong>{locales.map((item) => <button type="button" key={item} onClick={() => { setLocale(item); setLanguageOpen(false); }}>{item === locale ? <Check size={15} /> : <span />}{localeNames[item]}</button>)}</div>}
           </div>
-          <button type="button" className="icon-text-button account-button" onClick={() => setAccountOpen(true)}><UserPlus size={18} /> {t.account}</button>
-          <button type="button" className="icon-button" aria-label="Notifications"><Bell size={19} /></button>
-          <button type="button" className="icon-button mobile-menu-button" aria-label="Open menu" onClick={() => setMobileMenuOpen((value) => !value)}>{mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}</button>
+          <LocalProfilePanel locale={locale} ledger={ledger} savedTrips={savedTrips} unlocks={unlocks} />
+          <button type="button" className="icon-button mobile-menu-button" aria-label={u.openMenu} onClick={() => { window.dispatchEvent(new Event("gemgo:close-overlays")); setLanguageOpen(false); setMobileMenuOpen((value) => !value); }}>{mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}</button>
         </div>
         {mobileMenuOpen && <nav className="mobile-menu">{navItems.map((item) => <button type="button" key={item.id} onClick={() => chooseSection(item.id)}>{item.label}<ChevronRight size={17} /></button>)}</nav>}
       </header>
+
+      {activeTransitStop && section === "trip" && (
+        <aside className="gtfs-source-banner">
+          <Bus size={18} />
+          <span><strong>{activeTransitStop.name}</strong><small>{activeTransitStop.distanceKm.toFixed(1)} km from the experience · static regional-rail stop from GTFS.de / DELFI, not a live departure</small></span>
+        </aside>
+      )}
 
       {section === "explore" && (
         <section className="app-content explore-page">
           {stage === "brief" && (
             <>
-              <div className="page-heading split-heading"><div><span className="eyebrow"><Compass size={15} /> Personalised alternatives</span><h1>{t.headline}</h1><p>{t.intro}</p></div><div className="privacy-note"><ShieldCheck size={19} /><span><strong>No account required</strong> Planning data stays on this device until you choose to synchronise it.</span></div></div>
+              <div className="page-heading split-heading"><div><span className="eyebrow"><Compass size={15} /> {u.alternatives}</span><h1>{t.headline}</h1><p>{t.intro}</p></div><div className="privacy-note"><ShieldCheck size={19} /><span><strong>{u.noAccount}</strong> {u.localPlanning}</span></div></div>
               <div className="explore-layout">
                 <form className="planner-panel" onSubmit={(event) => { event.preventDefault(); search(); }}>
-                  <label className="prompt-field"><span>{t.prompt}</span><textarea rows={4} value={preferences.prompt} onChange={(event) => updatePreference("prompt", event.target.value)} /><small>The text is parsed in EN, IT, DE, FR and SL. Controls remain editable.</small></label>
-                  <div className="form-section"><div className="form-section-title"><LocateFixed size={18} /><div><strong>{t.origin}</strong><small>{originStatus === "ready" ? origin?.label : originStatus === "loading" ? "Resolving location…" : originStatus === "not-found" ? "Location not found" : "Type a city or Alpine place"}</small></div></div><div className="field-grid field-grid-location"><label><span>{t.origin}</span><input value={preferences.origin} onChange={(event) => updatePreference("origin", event.target.value)} /></label><label><span>{t.travel}</span><div className="range-value">{preferences.maxTravelMinutes} min</div><input type="range" min="15" max="180" step="5" value={preferences.maxTravelMinutes} onChange={(event) => updatePreference("maxTravelMinutes", Number(event.target.value))} /></label></div></div>
-                  <div className="form-section"><div className="form-section-title"><Navigation size={18} /><div><strong>{t.mobility}</strong><small>Changes estimated and routed travel time</small></div></div><div className="choice-grid transport-grid">{transportOptions.map((option) => { const Icon = option.icon; return <button type="button" key={option.id} className={preferences.transport === option.id ? "is-selected" : ""} onClick={() => updatePreference("transport", option.id)}><Icon size={18} />{option.label}</button>; })}</div></div>
-                  <div className="form-section"><div className="form-section-title"><Clock3 size={18} /><div><strong>{t.time}</strong><small>Used to reject impractical plans</small></div></div><div className="choice-grid duration-grid">{durationOptions.map((option) => <button type="button" key={option.id} className={preferences.availableTime === option.id ? "is-selected" : ""} onClick={() => updatePreference("availableTime", option.id)}>{option.label}</button>)}</div><div className="field-grid time-grid"><label><span>From</span><input type="time" value={preferences.availableFrom} onChange={(event) => updatePreference("availableFrom", event.target.value)} /></label><label><span>To</span><input type="time" value={preferences.availableTo} onChange={(event) => updatePreference("availableTo", event.target.value)} /></label></div></div>
-                  <div className="form-section"><div className="form-section-title"><Sparkles size={18} /><div><strong>{t.experience}</strong><small>Choose only what matters</small></div></div><div className="chip-grid">{kindOptions.map((option) => <button type="button" key={option.id} className={preferences.kinds.includes(option.id) ? "is-selected" : ""} onClick={() => updatePreference("kinds", preferences.kinds.includes(option.id) ? preferences.kinds.filter((item) => item !== option.id) : [...preferences.kinds, option.id])}>{option.label}</button>)}</div></div>
-                  <div className="form-section"><div className="form-section-title"><Target size={18} /><div><strong>{t.needs}</strong><small>Unsuitable experiences are excluded</small></div></div><div className="choice-grid difficulty-grid">{(["easy", "moderate", "challenging"] as const).map((difficulty) => <button type="button" key={difficulty} className={preferences.difficulty === difficulty ? "is-selected" : ""} onClick={() => updatePreference("difficulty", difficulty)}>{difficulty}</button>)}</div><div className="chip-grid needs-grid">{needOptions.map((need) => <button type="button" key={need} className={preferences.needs.includes(need) ? "is-selected" : ""} onClick={() => updatePreference("needs", preferences.needs.includes(need) ? preferences.needs.filter((item) => item !== need) : [...preferences.needs, need])}>{need}</button>)}</div></div>
+                  <label className="prompt-field"><span>{t.prompt}</span><textarea rows={4} value={preferences.prompt} onChange={(event) => updatePreference("prompt", event.target.value)} /><small>{u.parser}</small></label>
+                  <div className="form-section"><div className="form-section-title"><LocateFixed size={18} /><div><strong>{t.origin}</strong><small>{originStatus === "ready" ? origin?.label : originStatus === "loading" ? u.resolving : originStatus === "not-found" ? u.notFound : u.typePlace}</small></div></div><div className="field-grid field-grid-location"><label><span>{t.origin}</span><input value={preferences.origin} onChange={(event) => updatePreference("origin", event.target.value)} /></label><label><span>{t.travel}</span><div className="range-value">{preferences.maxTravelMinutes} min</div><input type="range" min="15" max="180" step="5" value={preferences.maxTravelMinutes} onChange={(event) => updatePreference("maxTravelMinutes", Number(event.target.value))} /></label></div></div>
+                  <div className="form-section"><div className="form-section-title"><Navigation size={18} /><div><strong>{t.mobility}</strong><small>{u.travelImpact}</small></div></div><div className="choice-grid transport-grid">{transportOptions.map((option) => { const Icon = option.icon; return <button type="button" key={option.id} className={preferences.transport === option.id ? "is-selected" : ""} onClick={() => updatePreference("transport", option.id)}><Icon size={18} />{transportLabel(locale, option.id)}</button>; })}</div></div>
+                  <div className="form-section"><div className="form-section-title"><Clock3 size={18} /><div><strong>{t.time}</strong><small>{u.impractical}</small></div></div><div className="choice-grid duration-grid">{durationOptions.map((option) => <button type="button" key={option.id} className={preferences.availableTime === option.id ? "is-selected" : ""} onClick={() => updatePreference("availableTime", option.id)}>{u[option.id]}</button>)}</div><div className="field-grid time-grid"><label><span>{u.from}</span><input type="time" value={preferences.availableFrom} onChange={(event) => updatePreference("availableFrom", event.target.value)} /></label><label><span>{u.to}</span><input type="time" value={preferences.availableTo} onChange={(event) => updatePreference("availableTo", event.target.value)} /></label></div></div>
+                  <div className="form-section"><div className="form-section-title"><Sparkles size={18} /><div><strong>{t.experience}</strong><small>{u.chooseMatters}</small></div></div><div className="chip-grid">{kindOptions.map((option) => <button type="button" key={option.id} className={preferences.kinds.includes(option.id) ? "is-selected" : ""} onClick={() => updatePreference("kinds", preferences.kinds.includes(option.id) ? preferences.kinds.filter((item) => item !== option.id) : [...preferences.kinds, option.id])}>{kindLabel(locale, option.id)}</button>)}</div></div>
+                  <div className="form-section"><div className="form-section-title"><Target size={18} /><div><strong>{t.needs}</strong><small>{u.unsuitable}</small></div></div><div className="choice-grid difficulty-grid">{(["easy", "moderate", "challenging"] as const).map((difficulty) => <button type="button" key={difficulty} className={preferences.difficulty === difficulty ? "is-selected" : ""} onClick={() => updatePreference("difficulty", difficulty)}>{difficultyLabel(locale, difficulty)}</button>)}</div><div className="chip-grid needs-grid">{needOptions.map((need, index) => <button type="button" key={need} className={preferences.needs.includes(need) ? "is-selected" : ""} onClick={() => updatePreference("needs", preferences.needs.includes(need) ? preferences.needs.filter((item) => item !== need) : [...preferences.needs, need])}>{u.needs[index]}</button>)}</div></div>
                   <div className="condition-card"><CloudRain size={21} /><div><strong>{weather.source === "live" ? `${weather.temperature?.toFixed(0)}°C · ${weather.precipitationProbability ?? 0}% rain probability` : "Live weather unavailable"}</strong><span>{weather.source === "live" ? "Open-Meteo conditions influence the ranking." : "GemGo uses conservative fallback assumptions."}</span></div><span className="data-source-chip">{weather.source}</span></div>
                   <button type="submit" className="button button-primary button-large">{t.search}<ArrowRight size={18} /></button>
                 </form>
-                <aside className="explore-aside"><div className="catalogue-card"><span className="eyebrow"><Globe2 size={14} /> Current catalogue</span><strong>{totalCatalogueEntries}</strong><span>curated and pilot experiences</span><div>{Object.entries(catalogueSummary).map(([region, count]) => <small key={region}>{region}: {count}</small>)}</div></div><ExperienceMap experiences={ranked.map((item) => item.experience)} origin={origin} selectedId={selectedId} onSelect={(experience) => setSelectedId(experience.id)} /><div className="method-card"><h3>Quality before quietness</h3><p>Compatibility, access, duration and specific needs are checked before crowd pressure improves the rank.</p></div></aside>
+                <aside className="explore-aside"><div className="catalogue-card"><span className="eyebrow"><Globe2 size={14} /> {u.catalogue}</span><strong>{totalCatalogueEntries}</strong><span>{u.catalogueBody}</span><div>{Object.entries(catalogueSummary).map(([region, count]) => <small key={region}>{region}: {count}</small>)}</div></div><ExperienceMap locale={locale} experiences={ranked.map((item) => item.experience)} origin={origin} selectedId={selectedId} onSelect={(experience) => setSelectedId(experience.id)} /><div className="method-card"><h3>{u.quality}</h3><p>{u.qualityBody}</p></div></aside>
               </div>
             </>
           )}
@@ -485,7 +513,6 @@ export default function IntegratedAppShell() {
 
       {gemDropOpen && activeExperience && gemDropAlternative && <GemDropModal original={activeExperience} alternative={gemDropAlternative} onClose={() => setGemDropOpen(false)} onSwitch={switchGemDrop} />}
       {verificationOpen && activeExperience && <VerificationModal experience={activeExperience} message={verificationMessage} qrCode={qrCode} onQrCode={setQrCode} onGps={verifyGps} onQr={verifyQr} onDemo={() => completeVerification("demo")} onClose={() => setVerificationOpen(false)} />}
-      {accountOpen && <AccountModal onClose={() => setAccountOpen(false)} />}
       {toast && <div className="action-toast"><CheckCircle2 size={18} />{toast}</div>}
     </main>
   );
@@ -523,8 +550,4 @@ function RewardCard({ id, title, cost, balance, onUnlock }: { id: string; title:
 
 function AboutPage({ savedTrips, ledger }: { savedTrips: SavedTrip[]; ledger: GemPointEvent[] }) {
   return <section className="app-content about-page"><div className="page-heading"><span className="eyebrow"><Mountain size={15} />About GemGo</span><h1>Predict → Recommend → Redirect → Verify → Reward → Measure</h1><p>GemGo combines a better visitor decision with measurable, privacy-preserving outcomes for Alpine territories.</p></div><div className="methodology-grid"><article><Users size={23} /><h3>Crowd prediction</h3><p>Historical patterns, time, season, live weather and local signals, with visible confidence.</p></article><article><Target size={23} /><h3>Personalisation</h3><p>Interests, duration, difficulty, origin, transport and specific needs.</p></article><article><ShieldCheck size={23} /><h3>Safety gates</h3><p>Compatibility and territorial capacity before quietness improves rank.</p></article><article><Globe2 size={23} /><h3>Pan-Alpine framework</h3><p>{totalCatalogueEntries} current entries, shared standards and progressively deeper local validation.</p></article></div><div className="dashboard-banner"><div><span className="demo-label">Demonstration and device-local data</span><h2>Territory dashboard</h2><p>Real operational metrics will require sufficient anonymised samples.</p></div></div><div className="dashboard-metrics"><article><span>Plans created</span><strong>{savedTrips.length}</strong><small>on this device</small></article><article><span>Verified visits</span><strong>{ledger.filter((event) => event.type === "visit").length}</strong><small>device-local events</small></article><article><span>GemDrop acceptance</span><strong>{ledger.filter((event) => event.type === "gemdrop").length}</strong><small>device-local events</small></article><article><span>Catalogue coverage</span><strong>{Object.keys(catalogueSummary).length + 4}</strong><small>represented Alpine areas</small></article></div><div className="privacy-hero"><ShieldCheck size={34} /><div><h2>Privacy by design</h2><p>Explore without an account. Location is requested only for routing or verification. Account synchronisation remains optional and is not simulated as already operational.</p></div></div></section>;
-}
-
-function AccountModal({ onClose }: { onClose: () => void }) {
-  return <div className="modal-backdrop" role="dialog" aria-modal="true"><div className="account-modal"><button type="button" className="modal-close" onClick={onClose}><X size={20} /></button><UserPlus size={34} /><h2>Optional account</h2><p>The current branch keeps trips and points on this device. Production accounts will protect a pan-Alpine balance and synchronise plans only when the user chooses to register.</p><button type="button" className="button button-primary" disabled>Google and passkey onboarding coming next</button><button type="button" className="button button-ghost" onClick={onClose}>Continue as guest</button></div></div>;
 }
