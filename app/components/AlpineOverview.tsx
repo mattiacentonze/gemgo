@@ -1,37 +1,56 @@
 "use client";
 
 import { Mountain } from "lucide-react";
+import { useState } from "react";
 import ExperienceMap from "./ExperienceMap";
+import type { Locale } from "../domain";
+import { marketingCopy } from "../i18n/marketing";
 import { allExperiences, catalogueSummary, totalCatalogueEntries } from "../product/integrated-data";
 
 type Props = {
   compact?: boolean;
   selectedRegion?: string | null;
   onSelectRegion?: (region: string) => void;
+  locale?: Locale;
 };
 
-export default function AlpineOverview({ compact = false, selectedRegion, onSelectRegion }: Props) {
-  const visibleExperiences = selectedRegion
-    ? allExperiences.filter((experience) => experience.region === selectedRegion)
+export default function AlpineOverview({ compact = false, selectedRegion, onSelectRegion, locale = "en" }: Props) {
+  const [localRegion, setLocalRegion] = useState<string | null>(null);
+  const activeRegion = selectedRegion === undefined ? localRegion : selectedRegion;
+  const text = marketingCopy[locale].map;
+  const visibleExperiences = activeRegion
+    ? allExperiences.filter((experience) => experience.region === activeRegion)
     : allExperiences;
+
+  const selectRegion = (region: string) => {
+    const nextRegion = activeRegion === region ? null : region;
+    if (selectedRegion === undefined) setLocalRegion(nextRegion);
+    onSelectRegion?.(nextRegion ?? "");
+  };
+
+  const focusRegion = (region: string) => {
+    if (selectedRegion === undefined) setLocalRegion(region);
+    onSelectRegion?.(region);
+  };
 
   return (
     <div className={`alpine-overview alpine-overview-real ${compact ? "alpine-overview-compact" : ""}`}>
       <div className="alpine-overview-topline">
-        <span className="eyebrow"><Mountain size={14} /> Pan-Alpine coverage</span>
-        <span className="demo-label">{totalCatalogueEntries} current catalogue entries</span>
+        <span className="eyebrow"><Mountain size={14} /> {text.coverage}</span>
+        <span className="demo-label">{totalCatalogueEntries} {text.catalogue}</span>
       </div>
       <div className="alpine-real-map-wrap">
         <ExperienceMap
           experiences={visibleExperiences}
-          onSelect={(experience) => onSelectRegion?.(experience.region)}
+          onSelect={(experience) => focusRegion(experience.region)}
           className={compact ? "homepage-map-compact" : "homepage-map"}
+          locale={locale}
           showLegend={false}
         />
         <div className="pressure-legend" aria-label="Tourism pressure legend">
-          <span><i className="pressure-dot low" /> Lower estimate</span>
-          <span><i className="pressure-dot moderate" /> Moderate estimate</span>
-          <span><i className="pressure-dot high" /> Higher estimate</span>
+          <span><i className="pressure-dot low" /> {text.lower}</span>
+          <span><i className="pressure-dot moderate" /> {text.moderate}</span>
+          <span><i className="pressure-dot high" /> {text.higher}</span>
         </div>
       </div>
       <div className="region-count-row">
@@ -39,11 +58,12 @@ export default function AlpineOverview({ compact = false, selectedRegion, onSele
           <button
             type="button"
             key={region}
-            className={selectedRegion === region ? "is-selected" : ""}
-            onClick={() => onSelectRegion?.(region)}
+            className={activeRegion === region ? "is-selected" : ""}
+            aria-pressed={activeRegion === region}
+            onClick={() => selectRegion(region)}
           >
             <strong>{region}</strong>
-            <span>{count} pilot places</span>
+            <span>{count} {text.pilotPlaces}</span>
           </button>
         ))}
       </div>
