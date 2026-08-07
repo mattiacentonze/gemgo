@@ -1,6 +1,6 @@
 "use client";
 
-import { Mountain, Route } from "lucide-react";
+import { Mountain } from "lucide-react";
 import ExperienceMap from "./ExperienceMap";
 import { allExperiences, catalogueSummary, totalCatalogueEntries } from "../product/integrated-data";
 
@@ -26,8 +26,8 @@ export default function AlpineOverview({ compact = false, selectedRegion, onSele
           experiences={visibleExperiences}
           onSelect={(experience) => onSelectRegion?.(experience.region)}
           className={compact ? "homepage-map-compact" : "homepage-map"}
+          showLegend={false}
         />
-        <div className="alpine-map-origin"><Route size={15} /> Real coordinates · shared Alpine standards</div>
         <div className="pressure-legend" aria-label="Tourism pressure legend">
           <span><i className="pressure-dot low" /> Lower estimate</span>
           <span><i className="pressure-dot moderate" /> Moderate estimate</span>
