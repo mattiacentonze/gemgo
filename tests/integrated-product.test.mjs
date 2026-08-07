@@ -10,13 +10,14 @@ test("the application route uses the integrated product shell", async () => {
   assert.doesNotMatch(route, /export \{ default \} from "\.\.\/page"/);
 });
 
-test("the integrated catalogue retains the existing public destinations", async () => {
+test("the integrated catalogue uses only the official 50 public destinations", async () => {
   const data = JSON.parse(await source("app/data/destinations.json"));
   const adapter = await source("app/product/integrated-data.ts");
   assert.equal(data.meta.total_entries, 50);
   assert.equal(data.destinations.length, 50);
   assert.match(adapter, /publicDestinations/);
-  assert.match(adapter, /curatedExperiences/);
+  assert.doesNotMatch(adapter, /curatedExperiences/);
+  assert.match(adapter, /destinationData/);
   assert.match(adapter, /allExperiences/);
 });
 
@@ -31,10 +32,10 @@ test("natural language feeds editable preferences and distinct ranking roles", a
   assert.match(engine, /precipitationProbability/);
 });
 
-test("the new map uses real geography, gentler wheel zoom and clustering above two nearby markers", async () => {
+test("the new map uses relief geography, gentler wheel zoom and clustering above two nearby markers", async () => {
   const map = await source("app/components/ExperienceMap.tsx");
   const overview = await source("app/components/AlpineOverview.tsx");
-  assert.match(map, /tileLayer\("https:\/\/\{s\}\.tile\.openstreetmap\.org/);
+  assert.match(map, /tileLayer\("https:\/\/\{s\}\.tile\.opentopomap\.org/);
   assert.match(map, /wheelPxPerZoomLevel: 140/);
   assert.match(map, /group\.items\.length > 2/);
   assert.match(map, /mapReady/);
