@@ -13,6 +13,30 @@ test("mobile overlays close one another instead of stacking", () => {
   assert.match(profile, /addEventListener\("gemgo:close-overlays"/);
 });
 
+test("profile and notifications escape the sticky header and use a full mobile viewport", () => {
+  const notifications = read("app/components/NotificationCenter.tsx");
+  const profile = read("app/components/LocalProfilePanel.tsx");
+  const css = read("app/styles/visual-fixes.css");
+  assert.match(profile, /createPortal/);
+  assert.match(notifications, /notification-popover-portal/);
+  assert.match(css, /\.profile-panel[\s\S]*height: 100dvh/);
+  assert.match(css, /notification-popover-portal/);
+});
+
+test("GemPoints and About include localized badges, proposal boundaries and the team", () => {
+  const shell = read("app/components/IntegratedAppShell.tsx");
+  for (const locale of ["en", "it", "de", "fr", "sl"]) {
+    assert.match(shell, new RegExp(`${locale}: \\{ eyebrow:`));
+  }
+  assert.match(shell, /rewards: "GemPoints"/g);
+  assert.match(shell, /badge-showcase-grid/);
+  assert.match(shell, /Mattia Centonze/);
+  assert.match(shell, /Killian Foloppe/);
+  assert.match(shell, /Martino Dalla Fontana/);
+  assert.match(shell, /prototypeBody/);
+  assert.match(shell, /afterFundingBody/);
+});
+
 test("the demo profile hashes passwords and exposes earned progress and locked badges", () => {
   const profile = read("app/components/LocalProfilePanel.tsx");
   assert.match(profile, /crypto\.subtle\.digest\("SHA-256"/);
