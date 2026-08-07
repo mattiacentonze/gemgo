@@ -35,3 +35,23 @@ test("small screens keep quantitative cards compact but narrative cards readable
   assert.match(css, /max-width: 350px/);
   assert.match(css, /\.methodology-grid,[\s\S]*grid-template-columns: 1fr/);
 });
+
+test("the Alpine overview uses one compact legend and leaves zoom controls clear", () => {
+  const overview = read("app/components/AlpineOverview.tsx");
+  const map = read("app/components/ExperienceMap.tsx");
+  const css = read("app/styles/visual-fixes.css");
+  assert.match(overview, /showLegend=\{false\}/);
+  assert.doesNotMatch(overview, /Real coordinates/);
+  assert.match(map, /showLegend = true/);
+  assert.match(css, /\.experience-map-legend[\s\S]*width: max-content/);
+  assert.match(css, /\.leaflet-control-zoom/);
+});
+
+test("map markers have one circular GemGo shape with a downward tip", () => {
+  const map = read("app/components/ExperienceMap.tsx");
+  const css = read("app/styles/visual-fixes.css");
+  assert.doesNotMatch(map, /<i><\/i>/);
+  assert.match(css, /\.gemgo-map-marker[\s\S]*border-radius: 50%/);
+  assert.match(css, /\.gemgo-map-marker::after[\s\S]*clip-path: polygon\(0 0, 100% 0, 50% 100%\)/);
+  assert.match(css, /\.gemgo-map-marker img[\s\S]*transform: none/);
+});
