@@ -27,7 +27,7 @@ const renderPage = async (pathname = "/") => {
   return { response, html: await response.text() };
 };
 
-test("renders the pan-Alpine public product story", async () => {
+test("renders the overtourism-first pan-Alpine product story", async () => {
   const { response, html } = await renderPage();
 
   assert.equal(response.status, 200);
@@ -36,15 +36,15 @@ test("renders the pan-Alpine public product story", async () => {
     /^text\/html\b/i,
   );
   assert.match(html, developmentPreviewMeta);
-  assert.match(html, /Welcome to GemGo/i);
-  assert.match(html, /Try the app now/i);
-  assert.match(html, /Meet the team/i);
-  assert.match(html, /Explore more of the Alps/i);
-  assert.match(html, /without following the crowd/i);
-  assert.match(html, /Predict/i);
-  assert.match(html, /Recommend/i);
-  assert.match(html, /Verify/i);
-  assert.match(html, /Demonstration data/i);
+  assert.match(html, /Too crowded/i);
+  assert.match(html, /Find a better/i);
+  assert.match(html, /Alpine alternative/i);
+  assert.match(html, /Find a better alternative/i);
+  assert.match(html, /Neuschwanstein Castle/i);
+  assert.match(html, /Falkenstein Ruin Pfronten/i);
+  assert.match(html, /href="\/about"/i);
+  assert.match(html, /Popular plans concentrate pressure/i);
+  assert.match(html, /choose better/i);
   assert.match(html, /href="\/app"/i);
 });
 
