@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Check, Languages, Menu, Mountain, X } from "lucide-react";
+import { Check, Gem, Languages, Menu, UserRound, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { locales, type Locale } from "../domain";
 import { localeNames } from "../hooks/usePersistentLocale";
@@ -36,17 +36,17 @@ export default function MarketingHeader({ locale, onLocaleChange, copy }: Props)
 
   const links = [
     ["#how", copy.navigation.how],
-    ["#coverage", copy.navigation.coverage],
-    ["#proof", copy.navigation.why],
-    ["#team", copy.navigation.team],
+    ["/app", copy.navigation.tryApp],
+    ["#destinations", copy.navigation.coverage],
+    ["/about", copy.navigation.team],
   ] as const;
 
   return (
     <header className="marketing-header" ref={headerRef}>
       <div className="marketing-header-inner">
         <a href="#top" className="brand marketing-brand" aria-label="GemGo homepage" onClick={closeMenus}>
-          <span className="brand-mark"><Mountain size={22} /></span>
-          <span><strong>GemGo</strong><small>{copy.tagline}</small></span>
+          <span className="brand-mark"><img src="/assets/gemgo-logo-green.svg?v=2" alt="" /></span>
+          <span><strong>GemGo</strong><small>Better Alpine Choices</small></span>
         </a>
 
         <nav className="marketing-desktop-nav" aria-label="Homepage navigation">
@@ -83,7 +83,8 @@ export default function MarketingHeader({ locale, onLocaleChange, copy }: Props)
               </div>
             )}
           </div>
-          <Link href="/app" className="button button-primary button-small marketing-try-button">{copy.navigation.tryApp}</Link>
+          <Link href="/app?section=rewards" className="marketing-points-link"><Gem size={18} /><span><strong>1,750</strong><small>GemPoints</small></span></Link>
+          <Link href="/profile" className="icon-button marketing-profile-link" aria-label="Profile"><UserRound size={19} /></Link>
           <button
             type="button"
             className="icon-button marketing-menu-trigger"
@@ -98,6 +99,7 @@ export default function MarketingHeader({ locale, onLocaleChange, copy }: Props)
         {menuOpen && (
           <nav className="marketing-mobile-menu" aria-label="Mobile homepage navigation">
             {links.map(([href, label]) => <a key={href} href={href} onClick={closeMenus}>{label}</a>)}
+            <Link href="/profile" onClick={closeMenus}>Profile</Link>
             <Link href="/app" className="button button-primary" onClick={closeMenus}>{copy.navigation.tryApp}</Link>
           </nav>
         )}
