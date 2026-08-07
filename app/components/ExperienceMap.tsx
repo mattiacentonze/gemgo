@@ -15,6 +15,7 @@ type Props = {
   onSelect?: (experience: Experience) => void;
   className?: string;
   locale?: Locale;
+  showLegend?: boolean;
 };
 
 const safeText = (value: string) =>
@@ -39,6 +40,7 @@ export default function ExperienceMap({
   onSelect,
   className = "",
   locale: localeProp,
+  showLegend = true,
 }: Props) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<import("leaflet").Map | null>(null);
@@ -161,9 +163,9 @@ export default function ExperienceMap({
           const marker = L.marker([experience.latitude, experience.longitude], {
             icon: L.divIcon({
               className: "gemgo-map-marker-wrap",
-              html: `<span class="gemgo-map-marker${selected ? " is-selected" : ""}"><img src="${markerLogo(experience)}" alt=""/><i></i></span>`,
-              iconSize: selected ? [42, 50] : [34, 42],
-              iconAnchor: selected ? [21, 47] : [17, 39],
+              html: `<span class="gemgo-map-marker${selected ? " is-selected" : ""}"><img src="${markerLogo(experience)}" alt=""/></span>`,
+              iconSize: selected ? [46, 56] : [40, 50],
+              iconAnchor: selected ? [23, 56] : [20, 50],
             }),
             title: experience.name,
           });
@@ -232,12 +234,12 @@ export default function ExperienceMap({
           <span>{msg(locale, "map.destinationMap")}…</span>
         </div>
       )}
-      <div className="experience-map-legend" aria-label={msg(locale, "map.crowds")}>
+      {showLegend && <div className="experience-map-legend" aria-label={msg(locale, "map.crowds")}>
         <strong>{msg(locale, "plan.crowdPredicted")}</strong>
         <span><img src="/assets/gemgo-logo-green.svg?v=2" alt="" /> {msg(locale, "map.legendLow")}</span>
         <span><img src="/assets/gemgo-logo-orange.svg?v=2" alt="" /> {msg(locale, "map.legendModerate")}</span>
         <span><img src="/assets/gemgo-logo-red.svg?v=2" alt="" /> {msg(locale, "map.legendBusy")}</span>
-      </div>
+      </div>}
     </div>
   );
 }
