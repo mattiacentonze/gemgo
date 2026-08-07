@@ -143,7 +143,7 @@ export default function NotificationCenter() {
 
   if (!target) return null;
 
-  return createPortal(
+  const button = createPortal(
     <div className="notification-center">
       <button
         type="button"
@@ -155,8 +155,12 @@ export default function NotificationCenter() {
         <Bell size={19} />
         {unread > 0 && <span className="notification-badge">{Math.min(unread, 9)}</span>}
       </button>
-      {open && (
-        <div className="notification-popover" role="dialog" aria-label={msg(locale, "notifications.title")}>
+    </div>,
+    target,
+  );
+
+  const popover = open ? createPortal(
+        <div className="notification-popover notification-popover-portal" role="dialog" aria-label={msg(locale, "notifications.title")}>
           <div className="notification-heading">
             <div>
               <span>{msg(locale, "notifications.eyebrow")}</span>
@@ -183,9 +187,9 @@ export default function NotificationCenter() {
             )}
           </div>
           <small className="notification-footnote">{msg(locale, "notifications.intro")}</small>
-        </div>
-      )}
-    </div>,
-    target,
-  );
+        </div>,
+    document.body,
+  ) : null;
+
+  return <>{button}{popover}</>;
 }
