@@ -16,6 +16,7 @@ type Props = {
   className?: string;
   locale?: Locale;
   showLegend?: boolean;
+  focusRegion?: string | null;
 };
 
 const safeText = (value: string) =>
@@ -41,6 +42,7 @@ export default function ExperienceMap({
   className = "",
   locale: localeProp,
   showLegend = true,
+  focusRegion = null,
 }: Props) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<import("leaflet").Map | null>(null);
@@ -76,8 +78,9 @@ export default function ExperienceMap({
         wheelPxPerZoomLevel: 140,
         wheelDebounceTime: 55,
       });
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: "© OpenStreetMap contributors",
+      L.tileLayer("https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png", {
+        attribution: "Map: © OpenStreetMap contributors, SRTM · style: © OpenTopoMap",
+        maxZoom: 17,
       }).addTo(map);
       markerLayerRef.current = L.layerGroup().addTo(map);
       routeLayerRef.current = L.layerGroup().addTo(map);
@@ -116,6 +119,20 @@ export default function ExperienceMap({
           fillOpacity: 1,
         })
           .bindTooltip(`${safeText(msg(locale, "planner.start"))}: ${safeText(origin.label)}`)
+          .addTo(markerLayer);
+      }
+
+      if (experiences.some((experience) => experience.region === "Bavaria")) {
+        L.marker([47.5576, 10.7498], {
+          icon: L.divIcon({
+            className: "gemgo-map-marker-wrap gemgo-reference-marker-wrap",
+            html: `<span class="gemgo-map-marker gemgo-reference-marker"><img src="/assets/gemgo-logo-red.svg?v=2" alt=""/></span>`,
+            iconSize: [42, 52],
+            iconAnchor: [21, 52],
+          }),
+          title: "Neuschwanstein Castle",
+        })
+          .bindTooltip("Neuschwanstein Castle · reference hotspot")
           .addTo(markerLayer);
       }
 
@@ -214,6 +231,24 @@ export default function ExperienceMap({
       disposed = true;
     };
   }, [experiences, mapReady, origin]);
+
+  useEffect(() => {
+    if (!mapReady || !focusRegion) return;
+    let disposed = false;
+    const focus = async () => {
+      const map = mapRef.current;
+      const regionExperiences = experiences.filter((item) => item.region === focusRegion);
+      if (!map || regionExperiences.length === 0) return;
+      const L = (await import("leaflet")).default;
+      if (disposed) return;
+      map.fitBounds(
+        L.latLngBounds(regionExperiences.map((item) => [item.latitude, item.longitude])),
+        { padding: [56, 56], maxZoom: 9, animate: true },
+      );
+    };
+    focus();
+    return () => { disposed = true; };
+  }, [experiences, focusRegion, mapReady]);
 
   useEffect(() => {
     if (!mapReady) return;
