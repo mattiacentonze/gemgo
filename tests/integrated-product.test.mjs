@@ -66,8 +66,29 @@ test("visit verification supports GPS, partner codes and an explicitly labelled 
 
 test("the redesigned interface exposes all five required locales", async () => {
   const shell = await source("app/components/IntegratedAppShell.tsx");
+  const marketing = await source("app/i18n/marketing.ts");
+  const localeHook = await source("app/hooks/usePersistentLocale.ts");
   for (const locale of ["en", "it", "de", "fr", "sl"]) {
     assert.match(shell, new RegExp(`\\b${locale}: \\{`));
+    assert.match(marketing, new RegExp(`\\b${locale}: \\{`));
   }
-  assert.match(shell, /gemgo-locale-v3/);
+  assert.match(localeHook, /gemgo-locale-v3/);
+  assert.match(shell, /usePersistentLocale/);
+});
+
+test("homepage language, regional map controls and result-card hierarchy are interactive", async () => {
+  const home = await source("app/page.tsx");
+  const header = await source("app/components/MarketingHeader.tsx");
+  const overview = await source("app/components/AlpineOverview.tsx");
+  const card = await source("app/components/IntegratedResultCard.tsx");
+  const photo = await source("app/components/DestinationPhoto.tsx");
+  assert.match(home, /usePersistentLocale/);
+  assert.match(header, /marketing-language-popover/);
+  assert.match(header, /marketing-mobile-menu/);
+  assert.match(overview, /aria-pressed/);
+  assert.match(overview, /setLocalRegion/);
+  assert.match(card, /recommendation-reasons/);
+  assert.match(card, /result-metrics/);
+  assert.doesNotMatch(card, /rank-label/);
+  assert.doesNotMatch(photo, /<figcaption>/);
 });
