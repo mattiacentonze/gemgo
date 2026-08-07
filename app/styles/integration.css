@@ -155,26 +155,10 @@
   object-fit: cover;
 }
 
-.integrated-result-card .destination-photo figcaption {
-  position: absolute;
-  right: 8px;
-  bottom: 8px;
-  max-width: 72%;
-  padding: 4px 7px;
-  border-radius: 8px;
-  background: rgba(6, 37, 31, 0.72);
-  font-size: 0.62rem;
-}
-
-.integrated-result-card .rank-label,
 .integrated-result-card .crowd-chip {
   position: absolute;
   z-index: 2;
   top: 14px;
-}
-
-.integrated-result-card .rank-label {
-  left: 14px;
 }
 
 .integrated-result-card .crowd-chip {
