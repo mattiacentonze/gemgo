@@ -1,13 +1,6 @@
 import destinationData from "../data/destinations.json";
 import bavariaTransitData from "../data/gtfs-bavaria-regional-stops.json";
-import { experiences as curatedExperiences } from "./data";
-import type {
-  CrowdLevel,
-  Difficulty,
-  Experience,
-  ExperienceKind,
-  ValidationLevel,
-} from "./types";
+import type { CrowdLevel, Difficulty, Experience, ExperienceKind, ValidationLevel } from "./types";
 
 type PublicDestination = {
   id: string;
@@ -17,53 +10,41 @@ type PublicDestination = {
   latitude: number;
   longitude: number;
   destination_type: string;
-};
-
-const hashString = (value: string) => {
-  let hash = 0;
-  for (let index = 0; index < value.length; index += 1) {
-    hash = (hash * 31 + value.charCodeAt(index)) >>> 0;
-  }
-  return hash;
+  popularity_score: number;
+  hidden_gem_score: number;
+  sustainability_score: number;
+  description: string;
+  tags: string[];
 };
 
 const contains = (value: string, pattern: RegExp) => pattern.test(value.toLowerCase());
 
-const kindsFor = (type: string): ExperienceKind[] => {
+const kindsFor = (destination: PublicDestination): ExperienceKind[] => {
+  const value = `${destination.destination_type} ${destination.tags.join(" ")}`;
   const kinds = new Set<ExperienceKind>();
-  if (contains(type, /lake|reservoir|wetland|water/)) kinds.add("water");
-  if (contains(type, /route|trail|valley|nature|reserve|mountain|pass|viewpoint|hill/)) {
-    kinds.add("nature");
-  }
-  if (contains(type, /route|trail|mountain|pass|valley/)) kinds.add("hiking");
-  if (contains(type, /village|town/)) kinds.add("villages");
-  if (contains(type, /castle|cultur|historic|archaeological|monastery|religious|fortified/)) {
-    kinds.add("culture");
-  }
-  if (contains(type, /wine|market|village/)) kinds.add("food");
-  if (contains(type, /car-free|lake village|market town/)) kinds.add("family");
-  if (contains(type, /village|town|cultur|castle|archaeological/)) kinds.add("accessible");
+  if (contains(value, /lake|reservoir|wetland|water|swim/)) kinds.add("water");
+  if (contains(value, /route|trail|valley|nature|reserve|mountain|pass|viewpoint|hill|wildlife/)) kinds.add("nature");
+  if (contains(value, /route|trail|mountain|pass|valley|hiking|walk/)) kinds.add("hiking");
+  if (contains(value, /village|town/)) kinds.add("villages");
+  if (contains(value, /castle|cultur|historic|archaeological|monastery|religious|fortified|heritage|museum/)) kinds.add("culture");
+  if (contains(value, /wine|market|food|cuisine/)) kinds.add("food");
+  if (contains(value, /family|easy|car-free|lake village|market town/)) kinds.add("family");
+  if (contains(value, /village|town|cultur|castle|archaeological|train/)) kinds.add("accessible");
+  if (contains(value, /ski|winter/)) kinds.add("winter");
   if (kinds.size === 0) kinds.add("nature");
   return [...kinds];
 };
 
-const difficultyFor = (type: string): Difficulty =>
-  contains(type, /mountain pass|shoulder trail|scenic route|hidden valley|nature reserve/)
+const difficultyFor = (destination: PublicDestination): Difficulty =>
+  contains(`${destination.destination_type} ${destination.description}`, /mountain pass|shoulder trail|summit|steep|high-altitude|hidden valley/)
     ? "moderate"
     : "easy";
 
-const crowdFor = (seed: number): CrowdLevel => {
-  const value = seed % 10;
-  if (value <= 4) return "low";
-  if (value <= 8) return "moderate";
-  return "high";
-};
-
-const crowdWindowFor = (seed: number) => {
-  const starts = ["08:00", "09:30", "13:30", "14:30", "15:00"];
-  const start = starts[seed % starts.length];
-  const startHour = Number(start.slice(0, 2));
-  return `${start}–${String(Math.min(19, startHour + 3)).padStart(2, "0")}:${start.slice(3)}`;
+const crowdFor = (destination: PublicDestination): CrowdLevel => {
+  if (destination.name === "Mittenwald") return "high";
+  if (destination.popularity_score >= 0.45) return "high";
+  if (destination.popularity_score >= 0.22) return "moderate";
+  return "low";
 };
 
 const toneFor = (type: string): Experience["imageTone"] => {
@@ -82,27 +63,32 @@ const promiseFor = (destination: PublicDestination, kinds: ExperienceKind[]) => 
   return `A quieter way to experience ${destination.name}`;
 };
 
-const summaryFor = (destination: PublicDestination, kinds: ExperienceKind[]) => {
-  const focus = kinds.includes("culture")
-    ? "heritage, local streets and independent services"
-    : kinds.includes("water")
-      ? "waterfront scenery, short walks and flexible stops"
-      : kinds.includes("villages")
-        ? "village life, local services and nearby landscape"
-        : "landscape, outdoor time and a flexible route";
-  return `${destination.name} is included in GemGo's existing public pilot catalogue. This data-based experience combines ${focus} and is presented as a lower-pressure alternative subject to local validation.`;
+const demoComparison: Record<string, Experience["comparison"]> = {
+  bav_020: { original: "Neuschwanstein Castle", reachDifference: "About 30 minutes by road", advantages: ["Comparable castle experience", "Lower estimated pressure", "Free hilltop access"] },
+  bav_013: { original: "Mittenwald", reachDifference: "About 35 minutes by road", advantages: ["Quieter valley setting", "Working farms and local services", "Flexible walking"] },
+  bav_014: { original: "Busy lakes near Munich", reachDifference: "Varies by starting point", advantages: ["Protected chain of lakes", "Cycling and wild swimming", "Lower estimated pressure"] },
+  vda_005: { original: "Central Aosta and Pila", reachDifference: "About 28 minutes by road", advantages: ["Quieter valley setting", "Local food traditions", "Flexible trails"] },
+  vda_002: { original: "Breuil-Cervinia", reachDifference: "About 35 minutes by road", advantages: ["Car-free village", "Cable-car access", "Lower traffic pressure"] },
+  vda_013: { original: "Aosta historic centre", reachDifference: "About 20 minutes by road", advantages: ["Distinct Roman heritage", "Short focused visit", "Supports a smaller local area"] },
 };
 
+export const demoAlternativeIds = {
+  bavaria: ["catalogue-bav_020", "catalogue-bav_013", "catalogue-bav_014"],
+  aosta: ["catalogue-vda_005", "catalogue-vda_002", "catalogue-vda_013"],
+} as const;
+
 const adaptDestination = (destination: PublicDestination): Experience => {
-  const seed = hashString(destination.id);
-  const kinds = kindsFor(destination.destination_type);
-  const difficulty = difficultyFor(destination.destination_type);
-  const durationMinutes = 75 + (seed % 7) * 20;
-  const crowd = crowdFor(seed);
-  const crowdWindow = crowdWindowFor(seed);
-  const points = 45 + (seed % 6) * 5;
-  const travelBase = 18 + (seed % 38);
+  const kinds = kindsFor(destination);
+  const difficulty = difficultyFor(destination);
+  const crowd = crowdFor(destination);
+  const durationMinutes = difficulty === "moderate" ? 180 : kinds.includes("culture") ? 105 : 135;
+  const points = Math.round(35 + destination.hidden_gem_score * 20 + destination.sustainability_score * 20);
   const validation: ValidationLevel = "Data-based suggestion";
+  const comparison = demoComparison[destination.id] ?? {
+    original: "A better-known nearby Alpine destination",
+    reachDifference: "Calculated from your selected starting point",
+    advantages: ["Potentially lower visitor pressure", "Opportunity to distribute local spending", "A more flexible visit"],
+  };
 
   return {
     id: `catalogue-${destination.id}`,
@@ -114,60 +100,35 @@ const adaptDestination = (destination: PublicDestination): Experience => {
     difficulty,
     latitude: destination.latitude,
     longitude: destination.longitude,
-    travel: {
-      walking: travelBase < 25 ? travelBase * 3 : null,
-      bicycle: travelBase * 2,
-      public: travelBase + 18,
-      car: travelBase,
-      mixed: travelBase + 12,
-    },
+    travel: { walking: null, bicycle: null, public: null, car: null, mixed: null },
     durationMinutes,
     crowd,
-    crowdWindow,
+    crowdWindow: crowd === "high" ? "08:00–10:00" : crowd === "moderate" ? "09:00–12:00" : "10:00–16:00",
     confidence: "Low",
-    updated: "Catalogue estimate",
+    updated: "Official team dataset · 7 June 2026",
     validation,
     imageTone: toneFor(destination.destination_type),
-    summary: summaryFor(destination, kinds),
+    summary: destination.description,
     reasons: [
-      "Part of the existing GemGo pilot catalogue",
-      "Compatible with a flexible Alpine visit",
-      crowd === "low" ? "Lower estimated pressure" : "An off-peak window is available",
+      `Official ${destination.region} pilot entry`,
+      `Hidden-gem score ${Math.round(destination.hidden_gem_score * 100)} / 100`,
+      `Sustainability score ${Math.round(destination.sustainability_score * 100)} / 100`,
     ],
-    tradeoffs: [
-      "Operational details require local confirmation",
-      "Crowd conditions are estimated, not live occupancy",
-    ],
-    comparison: {
-      original: "A nearby major Alpine hotspot",
-      reachDifference: "Travel difference depends on the selected origin",
-      advantages: [
-        "Potentially lower visitor pressure",
-        "Opportunity to distribute local spending",
-        "More flexible visit timing",
-      ],
-    },
+    tradeoffs: ["Operational details require local confirmation", "Crowd levels are prototype estimates, not live occupancy"],
+    comparison,
     itinerary: [
-      { time: "00:00", label: `Leave from your selected starting point` },
+      { time: "00:00", label: "Leave from your selected starting point" },
       { time: "+travel", label: `Arrive at ${destination.name}` },
-      { time: "+30m", label: `Begin the recommended ${destination.destination_type.toLowerCase()} experience` },
-      { time: `+${Math.max(60, durationMinutes - 30)}m`, label: "Optional local stop and return" },
+      { time: "+30m", label: `Begin the ${destination.destination_type.toLowerCase()} experience` },
+      { time: `+${durationMinutes}m`, label: "Optional local stop and return" },
     ],
-    mobility: [
-      "Road travel can be recalculated from the selected origin",
-      "Public transport availability requires provider confirmation",
-      "Parking and seasonal access are not yet confirmed",
-    ],
+    mobility: ["Road travel is recalculated from your origin", "Public transport requires a verified provider route", "Check seasonal access before departure"],
     localBenefit: `A visit to ${destination.name} can distribute time and spending beyond the main tourism corridors of ${destination.region}.`,
-    safety: [
-      "Check official local conditions before departure",
-      difficulty === "moderate" ? "Outdoor footwear and route awareness recommended" : "Generally suitable for a flexible visit",
-      "Seasonal restrictions may apply",
-    ],
+    safety: ["Check official local conditions before departure", difficulty === "moderate" ? "Outdoor footwear and route awareness recommended" : "Generally suitable for a flexible visit", "Seasonal restrictions may apply"],
     points,
     crowdByHour: [
-      { time: "09:00", level: seed % 3 === 0 ? "low" : "moderate" },
-      { time: "12:00", level: crowd === "high" ? "high" : "moderate" },
+      { time: "09:00", level: crowd === "high" ? "moderate" : "low" },
+      { time: "12:00", level: crowd },
       { time: "15:00", level: crowd === "low" ? "low" : "moderate" },
       { time: "17:00", level: "low" },
     ],
@@ -175,12 +136,7 @@ const adaptDestination = (destination: PublicDestination): Experience => {
 };
 
 const publicDestinations = (destinationData as { destinations: PublicDestination[] }).destinations;
-const curatedNames = new Set(curatedExperiences.map((experience) => experience.name.toLocaleLowerCase()));
-const catalogueExperiences = publicDestinations
-  .filter((destination) => !curatedNames.has(destination.name.toLocaleLowerCase()))
-  .map(adaptDestination);
-
-export const allExperiences: Experience[] = [...curatedExperiences, ...catalogueExperiences];
+export const allExperiences: Experience[] = publicDestinations.map(adaptDestination);
 
 export const catalogueSummary = publicDestinations.reduce<Record<string, number>>((summary, destination) => {
   summary[destination.region] = (summary[destination.region] ?? 0) + 1;
