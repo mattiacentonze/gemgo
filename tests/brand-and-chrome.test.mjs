@@ -6,9 +6,9 @@ const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf
 
 test("real GemGo wordmark is visible in the shared brand shell", () => {
   const css = read("app/styles/polish.css");
-  const logo = readFileSync(new URL("../public/assets/gemgo-logo.png", import.meta.url));
-  assert(logo.byteLength > 1000);
-  assert.match(css, /url\("\/assets\/gemgo-logo\.png"\)/);
+  const logo = readFileSync(new URL("../public/assets/gemgo-logo-green.svg", import.meta.url));
+  assert(logo.byteLength > 100);
+  assert.match(css, /url\("\/assets\/gemgo-logo-green\.svg\?v=2"\)/);
   assert.match(css, /\.brand \.brand-mark svg[\s\S]*display: none/);
   assert.match(css, /\.brand-compact \.brand-mark/);
 });
