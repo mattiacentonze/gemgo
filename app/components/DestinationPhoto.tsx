@@ -322,11 +322,6 @@ export default function DestinationPhoto({
           </div>
         )}
       </div>
-      <figcaption>
-        <a href={activeMedia.source} target="_blank" rel="noreferrer">
-          {activeMedia.author} · {activeMedia.license}
-        </a>
-      </figcaption>
     </figure>
   );
 }
