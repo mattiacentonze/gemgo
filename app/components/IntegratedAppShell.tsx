@@ -45,7 +45,10 @@ import {
 import { useEffect, useMemo, useState } from "react";
 import DestinationPhoto from "./DestinationPhoto";
 import ExperienceMap from "./ExperienceMap";
+import IntegratedResultCard from "./IntegratedResultCard";
 import LocalProfilePanel from "./LocalProfilePanel";
+import { locales, type Locale } from "../domain";
+import { localeNames, usePersistentLocale } from "../hooks/usePersistentLocale";
 import { difficultyLabel, kindLabel, panUi, transportLabel } from "../i18n/pan-ui";
 import { allExperiences, catalogueSummary, nearestGtfsStop, totalCatalogueEntries } from "../product/integrated-data";
 import {
@@ -76,12 +79,8 @@ import {
 import { defaultPreferences } from "../product/data";
 import type { AppSection, Experience, ExperienceKind, SearchPreferences, TransportMode } from "../product/types";
 
-type Locale = "en" | "it" | "de" | "fr" | "sl";
 type ExploreStage = "brief" | "results" | "experience";
 type TripMode = "active" | "saved";
-
-const locales: Locale[] = ["en", "it", "de", "fr", "sl"];
-const localeNames: Record<Locale, string> = { en: "English", it: "Italiano", de: "Deutsch", fr: "Français", sl: "Slovenščina" };
 
 const copy = {
   en: {
@@ -175,7 +174,7 @@ const formatDuration = (minutes: number) => {
 const overlap = (first: ExperienceKind[], second: ExperienceKind[]) => first.some((item) => second.includes(item));
 
 export default function IntegratedAppShell() {
-  const [locale, setLocale] = useState<Locale>("en");
+  const { locale, setLocale } = usePersistentLocale();
   const [languageOpen, setLanguageOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [section, setSection] = useState<AppSection>("explore");
@@ -240,8 +239,6 @@ export default function IntegratedAppShell() {
   })();
 
   useEffect(() => {
-    const storedLocale = window.localStorage.getItem("gemgo-locale-v3") as Locale | null;
-    if (storedLocale && locales.includes(storedLocale)) setLocale(storedLocale);
     const trips = loadSavedTrips();
     const active = loadActiveTrip();
     const migrated = migrateLegacyTrip(defaultPreferences);
@@ -250,11 +247,6 @@ export default function IntegratedAppShell() {
     setLedger(loadLedger());
     setUnlocks(loadRewardUnlocks());
   }, []);
-
-  useEffect(() => {
-    document.documentElement.lang = locale;
-    window.localStorage.setItem("gemgo-locale-v3", locale);
-  }, [locale]);
 
   useEffect(() => saveTrips(savedTrips), [savedTrips]);
   useEffect(() => saveActiveTrip(activeTrip), [activeTrip]);
@@ -506,7 +498,7 @@ export default function IntegratedAppShell() {
           {stage === "results" && (
             <>
               <div className="results-header"><button type="button" className="back-button" onClick={() => setStage("brief")}><ArrowLeft size={17} /> {t.adjust}</button><div><span className="eyebrow"><Sparkles size={15} /> Ranked from {totalCatalogueEntries} entries</span><h1>{t.results}</h1><p>Starting from <strong>{origin?.label ?? preferences.origin}</strong>, within <strong>{preferences.maxTravelMinutes} minutes</strong>.</p></div><div className="results-summary"><strong>3</strong><span>distinct recommendation roles</span><small>Live route times where available</small></div></div>
-              <div className="result-layout"><div className="results-map-panel"><ExperienceMap experiences={ranked.map((item) => item.experience)} origin={origin} selectedId={selectedId} onSelect={(experience) => setSelectedId(experience.id)} /><div className="comparison-proof"><div><span>Original plan</span><strong>Popular destination</strong><small>Higher expected pressure</small></div><ArrowRight size={22} /><div><span>GemGo alternative</span><strong>{ranked[0]?.experience.name}</strong><small>Compatible and more transparent</small></div></div></div><div className="result-cards">{ranked.map((item) => <IntegratedResultCard key={item.experience.id} item={item} saved={savedTrips.some((trip) => trip.trip.experienceId === item.experience.id)} onOpen={() => { setSelectedId(item.experience.id); setStage("experience"); window.scrollTo({ top: 0, behavior: "smooth" }); }} onSave={() => saveIdea(item.experience)} />)}{showMore && moreResults.map((experience) => <CompactResult key={experience.id} experience={experience} onOpen={() => { setSelectedId(experience.id); setStage("experience"); }} />)}<button type="button" className="show-more-button" onClick={() => setShowMore((value) => !value)}>{showMore ? "Show only the top three" : "Show more compatible results"}<ChevronRight size={17} /></button></div></div>
+              <div className="result-layout"><div className="results-map-panel"><ExperienceMap locale={locale} experiences={ranked.map((item) => item.experience)} origin={origin} selectedId={selectedId} onSelect={(experience) => setSelectedId(experience.id)} /><div className="comparison-proof"><div><span>Original plan</span><strong>Popular destination</strong><small>Higher expected pressure</small></div><ArrowRight size={22} /><div><span>GemGo alternative</span><strong>{ranked[0]?.experience.name}</strong><small>Compatible and more transparent</small></div></div></div><div className="result-cards">{ranked.map((item) => <IntegratedResultCard locale={locale} key={item.experience.id} item={item} saved={savedTrips.some((trip) => trip.trip.experienceId === item.experience.id)} onOpen={() => { setSelectedId(item.experience.id); setStage("experience"); window.scrollTo({ top: 0, behavior: "smooth" }); }} onSave={() => saveIdea(item.experience)} />)}{showMore && moreResults.map((experience) => <CompactResult key={experience.id} experience={experience} onOpen={() => { setSelectedId(experience.id); setStage("experience"); }} />)}<button type="button" className="show-more-button" onClick={() => setShowMore((value) => !value)}>{showMore ? "Show only the top three" : "Show more compatible results"}<ChevronRight size={17} /></button></div></div>
             </>
           )}
 
@@ -532,11 +524,6 @@ export default function IntegratedAppShell() {
       {toast && <div className="action-toast"><CheckCircle2 size={18} />{toast}</div>}
     </main>
   );
-}
-
-function IntegratedResultCard({ item, saved, onOpen, onSave }: { item: RankedExperience; saved: boolean; onOpen: () => void; onSave: () => void }) {
-  const experience = item.experience;
-  return <article className="experience-card integrated-result-card"><div className="experience-card-media"><DestinationPhoto name={experience.name} region={experience.region} compact /><span className="rank-label">{item.label}</span><span className={`crowd-chip crowd-${experience.crowd}`}>{experience.crowd} crowd</span></div><div className="experience-card-body"><span className="validation-label"><BadgeCheck size={14} />{experience.validation}</span><h2>{experience.name}</h2><p className="experience-promise">{experience.promise}</p><div className="experience-metrics"><span><Navigation size={16} />{item.travelMinutes ?? "?"} min</span><span><Clock3 size={16} />{formatDuration(experience.durationMinutes)}</span><span><Coins size={16} />{experience.points}</span></div><div className="reason-list">{item.reasons.slice(0, 3).map((reason) => <span key={reason}><CheckCircle2 size={14} />{reason}</span>)}</div><div className="experience-card-actions"><button type="button" className="button button-primary" onClick={onOpen}>View experience<ArrowRight size={16} /></button><button type="button" className="button button-secondary" onClick={onSave} disabled={saved}>{saved ? "Saved" : "Save"}</button></div></div></article>;
 }
 
 function CompactResult({ experience, onOpen }: { experience: Experience; onOpen: () => void }) {
