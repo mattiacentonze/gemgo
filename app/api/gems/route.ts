@@ -35,8 +35,11 @@ export async function POST(request: Request) {
     const category = cleanText(payload.category, 40);
     const rawMapUrl = cleanText(payload.mapUrl, 500);
     const mapUrl = rawMapUrl ? new URL(rawMapUrl) : null;
+    const photoName = cleanText(payload.photoName, 180);
+    const photoType = cleanText(payload.photoType, 80);
+    const photoSize = Number(payload.photoSize);
 
-    if (name.length < 3 || description.length < 20) {
+    if (name.length < 3 || description.length < 20 || !photoName || !["image/jpeg", "image/png", "image/webp"].includes(photoType) || !Number.isFinite(photoSize) || photoSize <= 0 || photoSize > 8 * 1024 * 1024) {
       return Response.json({ error: "invalid_contribution" }, { status: 400 });
     }
     if (!regionCodes.includes(region as (typeof regionCodes)[number]) || region === "all") {
