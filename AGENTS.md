@@ -1,0 +1,52 @@
+# GemGo Pan-Alpine contributor guide
+
+## Source and release scope
+
+- Product changes belong on `agent/pan-alpine-product-redesign`; never merge or push directly to the GitHub `main` branch.
+- The existing Sites project is the deployment target. Use its lifecycle checkout and checkpoint flow; do not create a second site.
+- Preserve the Pan-Alpine positioning: comparable lower-pressure alternatives, explainable ranking, visit verification, GemPoints and aggregated territorial outcomes.
+
+## Product truth
+
+- Clearly distinguish live, estimated, static and demonstrative data.
+- Do not present partner rewards, crowd prediction, account sync or institutional metrics as production capabilities until their real backends and agreements exist.
+- `GemPoints` is the public name in every language. Never rename this section to Rewards, GemXP or Credits.
+- Device-local profile and authentication are demo functionality. Never imply server-side account security or cross-device persistence.
+
+## Internationalisation
+
+- Supported locales are EN, IT, DE, FR and SL. Use `app/domain.ts` and `usePersistentLocale`; do not create another locale store.
+- The selected locale must persist between the homepage and `/app`, update `document.documentElement.lang`, and remain usable on touch and desktop layouts.
+- New user-facing strings must be added for all five locales. Dynamic place names may remain proper nouns; surrounding labels must be translated.
+
+## Responsive and interaction rules
+
+- The homepage and app headers must be full-bleed; their inner content may be width constrained.
+- Logo, language, profile/menu and primary navigation must remain operable at every supported width. Never hide the only route to an action.
+- Menus, notifications, profile and language panels are mutually exclusive and must fit inside the dynamic viewport.
+- Map overlays must reserve separate areas: zoom controls top-left, contextual cards top-right, compact legend at the bottom. Do not stack controls over one another.
+- Region buttons are real controls: selecting Bavaria or Valle d’Aosta must refit the map to that region and expose selected state with `aria-pressed`.
+- Avoid horizontal scrolling at the page level. Long German, French and Slovenian copy must wrap without clipping.
+- Touch targets should be at least 40px, preferably 44px for primary controls.
+
+## Photography
+
+- Destination photography must be landscape (minimum source ratio 1.22, rendered with `object-fit: cover`) and show the named place or its immediate setting.
+- Reject maps, books, covers, diagrams, flags, logos, posters, scans, portraits and weakly related results.
+- Do not place ranking text over destination photos. Crowd status may remain as a compact chip.
+- Wikimedia source, author and licence metadata must remain in the data model even while attribution is temporarily hidden in the demo UI. Restoring compliant attribution is a release requirement before production use.
+
+## UI composition
+
+- Recommendation cards use explicit horizontal icon-and-text rows for validation and reasons. Metrics must include labels, not unexplained numbers.
+- Prefer feature components and feature-scoped styles. Extract a component when it has independent state/behaviour or a file grows beyond roughly 500 lines; do not perform risky wholesale rewrites immediately before a demo.
+- Avoid adding broad late-stage CSS selectors. Scope fixes to a route or component and remove superseded rules when practical.
+- Motion must respect `prefers-reduced-motion`; sound remains opt-in and off by default.
+
+## Required verification before publishing
+
+- Run lint, production build, i18n checks and the full test suite.
+- Use the agent preview for real visual and interaction QA at representative widths: 320, 360, 390, 430, 768, 1024 and 1440px. Test at least one short and one tall viewport.
+- On the homepage, test language switching, mobile menu, all anchor links, both CTAs, regional map controls and map overlays.
+- In `/app`, test language switching, profile, notifications, mobile menu, Explore results, image gallery, map, My Trip, GemPoints and About.
+- Inspect screenshots for overflow, clipped copy, grey image bars, overlay collisions, inaccessible controls and inconsistent spacing. Fix findings before checkpointing.
