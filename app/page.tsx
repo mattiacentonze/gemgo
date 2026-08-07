@@ -156,9 +156,9 @@ export default function HomePage() {
           <p>GemGo began at the EUSALP AI Hackathon and is being developed as a practical system for visitors and territories.</p>
         </div>
         <div className="team-role-grid">
-          <article><strong>Product & development</strong><span>Platform, recommendation logic and user experience</span></article>
-          <article><strong>Strategy & partnerships</strong><span>Business model, institutions and local reward network</span></article>
-          <article><strong>Tourism & territory</strong><span>Local validation, content quality and stakeholder needs</span></article>
+          <article><strong>Mattia Centonze</strong><span>Product Development Lead · platform, infrastructure and recommendation system</span></article>
+          <article><strong>Killian Foloppe</strong><span>Business Strategy Lead · development, strategy and financial planning</span></article>
+          <article><strong>Martino Dalla Fontana</strong><span>Partnerships & Growth Lead · merchants, institutions and go-to-market</span></article>
         </div>
         <div className="achievement-banner"><BadgeCheck size={22} /><div><strong>EUSALP AI Hackathon winner</strong><span>Prototype developed for pan-Alpine tourism-flow redistribution.</span></div></div>
       </section>
