@@ -54,7 +54,7 @@ test("renders the integrated application route", async () => {
   assert.match(html, /What would you like to experience/i);
   assert.match(html, /Show my best alternatives/i);
   assert.match(html, /My Trip/i);
-  assert.match(html, /Rewards/i);
+  assert.match(html, /GemPoints/i);
   assert.match(html, /Current catalogue/i);
 });
 
