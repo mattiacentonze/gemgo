@@ -17,7 +17,7 @@ const icons = {
 const defaultLabels: Record<AppPage, string> = {
   explore: "Explore",
   trip: "My Trip",
-  rewards: "Rewards",
+  rewards: "GemPoints",
   about: "About",
 };
 
