@@ -3,6 +3,7 @@
 import { Download, ShieldCheck, Trash2, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+import type { Locale } from "../domain";
 
 const GEMGO_KEYS = [
   "gemgo-trips-v3",
@@ -22,7 +23,17 @@ const GEMGO_KEYS = [
   "gemgo-saved-plan",
   "gemgo-location-consent",
   "gemgo-account-prompt-next",
+  "gemgo-local-profile-v1",
+  "gemgo-local-session-v1",
 ];
+
+const privacyText = {
+  en: { title: "Your local data", body: "Export it or remove only GemGo data from this browser.", export: "Export JSON", remove: "Delete local data", dialog: "Confirm deletion of local GemGo data", question: "Delete GemGo data from this browser?", warning: "Saved trips, multi-day plans, GemPoints history, feedback, reward codes, profile and local preferences will be removed. This cannot be undone.", cancel: "Cancel", confirm: "Delete data", close: "Cancel deletion" },
+  it: { title: "I tuoi dati locali", body: "Esportali oppure rimuovi solo i dati GemGo da questo browser.", export: "Esporta JSON", remove: "Elimina dati locali", dialog: "Conferma eliminazione dei dati locali GemGo", question: "Eliminare i dati GemGo da questo browser?", warning: "Viaggi, piani, storico GemPoints, feedback, codici premio, profilo e preferenze locali verranno rimossi. L’azione non è reversibile.", cancel: "Annulla", confirm: "Elimina dati", close: "Annulla eliminazione" },
+  de: { title: "Deine lokalen Daten", body: "Exportiere sie oder entferne nur GemGo-Daten aus diesem Browser.", export: "JSON exportieren", remove: "Lokale Daten löschen", dialog: "Löschen lokaler GemGo-Daten bestätigen", question: "GemGo-Daten aus diesem Browser löschen?", warning: "Gespeicherte Reisen, Pläne, GemPoints-Verlauf, Feedback, Prämiencodes, Profil und lokale Einstellungen werden entfernt. Dies kann nicht rückgängig gemacht werden.", cancel: "Abbrechen", confirm: "Daten löschen", close: "Löschen abbrechen" },
+  fr: { title: "Vos données locales", body: "Exportez-les ou supprimez uniquement les données GemGo de ce navigateur.", export: "Exporter en JSON", remove: "Supprimer les données locales", dialog: "Confirmer la suppression des données locales GemGo", question: "Supprimer les données GemGo de ce navigateur ?", warning: "Les voyages, plans, historique GemPoints, avis, codes de récompense, profil et préférences locales seront supprimés. Cette action est irréversible.", cancel: "Annuler", confirm: "Supprimer", close: "Annuler la suppression" },
+  sl: { title: "Vaši lokalni podatki", body: "Izvozite jih ali iz tega brskalnika odstranite samo podatke GemGo.", export: "Izvozi JSON", remove: "Izbriši lokalne podatke", dialog: "Potrditev izbrisa lokalnih podatkov GemGo", question: "Izbrisati podatke GemGo iz tega brskalnika?", warning: "Shranjena potovanja, načrti, zgodovina GemPoints, odzivi, kode nagrad, profil in lokalne nastavitve bodo odstranjeni. Tega ni mogoče razveljaviti.", cancel: "Prekliči", confirm: "Izbriši podatke", close: "Prekliči izbris" },
+} as const;
 
 const collectLocalData = () => {
   const data: Record<string, unknown> = {};
@@ -46,12 +57,22 @@ const collectLocalData = () => {
 export default function PrivacyControls() {
   const [target, setTarget] = useState<Element | null>(null);
   const [confirming, setConfirming] = useState(false);
+  const [locale, setLocale] = useState<Locale>("en");
+  const t = privacyText[locale];
 
   useEffect(() => {
     const resolve = () => setTarget(document.querySelector(".integrated-app .privacy-hero"));
     resolve();
     const observer = new MutationObserver(resolve);
     observer.observe(document.body, { childList: true, subtree: true });
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const sync = () => setLocale((document.documentElement.lang || "en") as Locale);
+    sync();
+    const observer = new MutationObserver(sync);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["lang"] });
     return () => observer.disconnect();
   }, []);
 
@@ -85,30 +106,30 @@ export default function PrivacyControls() {
       <div className="privacy-control-heading">
         <ShieldCheck size={20} />
         <div>
-          <strong>Your local data</strong>
-          <span>Export it or remove only GemGo data from this browser.</span>
+          <strong>{t.title}</strong>
+          <span>{t.body}</span>
         </div>
       </div>
       <div className="privacy-control-actions">
         <button type="button" className="button button-secondary" onClick={exportData}>
           <Download size={17} />
-          Export JSON
+          {t.export}
         </button>
         <button type="button" className="button privacy-delete-button" onClick={() => setConfirming(true)}>
           <Trash2 size={17} />
-          Delete local data
+          {t.remove}
         </button>
       </div>
       {confirming && (
-        <div className="privacy-confirm" role="alertdialog" aria-label="Confirm deletion of local GemGo data">
-          <button type="button" className="icon-button" aria-label="Cancel deletion" onClick={() => setConfirming(false)}>
+        <div className="privacy-confirm" role="alertdialog" aria-label={t.dialog}>
+          <button type="button" className="icon-button" aria-label={t.close} onClick={() => setConfirming(false)}>
             <X size={17} />
           </button>
-          <strong>Delete GemGo data from this browser?</strong>
-          <p>Saved trips, multi-day plans, GemPoints history, visit feedback, reward codes and local preferences will be removed. This cannot be undone.</p>
+          <strong>{t.question}</strong>
+          <p>{t.warning}</p>
           <div>
-            <button type="button" className="button button-secondary" onClick={() => setConfirming(false)}>Cancel</button>
-            <button type="button" className="button privacy-delete-confirm" onClick={deleteData}>Delete data</button>
+            <button type="button" className="button button-secondary" onClick={() => setConfirming(false)}>{t.cancel}</button>
+            <button type="button" className="button privacy-delete-confirm" onClick={deleteData}>{t.confirm}</button>
           </div>
         </div>
       )}
