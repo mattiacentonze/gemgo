@@ -13,7 +13,7 @@ export type SavedTrip = {
 export type GemPointEvent = {
   id: string;
   amount: number;
-  type: "visit" | "gemdrop" | "mobility" | "partner" | "redemption";
+  type: "visit" | "gemdrop" | "mobility" | "partner" | "contribution" | "redemption";
   label: string;
   createdAt: string;
   balanceAfter: number;
