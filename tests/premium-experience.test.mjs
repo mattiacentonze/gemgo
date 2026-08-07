@@ -5,14 +5,14 @@ import test from "node:test";
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 
 test("modals cover mobile navigation and provide keyboard focus handling", () => {
-  const page = read("app/app/page.tsx");
-  const enhancer = read("app/components/ModalExperienceEnhancer.tsx");
+  const shell = read("app/components/IntegratedAppShell.tsx");
   const css = read("app/styles/modal-polish.css");
-  assert.match(page, /<ModalExperienceEnhancer \/>/);
-  assert.match(enhancer, /event\.key === "Escape"/);
-  assert.match(enhancer, /event\.key !== "Tab"/);
-  assert.match(enhancer, /previousFocus\?\.focus/);
-  assert.match(enhancer, /modal-backdrop/);
+  assert.match(shell, /const useModalA11y/);
+  assert.match(shell, /event\.key === "Escape"/);
+  assert.match(shell, /event\.key !== "Tab"/);
+  assert.match(shell, /previous\?\.focus/);
+  assert.match(shell, /modal-backdrop/);
+  assert.doesNotMatch(shell, /ModalExperienceEnhancer|observer\.observe\(document\.body/);
   assert.match(css, /\.modal-backdrop[\s\S]*z-index: 1000/);
   assert.match(css, /html\.has-open-modal/);
   assert.match(css, /prefers-reduced-motion: reduce/);
@@ -21,28 +21,24 @@ test("modals cover mobile navigation and provide keyboard focus handling", () =>
 test("flagship experiences use reviewed Commons file sets", () => {
   const media = read("app/lib/commons-media.ts");
   const expected = [
-    "Valpelline 001.JPG",
-    "Weißensee (Füssen).jpg",
-    "Stadtplatz Hall in Tirol.jpg",
-    "Mostnica Gorge.jpg",
-    "Engadinerhaus und hölzener Brunnen in Guarda.jpg",
-    "Gresse en Vercors - Hiver.jpg",
+    "Torgnon.JPG",
+    "Châtillon vista dal castello di Ussel..JPG",
+    "Gressoney-St-Jean - été.JPG",
+    "Piccolo S Bernardo.jpg",
+    "Fénis Castle.jpg",
   ];
   expected.forEach((filename) => assert(media.includes(filename), `Missing curated media file: ${filename}`));
   assert.match(media, /iiprop: "url\|size\|extmetadata"/);
 });
 
-test("post-visit feedback contributes only to a device-local dashboard metric", () => {
-  const page = read("app/app/page.tsx");
-  const metric = read("app/components/FeedbackImpactMetric.tsx");
-  const css = read("app/styles/feedback-impact.css");
-  assert.match(page, /<FeedbackImpactMetric \/>/);
-  assert.match(metric, /gemgo-visit-feedback-v1/);
-  assert.match(metric, /Alternative satisfaction/);
-  assert.match(metric, /device-local response/);
-  assert.match(metric, /snapshotRef/);
-  assert.match(metric, /Math\.round\(\(positive \/ feedback\.length\) \* 100\)/);
-  assert.match(css, /feedback-impact-metric/);
+test("post-visit feedback stays direct and device-local", () => {
+  const shell = read("app/components/IntegratedAppShell.tsx");
+  const feedback = read("app/components/VisitFeedback.tsx");
+  assert.match(shell, /<VisitFeedback/);
+  assert.match(feedback, /gemgo-visit-feedback-v1/);
+  assert.match(feedback, /window\.localStorage\.setItem/);
+  assert.match(feedback, /stays on this device/);
+  assert.doesNotMatch(feedback, /MutationObserver|createPortal/);
 });
 
 test("sound lifecycle closes its Web Audio context and uses stable listeners", () => {

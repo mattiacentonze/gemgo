@@ -1,22 +1,57 @@
 "use client";
 
-import { LoaderCircle } from "lucide-react";
+import { Layers3, LoaderCircle, Map as MapIcon, Mountain } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import type { Experience } from "../product/types";
+import type { Experience, TransportMode } from "../product/types";
 import type { OriginPoint } from "../product/recommendation-engine";
 import type { Locale } from "../domain";
-import { msg } from "../i18n/catalogs.mjs";
+import { msg } from "../i18n/catalogs";
+import { fetchRoadGeometry } from "../lib/geo";
 
 type Props = {
   experiences: Experience[];
   selectedId?: string;
   origin?: OriginPoint | null;
   routeCoordinates?: Array<[number, number]>;
+  routeMode?: TransportMode;
+  routeStops?: Experience[];
+  routeModes?: TransportMode[];
   onSelect?: (experience: Experience) => void;
   className?: string;
   locale?: Locale;
   showLegend?: boolean;
   focusRegion?: string | null;
+  focusRequestId?: number;
+};
+
+type MapStyle = "standard" | "relief";
+
+const ALPINE_BOUNDS: [[number, number], [number, number]] = [
+  [44.9, 6.35],
+  [48.5, 13.35],
+];
+
+const mapStyleCopy: Record<Locale, { label: string; standard: string; relief: string }> = {
+  en: { label: "Map style", standard: "Standard", relief: "Relief" },
+  it: { label: "Stile mappa", standard: "Standard", relief: "Rilievo" },
+  de: { label: "Kartenstil", standard: "Standard", relief: "Relief" },
+  fr: { label: "Style de carte", standard: "Standard", relief: "Relief" },
+  sl: { label: "Slog zemljevida", standard: "Standard", relief: "Relief" },
+};
+
+const routeStyle: Record<TransportMode, { color: string; dashArray?: string }> = {
+  walking: { color: "#3178c6", dashArray: "3 8" },
+  bicycle: { color: "#2f9e62" },
+  public: { color: "#ef8f2f", dashArray: "9 8" },
+  car: { color: "#7856a8" },
+  mixed: { color: "#0b9fa5", dashArray: "12 6 3 6" },
+};
+
+const engineMode = (mode: TransportMode) => {
+  if (mode === "car") return "driving";
+  if (mode === "bicycle") return "cycling";
+  if (mode === "public") return "public_transport";
+  return "walking";
 };
 
 const safeText = (value: string) =>
@@ -38,18 +73,30 @@ export default function ExperienceMap({
   selectedId,
   origin = null,
   routeCoordinates = [],
+  routeMode = "walking",
+  routeStops = [],
+  routeModes = [],
   onSelect,
   className = "",
   locale: localeProp,
   showLegend = true,
   focusRegion = null,
+  focusRequestId = 0,
 }: Props) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<import("leaflet").Map | null>(null);
   const markerLayerRef = useRef<import("leaflet").LayerGroup | null>(null);
   const routeLayerRef = useRef<import("leaflet").LayerGroup | null>(null);
+  const multiRouteLayerRef = useRef<import("leaflet").LayerGroup | null>(null);
+  const tileLayerRef = useRef<import("leaflet").TileLayer | null>(null);
+  const experienceMarkersRef = useRef(
+    new Map<string, import("leaflet").Marker>(),
+  );
   const onSelectRef = useRef(onSelect);
+  const selectedIdRef = useRef(selectedId);
   const [mapReady, setMapReady] = useState(false);
+  const [mapStyle, setMapStyle] = useState<MapStyle>("relief");
+  const [mapStyleOpen, setMapStyleOpen] = useState(false);
   const [observedLocale, setObservedLocale] = useState<Locale>("en");
   const locale = localeProp ?? observedLocale;
 
@@ -68,24 +115,27 @@ export default function ExperienceMap({
 
   useEffect(() => {
     let active = true;
+    const experienceMarkers = experienceMarkersRef.current;
     import("leaflet").then((module) => {
       if (!active || !containerRef.current || mapRef.current) return;
       const L = module.default;
       const map = L.map(containerRef.current, {
         zoomControl: true,
-        minZoom: 4,
+        minZoom: 5,
         maxZoom: 18,
+        maxBounds: ALPINE_BOUNDS,
+        maxBoundsViscosity: 0.92,
+        preferCanvas: true,
+        fadeAnimation: false,
+        markerZoomAnimation: false,
         wheelPxPerZoomLevel: 140,
         wheelDebounceTime: 55,
       });
-      L.tileLayer("https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png", {
-        attribution: "Map: © OpenStreetMap contributors, SRTM · style: © OpenTopoMap",
-        maxZoom: 17,
-      }).addTo(map);
       markerLayerRef.current = L.layerGroup().addTo(map);
       routeLayerRef.current = L.layerGroup().addTo(map);
+      multiRouteLayerRef.current = L.layerGroup().addTo(map);
       mapRef.current = map;
-      map.setView([46.7, 9.8], 6);
+      map.fitBounds(ALPINE_BOUNDS, { padding: [8, 8], animate: false });
       setMapReady(true);
     });
     return () => {
@@ -94,8 +144,40 @@ export default function ExperienceMap({
       mapRef.current = null;
       markerLayerRef.current = null;
       routeLayerRef.current = null;
+      multiRouteLayerRef.current = null;
+      tileLayerRef.current = null;
+      experienceMarkers.clear();
     };
   }, []);
+
+  useEffect(() => {
+    if (!mapReady || !mapRef.current) return;
+    let disposed = false;
+    import("leaflet").then(({ default: L }) => {
+      const map = mapRef.current;
+      if (!map || disposed) return;
+      tileLayerRef.current?.removeFrom(map);
+      const layer = mapStyle === "standard"
+        ? L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+            attribution: "© OpenStreetMap contributors",
+            bounds: ALPINE_BOUNDS,
+            keepBuffer: 1,
+            maxZoom: 18,
+            noWrap: true,
+            updateWhenIdle: true,
+          })
+        : L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
+            attribution: "Tiles © Esri — Source: Esri, Maxar, Earthstar Geographics",
+            bounds: ALPINE_BOUNDS,
+            keepBuffer: 1,
+            maxZoom: 18,
+            noWrap: true,
+            updateWhenIdle: true,
+          });
+      tileLayerRef.current = layer.addTo(map);
+    });
+    return () => { disposed = true; };
+  }, [mapReady, mapStyle]);
 
   useEffect(() => {
     if (!mapReady) return;
@@ -103,12 +185,11 @@ export default function ExperienceMap({
     const render = async () => {
       const map = mapRef.current;
       const markerLayer = markerLayerRef.current;
-      const routeLayer = routeLayerRef.current;
-      if (!map || !markerLayer || !routeLayer) return;
+      if (!map || !markerLayer) return;
       const L = (await import("leaflet")).default;
       if (disposed) return;
       markerLayer.clearLayers();
-      routeLayer.clearLayers();
+      experienceMarkersRef.current.clear();
 
       if (origin) {
         L.circleMarker([origin.lat, origin.lng], {
@@ -136,82 +217,139 @@ export default function ExperienceMap({
           .addTo(markerLayer);
       }
 
-      const threshold = map.getZoom() >= 11 ? 0 : 56;
-      const groups: Array<{ items: Experience[]; x: number; y: number }> = [];
+      const coordinateGroups = new Map<string, Experience[]>();
       experiences.forEach((experience) => {
-        const point = map.latLngToContainerPoint([experience.latitude, experience.longitude]);
-        const group = threshold
-          ? groups.find((item) => Math.hypot(item.x - point.x, item.y - point.y) <= threshold)
-          : undefined;
-        if (group) {
-          group.items.push(experience);
-          group.x = (group.x * (group.items.length - 1) + point.x) / group.items.length;
-          group.y = (group.y * (group.items.length - 1) + point.y) / group.items.length;
-        } else {
-          groups.push({ items: [experience], x: point.x, y: point.y });
-        }
+        const key = `${experience.latitude.toFixed(5)}:${experience.longitude.toFixed(5)}`;
+        const group = coordinateGroups.get(key) ?? [];
+        group.push(experience);
+        coordinateGroups.set(key, group);
       });
 
-      groups.forEach((group) => {
-        if (group.items.length > 2) {
-          const latitude = group.items.reduce((sum, item) => sum + item.latitude, 0) / group.items.length;
-          const longitude = group.items.reduce((sum, item) => sum + item.longitude, 0) / group.items.length;
-          const cluster = L.marker([latitude, longitude], {
-            icon: L.divIcon({
-              className: "gemgo-map-cluster-wrap",
-              html: `<span class="gemgo-map-cluster"><img src="/assets/gemgo-logo-green.svg?v=2" alt=""/><strong>${group.items.length}</strong></span>`,
-              iconSize: [46, 46],
-              iconAnchor: [23, 23],
-            }),
-          });
-          cluster.bindTooltip(msg(locale, "map.clusterLabel", { count: group.items.length, crowd: msg(locale, "map.legendLow") }));
-          cluster.on("click", () => {
-            map.fitBounds(
-              L.latLngBounds(group.items.map((item) => [item.latitude, item.longitude])),
-              { padding: [48, 48], maxZoom: 13 },
-            );
-          });
-          cluster.addTo(markerLayer);
-          return;
-        }
-
-        group.items.forEach((experience) => {
-          const selected = selectedId === experience.id;
-          const marker = L.marker([experience.latitude, experience.longitude], {
+      experiences.forEach((experience) => {
+          const coordinateKey = `${experience.latitude.toFixed(5)}:${experience.longitude.toFixed(5)}`;
+          const coordinateGroup = coordinateGroups.get(coordinateKey) ?? [experience];
+          const coordinateIndex = coordinateGroup.findIndex(
+            (item) => item.id === experience.id,
+          );
+          const angle =
+            coordinateGroup.length > 1
+              ? (coordinateIndex / coordinateGroup.length) * Math.PI * 2
+              : 0;
+          const offset = coordinateGroup.length > 1 ? 0.00045 : 0;
+          const marker = L.marker(
+            [
+              experience.latitude + Math.sin(angle) * offset,
+              experience.longitude + Math.cos(angle) * offset,
+            ],
+            {
             icon: L.divIcon({
               className: "gemgo-map-marker-wrap",
-              html: `<span class="gemgo-map-marker${selected ? " is-selected" : ""}"><img src="${markerLogo(experience)}" alt=""/></span>`,
-              iconSize: selected ? [46, 56] : [40, 50],
-              iconAnchor: selected ? [23, 56] : [20, 50],
+              html: `<span class="gemgo-map-marker${selectedIdRef.current === experience.id ? " is-selected" : ""}"><img src="${markerLogo(experience)}" alt=""/></span>`,
+              iconSize: [40, 50],
+              iconAnchor: [20, 50],
             }),
             title: experience.name,
-          });
+            },
+          );
           marker.bindPopup(
             `<div class="gemgo-map-popup"><strong>${safeText(experience.name)}</strong><span>${safeText(experience.region)} · ${safeText(experience.country)}</span><small>${safeText(msg(locale, experience.crowd === "low" ? "map.legendLow" : experience.crowd === "moderate" ? "map.legendModerate" : "map.legendBusy"))} · ${safeText(experience.validation)}</small></div>`,
           );
-          marker.on("click", () => onSelectRef.current?.(experience));
+          marker.on("click", () => {
+            marker.openPopup();
+            onSelectRef.current?.(experience);
+          });
           marker.addTo(markerLayer);
-          if (selected) marker.openPopup();
-        });
+          experienceMarkersRef.current.set(experience.id, marker);
       });
-
-      if (routeCoordinates.length > 1) {
-        L.polyline(routeCoordinates, {
-          color: "#185c4d",
-          weight: 5,
-          opacity: 0.82,
-        }).addTo(routeLayer);
-      }
     };
 
-    render();
-    const map = mapRef.current;
-    map?.on("zoomend moveend", render);
+    void render();
     return () => {
       disposed = true;
-      map?.off("zoomend moveend", render);
     };
-  }, [experiences, locale, mapReady, origin, routeCoordinates, selectedId]);
+  }, [experiences, locale, mapReady, origin]);
+
+  useEffect(() => {
+    selectedIdRef.current = selectedId;
+    experienceMarkersRef.current.forEach((marker, id) => {
+      marker
+        .getElement()
+        ?.querySelector(".gemgo-map-marker")
+        ?.classList.toggle("is-selected", id === selectedId);
+    });
+  }, [selectedId]);
+
+  useEffect(() => {
+    if (!mapReady) return;
+    let disposed = false;
+    const draw = async () => {
+      const layer = routeLayerRef.current;
+      if (!layer) return;
+      const L = (await import("leaflet")).default;
+      if (disposed) return;
+      layer.clearLayers();
+      if (routeCoordinates.length <= 1) return;
+      const style = routeStyle[routeMode];
+      L.polyline(routeCoordinates, {
+        color: style.color,
+        weight: 5,
+        opacity: 0.9,
+        dashArray: style.dashArray,
+        lineCap: "round",
+        className: `gemgo-route gemgo-route-${routeMode}`,
+      }).addTo(layer);
+    };
+    void draw();
+    return () => {
+      disposed = true;
+    };
+  }, [mapReady, routeCoordinates, routeMode]);
+
+  useEffect(() => {
+    if (!mapReady) return;
+    let disposed = false;
+    const controller = new AbortController();
+    const draw = async () => {
+      const map = mapRef.current;
+      const layer = multiRouteLayerRef.current;
+      if (!map || !layer) return;
+      const L = (await import("leaflet")).default;
+      if (disposed) return;
+      layer.clearLayers();
+      for (let index = 1; index < routeStops.length; index += 1) {
+        const from = routeStops[index - 1];
+        const to = routeStops[index];
+        const mode = routeModes[index - 1] ?? "public";
+        const style = routeStyle[mode];
+        let coordinates: Array<[number, number]> = [[from.latitude, from.longitude], [to.latitude, to.longitude]];
+        try {
+          const route = await fetchRoadGeometry(
+            { lat: from.latitude, lng: from.longitude },
+            { lat: to.latitude, lng: to.longitude },
+            engineMode(mode),
+            controller.signal,
+          );
+          if (route?.coordinates?.length) coordinates = route.coordinates;
+        } catch (error) {
+          if ((error as { name?: string }).name === "AbortError") return;
+        }
+        if (disposed) return;
+        L.polyline(coordinates, {
+          color: style.color,
+          weight: 5,
+          opacity: 0.9,
+          dashArray: coordinates.length === 2 ? (style.dashArray ?? "6 8") : style.dashArray,
+          lineCap: "round",
+          className: `gemgo-route gemgo-route-${mode}`,
+        }).addTo(layer);
+      }
+    };
+    void draw();
+    return () => {
+      disposed = true;
+      controller.abort();
+    };
+  }, [mapReady, routeModes, routeStops]);
 
   useEffect(() => {
     if (!mapReady) return;
@@ -248,7 +386,7 @@ export default function ExperienceMap({
     };
     focus();
     return () => { disposed = true; };
-  }, [experiences, focusRegion, mapReady]);
+  }, [experiences, focusRegion, focusRequestId, mapReady]);
 
   useEffect(() => {
     if (!mapReady) return;
@@ -261,7 +399,7 @@ export default function ExperienceMap({
   }, [mapReady]);
 
   return (
-    <div className={`experience-map-shell ${className}`}>
+    <div className={`experience-map-shell is-${mapStyle} ${className}`}>
       <div ref={containerRef} className="experience-map" aria-label={msg(locale, "map.interactive", { count: experiences.length })} />
       {!mapReady && (
         <div className="experience-map-loading" role="status">
@@ -269,6 +407,42 @@ export default function ExperienceMap({
           <span>{msg(locale, "map.destinationMap")}…</span>
         </div>
       )}
+      <div className={`experience-map-style${mapStyleOpen ? " is-open" : ""}`}>
+        <button
+          type="button"
+          className="experience-map-style-trigger"
+          aria-label={mapStyleCopy[locale].label}
+          aria-expanded={mapStyleOpen}
+          title={mapStyleCopy[locale].label}
+          onClick={() => setMapStyleOpen((open) => !open)}
+        >
+          <Layers3 size={18} />
+        </button>
+        {mapStyleOpen && (
+          <div className="experience-map-style-options" aria-label={mapStyleCopy[locale].label}>
+            <button
+              type="button"
+              className={mapStyle === "standard" ? "is-active" : ""}
+              aria-label={mapStyleCopy[locale].standard}
+              aria-pressed={mapStyle === "standard"}
+              title={mapStyleCopy[locale].standard}
+              onClick={() => { setMapStyle("standard"); setMapStyleOpen(false); }}
+            >
+              <MapIcon size={18} />
+            </button>
+            <button
+              type="button"
+              className={mapStyle === "relief" ? "is-active" : ""}
+              aria-label={mapStyleCopy[locale].relief}
+              aria-pressed={mapStyle === "relief"}
+              title={mapStyleCopy[locale].relief}
+              onClick={() => { setMapStyle("relief"); setMapStyleOpen(false); }}
+            >
+              <Mountain size={18} />
+            </button>
+          </div>
+        )}
+      </div>
       {showLegend && <div className="experience-map-legend" aria-label={msg(locale, "map.crowds")}>
         <strong>{msg(locale, "plan.crowdPredicted")}</strong>
         <span><img src="/assets/gemgo-logo-green.svg?v=2" alt="" /> {msg(locale, "map.legendLow")}</span>

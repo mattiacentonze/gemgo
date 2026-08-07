@@ -36,9 +36,9 @@ export default function MarketingHeader({ locale, onLocaleChange, copy }: Props)
 
   const links = [
     ["#how", copy.navigation.how],
-    ["/app", copy.navigation.tryApp],
-    ["#destinations", copy.navigation.coverage],
+    ["/app/explore", copy.navigation.tryApp],
     ["/about", copy.navigation.team],
+    ["/privacy", copy.footer.privacy],
   ] as const;
 
   return (
@@ -83,7 +83,7 @@ export default function MarketingHeader({ locale, onLocaleChange, copy }: Props)
               </div>
             )}
           </div>
-          <Link href="/app?section=rewards" className="marketing-points-link"><Gem size={18} /><span><strong>1,750</strong><small>GemPoints</small></span></Link>
+          <Link href="/app/gempoints" className="marketing-points-link"><Gem size={18} /><span><strong>1,750</strong><small>GemPoints</small></span></Link>
           <Link href="/profile" className="icon-button marketing-profile-link" aria-label="Profile"><UserRound size={19} /></Link>
           <button
             type="button"
@@ -100,7 +100,7 @@ export default function MarketingHeader({ locale, onLocaleChange, copy }: Props)
           <nav className="marketing-mobile-menu" aria-label="Mobile homepage navigation">
             {links.map(([href, label]) => <a key={href} href={href} onClick={closeMenus}>{label}</a>)}
             <Link href="/profile" onClick={closeMenus}>Profile</Link>
-            <Link href="/app" className="button button-primary" onClick={closeMenus}>{copy.navigation.tryApp}</Link>
+            <Link href="/app/explore" className="button button-primary" onClick={closeMenus}>{copy.navigation.tryApp}</Link>
           </nav>
         )}
       </div>

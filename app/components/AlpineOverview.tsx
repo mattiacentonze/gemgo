@@ -5,7 +5,7 @@ import { useState } from "react";
 import ExperienceMap from "./ExperienceMap";
 import type { Locale } from "../domain";
 import { marketingCopy } from "../i18n/marketing";
-import { allExperiences, catalogueSummary, totalCatalogueEntries } from "../product/integrated-data";
+import { allExperiences, catalogueSummary, totalCatalogueEntries } from "../product/catalogue";
 
 type Props = {
   compact?: boolean;
@@ -16,12 +16,13 @@ type Props = {
 
 export default function AlpineOverview({ compact = false, selectedRegion, onSelectRegion, locale = "en" }: Props) {
   const [localRegion, setLocalRegion] = useState<string | null>(null);
+  const [focusRequestId, setFocusRequestId] = useState(0);
   const activeRegion = selectedRegion === undefined ? localRegion : selectedRegion;
   const text = marketingCopy[locale].map;
   const selectRegion = (region: string) => {
-    const nextRegion = activeRegion === region ? null : region;
-    if (selectedRegion === undefined) setLocalRegion(nextRegion);
-    onSelectRegion?.(nextRegion ?? "");
+    if (selectedRegion === undefined) setLocalRegion(region);
+    setFocusRequestId((current) => current + 1);
+    onSelectRegion?.(region);
   };
 
   return (
@@ -37,6 +38,7 @@ export default function AlpineOverview({ compact = false, selectedRegion, onSele
           locale={locale}
           showLegend={false}
           focusRegion={activeRegion}
+          focusRequestId={focusRequestId}
         />
         <div className="pressure-legend" aria-label="Tourism pressure legend">
           <span><i className="pressure-dot low" /> {text.lower}</span>

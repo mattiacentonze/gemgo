@@ -4,8 +4,8 @@ GemGo must distinguish operational facts from estimates and demonstration conten
 
 | Feature | Current source | Classification | Product rule |
 |---|---|---|---|
-| Pan-Alpine homepage regions | Existing public pilot catalogue plus curated redesign experiences | Mixed public catalogue and demonstration coverage | Counts correspond only to experiences actually present in the branch. |
-| Experience content | `app/product/integrated-data.ts` and `app/product/data.ts` | Existing pilot metadata plus curated demonstration content | Copy, itinerary, mobility and safety fields must be locally validated before production. |
+| Pilot catalogue | 50 official team destinations plus 16 unique Bavarian Alpify additions | Static public pilot data | Active map coverage is limited to Bavaria and Valle d’Aosta; the Alpify Tyrol record is excluded. |
+| Experience content | `app/data/destinations.json`, `app/data/alpify-locations.json` and `app/product/catalogue.ts` | Existing pilot metadata plus adapted prototype content | Copy, itinerary, mobility and safety fields must be locally validated before production. |
 | Recommendation ranking | Deterministic client score | Operational prototype logic | Explainable and reproducible; not described as a trained production AI model. |
 | Crowd windows | Curated values and intended future factors | Demonstration prediction | Always display them as estimated unless an operational provider is explicitly connected. |
 | Weather context | Open-Meteo through `app/product/live-context.ts` | Live external data when available | Show the live source state and fall back conservatively when unavailable. |

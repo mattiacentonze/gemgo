@@ -25,6 +25,10 @@ The visible application has four primary sections: Explore, My Trip, Rewards and
 
 Legacy destination, map, parser and moderation modules remain in the repository while the redesigned path is evaluated. They can be migrated into the new feature boundaries incrementally instead of being deleted before parity is proven.
 
+## Catalogue boundary
+
+The application combines the official 50-place team dataset with the Bavaria subset of the Alpify repository catalogue. The Tyrol entry (`ruin-ehrenberg`) is excluded and a deterministic identity-and-distance merge removes one known duplicate (`Partnachklamm`) while preserving distinct nearby sites, producing 66 catalogue entries with explicit source provenance. Active coverage is limited to Bavaria and Valle d’Aosta.
+
 ## Recommendation model
 
 The current redesign uses a deterministic score. It rewards:

@@ -6,18 +6,29 @@ const source = async (path) => readFile(new URL(`../${path}`, import.meta.url), 
 
 test("the application route uses the integrated product shell", async () => {
   const route = await source("app/app/page.tsx");
-  assert.match(route, /IntegratedAppShell/);
+  const layout = await source("app/app/layout.tsx");
+  assert.match(layout, /IntegratedAppShell/);
+  assert.match(layout, /UiSoundController/);
+  assert.match(route, /return null/);
   assert.doesNotMatch(route, /export \{ default \} from "\.\.\/page"/);
 });
 
-test("the integrated catalogue uses only the official 50 public destinations", async () => {
+test("the catalogue combines 50 official places with 16 Bavarian Alpify additions", async () => {
   const data = JSON.parse(await source("app/data/destinations.json"));
-  const adapter = await source("app/product/integrated-data.ts");
+  const alpify = JSON.parse(await source("app/data/alpify-locations.json"));
+  const adapter = await source("app/product/catalogue.ts");
   assert.equal(data.meta.total_entries, 50);
   assert.equal(data.destinations.length, 50);
-  assert.match(adapter, /publicDestinations/);
-  assert.doesNotMatch(adapter, /curatedExperiences/);
+  assert.equal(alpify.length, 18);
+  assert(alpify.some((location) => location.id === "partnachklamm"));
   assert.match(adapter, /destinationData/);
+  assert.match(adapter, /alpifyData/);
+  assert.match(adapter, /mergeAlpineCatalogues/);
+  assert.match(adapter, /partnachklamm: "partnachklamm shoulder trails"/);
+  assert.match(adapter, /excludedAlpifyIds = new Set\(\["ruin-ehrenberg"\]\)/);
+  assert.match(adapter, /alpifyExcludedEntries/);
+  assert.match(adapter, /alpifyAddedEntries/);
+  assert.match(adapter, /pilotRegions = \["Bavaria", "Valle d’Aosta"\]/);
   assert.match(adapter, /allExperiences/);
 });
 
@@ -32,15 +43,55 @@ test("natural language feeds editable preferences and distinct ranking roles", a
   assert.match(engine, /precipitationProbability/);
 });
 
-test("the new map uses relief geography, gentler wheel zoom and clustering above two nearby markers", async () => {
+test("the new map switches between standard and softened relief layers", async () => {
   const map = await source("app/components/ExperienceMap.tsx");
   const overview = await source("app/components/AlpineOverview.tsx");
-  assert.match(map, /tileLayer\("https:\/\/\{s\}\.tile\.opentopomap\.org/);
+  assert.match(map, /tile\.openstreetmap\.org/);
+  assert.match(map, /World_Imagery/);
+  assert.match(map, /tileLayerRef/);
+  assert.match(map, /mapStyle === "standard"/);
+  assert.match(map, /ALPINE_BOUNDS/);
+  assert.match(map, /maxBoundsViscosity/);
+  assert.match(map, /experience-map-style-trigger/);
+  assert.doesNotMatch(map, /<span><Layers3/);
   assert.match(map, /wheelPxPerZoomLevel: 140/);
-  assert.match(map, /group\.items\.length > 2/);
+  assert.doesNotMatch(map, /group\.items\.length > 2/);
+  assert.match(map, /experienceMarkersRef/);
+  assert.match(map, /experiences\.forEach\(\(experience\)/);
   assert.match(map, /mapReady/);
+  assert.match(await source("app/components/IntegratedAppShell.tsx"), /experiences=\{allExperiences\}/);
   assert.match(overview, /ExperienceMap/);
   assert.doesNotMatch(overview, /alpine-ridge/);
+});
+
+test("legacy product paths redirect to the integrated app instead of duplicating the landing page", async () => {
+  const redirects = {
+    saved: /\/app\/my-trip\/saved/,
+    gemdrop: /\/app\/my-trip\?gemdrop=1/,
+    points: /\/app\/gempoints/,
+    gemdeals: /\/app\/gempoints/,
+  };
+  for (const [route, target] of Object.entries(redirects)) {
+    const page = await source(`app/${route}/page.tsx`);
+    assert.match(page, /redirect\(/);
+    assert.match(page, target);
+    assert.doesNotMatch(page, /export \{ default \} from "\.\.\/page"/);
+  }
+});
+
+test("SPA sections expose stable, reloadable paths", async () => {
+  const shell = await source("app/components/IntegratedAppShell.tsx");
+  for (const path of [
+    "/app/explore",
+    "/app/results",
+    "/app/my-trip",
+    "/app/my-trip/saved",
+    "/app/gempoints",
+  ]) {
+    assert.match(shell, new RegExp(path.replaceAll("/", "\\/")));
+  }
+  assert.match(shell, /\/app\/experience\/\$\{encodeURIComponent\(experienceId\)\}/);
+  assert.match(shell, /addEventListener\("popstate"/);
 });
 
 test("My Trip persists multiple plans and GemPoints use an event ledger", async () => {
@@ -54,6 +105,9 @@ test("My Trip persists multiple plans and GemPoints use an event ledger", async 
   assert.match(shell, /Save essentials offline/);
   assert.doesNotMatch(shell, /GemXP/);
   assert.doesNotMatch(shell, /GemCredits/);
+  assert.match(shell, /header-points-link/);
+  assert.match(shell, /notification-page-link/);
+  assert.match(shell, /balance\.toLocaleString\(locale\)/);
 });
 
 test("visit verification supports GPS, partner codes and an explicitly labelled demo path", async () => {

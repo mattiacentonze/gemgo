@@ -4,37 +4,41 @@ import test from "node:test";
 
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 
-test("mobile overlays close one another instead of stacking", () => {
+test("mobile language, menu and profile overlays close one another", () => {
   const shell = read("app/components/IntegratedAppShell.tsx");
-  const notifications = read("app/components/NotificationCenter.tsx");
   const profile = read("app/components/LocalProfilePanel.tsx");
   assert.match(shell, /gemgo:close-overlays/);
-  assert.match(notifications, /addEventListener\("gemgo:close-overlays"/);
   assert.match(profile, /addEventListener\("gemgo:close-overlays"/);
+  assert.match(shell, /setLanguageOpen\(false\)/);
+  assert.match(shell, /setMobileMenuOpen\(false\)/);
 });
 
-test("profile and notifications escape the sticky header and use a full mobile viewport", () => {
-  const notifications = read("app/components/NotificationCenter.tsx");
+test("profile uses a full mobile viewport while notifications have a dedicated route", () => {
+  const notifications = read("app/notifications/page.tsx");
   const profile = read("app/components/LocalProfilePanel.tsx");
   const css = read("app/styles/visual-fixes.css");
   assert.match(profile, /createPortal/);
-  assert.match(notifications, /notification-popover-portal/);
+  assert.match(notifications, /notification-history-page/);
+  assert.doesNotMatch(notifications, /notification-popover-portal|createPortal/);
   assert.match(css, /\.profile-panel[\s\S]*height: 100dvh/);
-  assert.match(css, /notification-popover-portal/);
 });
 
 test("GemPoints and About include localized badges, proposal boundaries and the team", () => {
   const shell = read("app/components/IntegratedAppShell.tsx");
+  const about = read("app/about/page.tsx");
+  const content = read("app/content.ts");
   for (const locale of ["en", "it", "de", "fr", "sl"]) {
-    assert.match(shell, new RegExp(`${locale}: \\{ eyebrow:`));
+    assert.match(shell, new RegExp(`\\b${locale}: \\{`));
   }
   assert.match(shell, /rewards: "GemPoints"/g);
   assert.match(shell, /badge-showcase-grid/);
-  assert.match(shell, /Mattia Centonze/);
-  assert.match(shell, /Killian Foloppe/);
-  assert.match(shell, /Martino Dalla Fontana/);
-  assert.match(shell, /prototypeBody/);
-  assert.match(shell, /afterFundingBody/);
+  assert.match(about, /team\.map/);
+  assert.match(about, /person\.linkedin/);
+  assert.match(content, /Mattia Centonze/);
+  assert.match(content, /Killian Foloppe/);
+  assert.match(content, /Martino Dalla Fontana/);
+  assert.match(about, /todayBody/);
+  assert.match(about, /futureBody/);
 });
 
 test("the demo profile hashes passwords and exposes earned progress and locked badges", () => {
@@ -52,17 +56,19 @@ test("destination media rejects vertical and non-place results", () => {
   assert.match(gallery, /info\.width \/ info\.height >= 1\.22/);
   assert.match(gallery, /book\|manuscript\|brochure/);
   assert.match(gallery, /isPlaceRelevant/);
-  assert.match(gallery, /gemgo-commons-landscape-v4/);
+  assert.match(gallery, /gemgo-commons-landscape-v5/);
 });
 
 test("the Bavarian transit subset is traceable and used by the product", () => {
   const feed = JSON.parse(read("app/data/gtfs-bavaria-regional-stops.json"));
-  const product = read("app/product/integrated-data.ts");
+  const transit = read("app/product/transit.ts");
+  const shell = read("app/components/IntegratedAppShell.tsx");
   assert.equal(feed.meta.licence, "Creative Commons 4.0");
   assert.equal(feed.meta.extractedAt, "2026-08-07");
   assert.ok(feed.stops.length > 800);
-  assert.match(product, /nearestGtfsStop/);
-  assert.match(product, /bavariaTransitData/);
+  assert.match(transit, /nearestGtfsStop/);
+  assert.match(transit, /bavariaTransitData/);
+  assert.match(shell, /import\("\.\.\/product\/transit"\)/);
 });
 
 test("Pan-Alpine controls provide five complete localized variants", () => {

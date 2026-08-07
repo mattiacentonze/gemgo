@@ -25,8 +25,16 @@ test("photo galleries support arrows keyboard and touch swipe", () => {
   assert.match(gallery, /event\.key === "ArrowLeft"/);
   assert.match(gallery, /event\.key === "ArrowRight"/);
   assert.match(gallery, /Math\.abs\(start - end\) < 44/);
+  assert.match(gallery, /chicken\|chickens\|hen\|hens\|rooster/);
+  assert.match(gallery, /gemgo-commons-landscape-v5/);
   assert.match(css, /touch-action: pan-y pinch-zoom/);
   assert.match(css, /focus-visible/);
+});
+
+test("My Trip photography fills its frame without grey bars", () => {
+  const css = read("app/styles/app-map-and-navigation-fixes.css");
+  assert.match(css, /\.integrated-trip-page \.trip-real-photo[\s\S]*aspect-ratio: 16 \/ 9/);
+  assert.match(css, /\.integrated-trip-page \.trip-real-photo \.destination-gallery-image[\s\S]*height: 100%/);
 });
 
 test("small screens keep quantitative cards compact but narrative cards readable", () => {

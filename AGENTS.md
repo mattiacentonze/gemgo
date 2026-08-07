@@ -43,6 +43,23 @@
 - Avoid adding broad late-stage CSS selectors. Scope fixes to a route or component and remove superseded rules when practical.
 - Motion must respect `prefers-reduced-motion`; sound remains opt-in and off by default.
 
+## Performance guardrails
+
+- Do not mount DOM-patching "enhancer" components that observe `document.body`. Whole-document `MutationObserver` scans previously caused navigation and typing freezes when Leaflet or image galleries updated the DOM.
+- Render controls, notifications, feedback, planners and modal behaviour directly in the owning React component. Observers are acceptable only for a narrow external surface such as the document language attribute.
+- Keep free-text input as draft state. Run parsing, ranking, routing and marker updates only on submit or on a deliberate structured-filter change.
+- Planner origins come from the 50 official pilot places plus the 16 deduplicated Bavarian Alpify additions. Keep source provenance and never geocode arbitrary home cities while the user types.
+- Catalogue merging must use identity and coordinates together. Do not collapse distinct neighbouring places merely because their source coordinates overlap; the known Alpify `Partnachklamm` entry is merged with the official `Partnachklamm Shoulder Trails` record.
+- Active catalogue and map coverage is limited to Bavaria and Valle d’Aosta. Exclude the Alpify `ruin-ehrenberg` Tyrol entry instead of relabelling it as Bavarian.
+- Overview and Explore maps mount every catalogue marker. Region controls only refit the viewport; they must never filter, unmount or cluster the other pilot markers.
+- Moving a preference slider must not recreate markers, refit the viewport or start route requests. Map marker layers respond only to catalogue, locale or origin changes.
+- The Leaflet popup close control must remain authoritative: selected-marker styling must not reopen a popup after the user closes it.
+- Disabled hooks must preserve referentially stable empty state. Never pass a fresh `[]` into a stateful effect that responds by writing a fresh `{}` or `[]`; that pattern previously caused an infinite `/app` render loop.
+- Lazy-load secondary sections such as the multi-day planner. Never import the legacy `AppShell` into the landing-page client bundle.
+- A base-map switch must keep only one tile layer mounted at a time. The supported choices are standard OpenStreetMap and the softened relief/satellite layer; preserve source attribution and restrict panning/tile bounds to the Alpine arc.
+- Route styling is semantic and consistent: walking blue/dotted, bicycle green, public transport orange/dashed, car purple, mixed mobility teal/dashed.
+- Before publishing, confirm that `/app` has no body-wide mutation observers and compare production client chunk sizes with the prior checkpoint.
+
 ## Required verification before publishing
 
 - Run lint, production build, i18n checks and the full test suite.

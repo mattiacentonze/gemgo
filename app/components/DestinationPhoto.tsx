@@ -21,7 +21,7 @@ type Props = {
 };
 
 const allowedLicense = /^(CC0|CC BY|CC BY-SA|Public domain)/i;
-const rejectedTitle = /\b(map|karte|plan|locator|flag|coat of arms|logo|icon|poster|diagram|sign|signage|stamp|emblem|book|manuscript|brochure|cover|painting|drawing|illustration|chart|document|menu|ticket|portrait|selfie|advertisement|scan)\b/i;
+const rejectedTitle = /\b(map|karte|plan|locator|flag|coat of arms|logo|icon|poster|diagram|sign|signage|stamp|emblem|book|manuscript|brochure|cover|painting|drawing|illustration|chart|document|menu|ticket|portrait|selfie|advertisement|scan|chicken|chickens|hen|hens|rooster|poultry|gallina|galline|pollo|huhn|hühner|henne|poule|coq|cow|cattle|sheep|goat|horse|duck)\b/i;
 
 const photoText = {
   en: { unavailable: "Relevant licensed image unavailable", loading: "Loading licensed destination gallery", noPhoto: "No licensed photo available for", loadingFor: "Loading licensed photos of", gallery: "photo gallery", photo: "photo", previous: "Previous photo of", next: "Next photo of", show: "Show photo" },
@@ -82,6 +82,8 @@ export default function DestinationPhoto({
   const [activeIndex, setActiveIndex] = useState(0);
   const [failed, setFailed] = useState(false);
   const [imageFailed, setImageFailed] = useState(false);
+  const [shouldLoad, setShouldLoad] = useState(false);
+  const visibilityRef = useRef<HTMLElement | null>(null);
   const touchStartRef = useRef<number | null>(null);
   const [locale, setLocale] = useState<Locale>("en");
   const t = photoText[locale];
@@ -95,9 +97,28 @@ export default function DestinationPhoto({
   }, []);
 
   useEffect(() => {
+    const element = visibilityRef.current;
+    if (!element || typeof IntersectionObserver === "undefined") {
+      setShouldLoad(true);
+      return;
+    }
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((entry) => entry.isIntersecting)) return;
+        setShouldLoad(true);
+        observer.disconnect();
+      },
+      { rootMargin: "280px 0px" },
+    );
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!shouldLoad) return;
     let active = true;
     const controller = new AbortController();
-    const cacheKey = `gemgo-commons-landscape-v4-${name}-${region}-${compact ? "compact" : "full"}`;
+    const cacheKey = `gemgo-commons-landscape-v5-${name}-${region}-${compact ? "compact" : "full"}`;
 
     queueMicrotask(() => {
       if (!active) return;
@@ -135,7 +156,10 @@ export default function DestinationPhoto({
         return response.json();
       })
       .then((payload) => {
-        const pages = Object.values(payload?.query?.pages ?? {}) as Array<{
+        const commonsPayload = payload as {
+          query?: { pages?: Record<string, unknown> };
+        };
+        const pages = Object.values(commonsPayload.query?.pages ?? {}) as Array<{
           title?: string;
           imageinfo?: Array<{
             thumburl?: string;
@@ -194,7 +218,7 @@ export default function DestinationPhoto({
       active = false;
       controller.abort();
     };
-  }, [compact, name, region]);
+  }, [compact, name, region, shouldLoad]);
 
   useEffect(() => {
     if (gallery.length < 2) return;
@@ -240,6 +264,7 @@ export default function DestinationPhoto({
   if (!activeMedia || imageFailed) {
     return (
       <div
+        ref={(element) => { visibilityRef.current = element; }}
         className={`destination-photo destination-photo-fallback ${failed || imageFailed ? "is-failed" : "is-loading"} ${className}`}
         role="img"
         aria-label={failed || imageFailed ? `${t.noPhoto} ${name}` : `${t.loadingFor} ${name}`}
@@ -259,6 +284,7 @@ export default function DestinationPhoto({
 
   return (
     <figure
+      ref={(element) => { visibilityRef.current = element; }}
       className={`destination-photo destination-gallery ${compact ? "is-compact" : ""} ${className}`}
       tabIndex={gallery.length > 1 ? 0 : undefined}
       aria-label={`${name} ${t.gallery}, ${t.photo} ${activeIndex + 1} / ${gallery.length}`}

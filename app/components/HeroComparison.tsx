@@ -38,7 +38,7 @@ export default function HeroComparison({ locale }: { locale: Locale }) {
           <span><Leaf size={19} />{t.similar}</span>
           <strong><Coins size={19} />{t.points}</strong>
         </div>
-        <Link href="/app" className="button button-primary button-full">{t.choose}</Link>
+        <Link href="/app/explore" className="button button-primary button-full">{t.choose}</Link>
       </article>
     </div>
   );

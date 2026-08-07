@@ -45,7 +45,7 @@ test("renders the overtourism-first pan-Alpine product story", async () => {
   assert.match(html, /href="\/about"/i);
   assert.match(html, /Popular plans concentrate pressure/i);
   assert.match(html, /choose better/i);
-  assert.match(html, /href="\/app"/i);
+  assert.match(html, /href="\/app\/explore"/i);
 });
 
 test("renders the integrated application route", async () => {
@@ -56,6 +56,25 @@ test("renders the integrated application route", async () => {
   assert.match(html, /My Trip/i);
   assert.match(html, /GemPoints/i);
   assert.match(html, /Current catalogue/i);
+  assert.match(html, />66<\/strong>/i);
+  assert.match(html, /<span>Bavaria<\/span><strong>41<\/strong>/i);
+  assert.match(html, /<span>Valle d’Aosta<\/span><strong>25<\/strong>/i);
+  assert.doesNotMatch(html, /Tyrol/i);
+});
+
+test("renders each named application path", async () => {
+  for (const pathname of [
+    "/app/explore",
+    "/app/results",
+    "/app/my-trip",
+    "/app/my-trip/saved",
+    "/app/gempoints",
+    "/app/experience/catalogue-vda_001",
+  ]) {
+    const { response, html } = await renderPage(pathname);
+    assert.equal(response.status, 200, pathname);
+    assert.match(html, /GemGo/i, pathname);
+  }
 });
 
 test("does not lead with the retired XP and credits vocabulary", async () => {
