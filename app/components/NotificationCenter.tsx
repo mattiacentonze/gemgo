@@ -12,13 +12,16 @@ type NotificationItem = {
   title: string;
   detail: string;
   createdAt: string;
-  kind: "trip" | "points" | "reward" | "system";
+  kind: "trip" | "points" | "reward" | "badge" | "system";
 };
+
+type BadgeHistoryItem = { id: string; title: string; createdAt: string };
 
 const READ_KEY = "gemgo-notifications-read-at-v1";
 const ACTIVE_TRIP_KEY = "gemgo-active-trip-v3";
 const LEDGER_KEY = "gemgo-points-ledger-v3";
 const REWARDS_KEY = "gemgo-reward-unlocks-v1";
+const BADGE_HISTORY_KEY = "gemgo-badge-history-v1";
 
 const readJson = <T,>(key: string, fallback: T): T => {
   try {
@@ -33,6 +36,7 @@ const buildNotifications = (locale: Locale): NotificationItem[] => {
   const activeTrip = readJson<SavedTrip | null>(ACTIVE_TRIP_KEY, null);
   const ledger = readJson<GemPointEvent[]>(LEDGER_KEY, []);
   const rewards = readJson<RewardUnlock[]>(REWARDS_KEY, []);
+  const badgeHistory = readJson<BadgeHistoryItem[]>(BADGE_HISTORY_KEY, []);
   const items: NotificationItem[] = [
     {
       id: "system-data-honesty",
@@ -75,6 +79,16 @@ const buildNotifications = (locale: Locale): NotificationItem[] => {
     });
   });
 
+  badgeHistory.forEach((badge) => {
+    items.push({
+      id: badge.id,
+      title: locale === "it" ? "Congratulazioni! Nuovo badge" : "Congratulations! New badge",
+      detail: badge.title,
+      createdAt: badge.createdAt,
+      kind: "badge",
+    });
+  });
+
   return items.sort((first, second) => Date.parse(second.createdAt) - Date.parse(first.createdAt));
 };
 
@@ -82,6 +96,7 @@ const iconFor = (kind: NotificationItem["kind"]) => {
   if (kind === "trip") return <Route size={18} />;
   if (kind === "points") return <Coins size={18} />;
   if (kind === "reward") return <Gift size={18} />;
+  if (kind === "badge") return <Check size={18} />;
   return <MapPin size={18} />;
 };
 
@@ -100,7 +115,12 @@ export default function NotificationCenter() {
     resolveTarget();
     const observer = new MutationObserver(resolveTarget);
     observer.observe(document.body, { childList: true, subtree: true });
-    return () => observer.disconnect();
+    const refreshBadges = () => setItems(buildNotifications((document.documentElement.lang || "en") as Locale));
+    window.addEventListener("gemgo:badge-earned", refreshBadges);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("gemgo:badge-earned", refreshBadges);
+    };
   }, []);
 
   useEffect(() => {
