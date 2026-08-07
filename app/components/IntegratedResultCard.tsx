@@ -47,7 +47,7 @@ export default function IntegratedResultCard({ locale, item, saved, onOpen, onSa
         <h2>{experience.name}</h2>
         <p className="experience-promise">{experience.promise}</p>
         <div className="experience-metrics result-metrics">
-          <span><Navigation size={18} /><small>{text.travel}</small><strong>{item.travelMinutes ?? "?"} min</strong></span>
+          <span><Navigation size={18} /><small>{text.travel}</small><strong>{item.travelMinutes === null ? "?" : formatDuration(item.travelMinutes)}</strong></span>
           <span><Clock3 size={18} /><small>{text.duration}</small><strong>{formatDuration(experience.durationMinutes)}</strong></span>
           <span><Coins size={18} /><small>{text.points}</small><strong>{experience.points}</strong></span>
         </div>
