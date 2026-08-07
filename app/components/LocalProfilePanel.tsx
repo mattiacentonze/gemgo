@@ -175,7 +175,7 @@ export default function LocalProfilePanel({ locale, ledger, savedTrips, unlocks 
 
   return (
     <div className="local-profile-control">
-      <button type="button" className="icon-text-button profile-button" onClick={toggle} aria-expanded={open}>
+      <button type="button" className="icon-text-button profile-button" onClick={toggle} aria-label={t.profile} aria-expanded={open}>
         {signedIn ? <User size={18} /> : <UserPlus size={18} />}
         <span>{signedIn ? account?.name.split(" ")[0] : t.profile}</span>
       </button>
