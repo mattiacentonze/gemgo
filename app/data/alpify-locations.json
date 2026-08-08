@@ -1,0 +1,524 @@
+[
+  {
+    "id": "weisensee",
+    "name": "Weisensee",
+    "category": "Lake",
+    "lat": 47.593,
+    "lng": 10.642,
+    "description": "A peaceful alpine lake popular with locals and nature lovers.",
+    "crowdingLevel": "Low",
+    "basePoints": 7,
+    "bikeWalkBonus": 3,
+    "questBonusPoints": 5,
+    "sideQuest": {
+      "id": "weisensee-find-the-lakeside-viewpoint",
+      "title": "Find the lakeside viewpoint",
+      "description": "Locate the marked viewpoint and take a verification photo.",
+      "verificationType": "Photo"
+    },
+    "badge": "Lake Explorer",
+    "reward": "Free postcard",
+    "rewardType": "Family",
+    "partner": {
+      "name": "Local Tourist Office",
+      "type": "Tourist office"
+    },
+    "estimatedVisitTimeMin": 60,
+    "familyFriendly": true,
+    "accessNotes": "Easy walking paths around the lake.",
+    "sourceOrNotes": "Hackathon demo data"
+  },
+  {
+    "id": "forgensee",
+    "name": "Forgensee",
+    "category": "Lake",
+    "lat": 47.6,
+    "lng": 10.7,
+    "description": "Large reservoir near Füssen with scenic mountain views.",
+    "crowdingLevel": "Medium",
+    "basePoints": 4,
+    "bikeWalkBonus": 2,
+    "questBonusPoints": 3,
+    "sideQuest": {
+      "id": "forgensee-spot-a-sailing-boat",
+      "title": "Spot a sailing boat",
+      "description": "Find a boat or marina sign and check in.",
+      "verificationType": "Photo"
+    },
+    "badge": "Water Wanderer",
+    "reward": "Cafe voucher",
+    "rewardType": "Food",
+    "partner": {
+      "name": "Local Cafe Partner",
+      "type": "Cafe"
+    },
+    "estimatedVisitTimeMin": 75,
+    "familyFriendly": true,
+    "accessNotes": "Accessible lakeside paths.",
+    "sourceOrNotes": "Hackathon demo data"
+  },
+  {
+    "id": "faulensee",
+    "name": "Faulensee",
+    "category": "Lake",
+    "lat": 47.658,
+    "lng": 10.53,
+    "description": "A hidden gem lake offering a quiet escape from crowds.",
+    "crowdingLevel": "Low",
+    "basePoints": 8,
+    "bikeWalkBonus": 3,
+    "questBonusPoints": 5,
+    "sideQuest": {
+      "id": "faulensee-find-the-reflection-point",
+      "title": "Find the reflection point",
+      "description": "Capture the designated reflection viewpoint.",
+      "verificationType": "Photo"
+    },
+    "badge": "Hidden Gem Hunter",
+    "reward": "Local snack",
+    "rewardType": "Food",
+    "partner": {
+      "name": "Regional Bakery",
+      "type": "Bakery"
+    },
+    "estimatedVisitTimeMin": 45,
+    "familyFriendly": true,
+    "accessNotes": "Short walk required.",
+    "sourceOrNotes": "Hackathon demo data"
+  },
+  {
+    "id": "gaisalpsee",
+    "name": "Gaisalpsee",
+    "category": "Lake",
+    "lat": 47.455,
+    "lng": 10.373,
+    "description": "A beautiful mountain lake reached by a rewarding hike.",
+    "crowdingLevel": "Low",
+    "basePoints": 2,
+    "bikeWalkBonus": 4,
+    "questBonusPoints": 6,
+    "sideQuest": {
+      "id": "gaisalpsee-reach-the-summit-marker",
+      "title": "Reach the summit marker",
+      "description": "Check in at the lake trail marker.",
+      "verificationType": "Photo"
+    },
+    "badge": "Mountain Explorer",
+    "reward": "Trail badge",
+    "rewardType": "Outdoor",
+    "partner": {
+      "name": "Hiking Partner",
+      "type": "Outdoor"
+    },
+    "estimatedVisitTimeMin": 120,
+    "familyFriendly": false,
+    "accessNotes": "Moderate hiking fitness required.",
+    "sourceOrNotes": "Hackathon demo data"
+  },
+  {
+    "id": "buchenberg",
+    "name": "Buchenberg",
+    "category": "Viewpoint",
+    "lat": 47.694,
+    "lng": 10.427,
+    "description": "Panoramic viewpoint with sweeping Allgäu scenery.",
+    "crowdingLevel": "Low",
+    "basePoints": 7,
+    "bikeWalkBonus": 3,
+    "questBonusPoints": 5,
+    "sideQuest": {
+      "id": "buchenberg-find-the-panorama-board",
+      "title": "Find the panorama board",
+      "description": "Locate the information board and check in.",
+      "verificationType": "Photo"
+    },
+    "badge": "View Chaser",
+    "reward": "Drink voucher",
+    "rewardType": "Food",
+    "partner": {
+      "name": "Mountain Hut",
+      "type": "Restaurant"
+    },
+    "estimatedVisitTimeMin": 90,
+    "familyFriendly": true,
+    "accessNotes": "Best reached by hiking trails.",
+    "sourceOrNotes": "Hackathon demo data"
+  },
+  {
+    "id": "tegelberg",
+    "name": "Tegelberg",
+    "category": "Viewpoint",
+    "lat": 47.57,
+    "lng": 10.788,
+    "description": "Famous mountain viewpoint near the royal castles.",
+    "crowdingLevel": "High",
+    "basePoints": 3,
+    "bikeWalkBonus": 1,
+    "questBonusPoints": 2,
+    "sideQuest": {
+      "id": "tegelberg-spot-neuschwanstein",
+      "title": "Spot Neuschwanstein",
+      "description": "Find the castle viewpoint.",
+      "verificationType": "Photo"
+    },
+    "badge": "Royal Viewfinder",
+    "reward": "Discount souvenir",
+    "rewardType": "Culture",
+    "partner": {
+      "name": "Castle Shop",
+      "type": "Shop"
+    },
+    "estimatedVisitTimeMin": 90,
+    "familyFriendly": true,
+    "accessNotes": "Cable car available.",
+    "sourceOrNotes": "Hackathon demo data"
+  },
+  {
+    "id": "castle-hohenschwangau",
+    "name": "Castle Hohenschwangau",
+    "category": "Castle",
+    "lat": 47.5576,
+    "lng": 10.7498,
+    "description": "Historic royal residence often overshadowed by Neuschwanstein.",
+    "crowdingLevel": "Medium",
+    "basePoints": 4,
+    "bikeWalkBonus": 2,
+    "questBonusPoints": 4,
+    "sideQuest": {
+      "id": "castle-hohenschwangau-find-the-royal-crest",
+      "title": "Find the royal crest",
+      "description": "Locate the crest and check in.",
+      "verificationType": "Photo"
+    },
+    "badge": "Castle Explorer",
+    "reward": "Museum discount",
+    "rewardType": "Culture",
+    "partner": {
+      "name": "Castle Partner",
+      "type": "Museum"
+    },
+    "estimatedVisitTimeMin": 75,
+    "familyFriendly": true,
+    "accessNotes": "Accessible visitor routes.",
+    "sourceOrNotes": "Hackathon demo data"
+  },
+  {
+    "id": "breitachklamm",
+    "name": "Breitachklamm",
+    "category": "Nature",
+    "lat": 47.395,
+    "lng": 10.239,
+    "description": "Spectacular gorge showcasing the power of Alpine water.",
+    "crowdingLevel": "High",
+    "basePoints": 3,
+    "bikeWalkBonus": 1,
+    "questBonusPoints": 2,
+    "sideQuest": {
+      "id": "breitachklamm-find-the-gorge-marker",
+      "title": "Find the gorge marker",
+      "description": "Check in at a designated sign.",
+      "verificationType": "Photo"
+    },
+    "badge": "Nature Adventurer",
+    "reward": "Free drink",
+    "rewardType": "Food",
+    "partner": {
+      "name": "Visitor Center",
+      "type": "Tourist office"
+    },
+    "estimatedVisitTimeMin": 90,
+    "familyFriendly": true,
+    "accessNotes": "Path can be wet.",
+    "sourceOrNotes": "Hackathon demo data"
+  },
+  {
+    "id": "castle-neuschwanstein",
+    "name": "Castle Neuschwanstein",
+    "category": "Castle",
+    "lat": 47.5576,
+    "lng": 10.7498,
+    "description": "World-famous castle and major tourism hotspot.",
+    "crowdingLevel": "High",
+    "basePoints": 1,
+    "bikeWalkBonus": 0,
+    "questBonusPoints": 1,
+    "sideQuest": {
+      "id": "castle-neuschwanstein-find-the-castle-plaque",
+      "title": "Find the castle plaque",
+      "description": "Check in near the official entrance.",
+      "verificationType": "Photo"
+    },
+    "badge": "Royal Visitor",
+    "reward": "Digital badge",
+    "rewardType": "Culture",
+    "partner": {
+      "name": "Castle Administration",
+      "type": "Museum"
+    },
+    "estimatedVisitTimeMin": 120,
+    "familyFriendly": true,
+    "accessNotes": "Expect queues.",
+    "sourceOrNotes": "Hackathon demo data"
+  },
+  {
+    "id": "nesselwang-waterfall-trail",
+    "name": "Waterfall path Nesselwang",
+    "category": "Trail",
+    "lat": 47.625,
+    "lng": 10.502,
+    "description": "Family-friendly trail leading to scenic waterfalls.",
+    "crowdingLevel": "Low",
+    "basePoints": 7,
+    "bikeWalkBonus": 3,
+    "questBonusPoints": 5,
+    "sideQuest": {
+      "id": "nesselwang-waterfall-trail-find-the-waterfall-sign",
+      "title": "Find the waterfall sign",
+      "description": "Check in at the waterfall marker.",
+      "verificationType": "Photo"
+    },
+    "badge": "Trail Discoverer",
+    "reward": "Ice cream voucher",
+    "rewardType": "Family",
+    "partner": {
+      "name": "Local Ice Cream Shop",
+      "type": "Cafe"
+    },
+    "estimatedVisitTimeMin": 60,
+    "familyFriendly": true,
+    "accessNotes": "Suitable for families.",
+    "sourceOrNotes": "Hackathon demo data"
+  },
+  {
+    "id": "starzlachklamm",
+    "name": "Starzlachklamm",
+    "category": "Nature",
+    "lat": 47.547,
+    "lng": 10.33,
+    "description": "A dramatic gorge with bridges and rushing water.",
+    "crowdingLevel": "Medium",
+    "basePoints": 5,
+    "bikeWalkBonus": 2,
+    "questBonusPoints": 4,
+    "sideQuest": {
+      "id": "starzlachklamm-cross-the-main-bridge",
+      "title": "Cross the main bridge",
+      "description": "Check in from the bridge viewpoint.",
+      "verificationType": "Photo"
+    },
+    "badge": "Gorge Explorer",
+    "reward": "Snack voucher",
+    "rewardType": "Food",
+    "partner": {
+      "name": "Local Partner",
+      "type": "Cafe"
+    },
+    "estimatedVisitTimeMin": 75,
+    "familyFriendly": true,
+    "accessNotes": "Some uneven terrain.",
+    "sourceOrNotes": "Hackathon demo data"
+  },
+  {
+    "id": "gruenten",
+    "name": "Grünten",
+    "category": "Viewpoint",
+    "lat": 47.565,
+    "lng": 10.379,
+    "description": "A mountain with a wonderful view over the valley",
+    "crowdingLevel": "Medium",
+    "basePoints": 6,
+    "bikeWalkBonus": 3,
+    "questBonusPoints": 4,
+    "sideQuest": {
+      "id": "gruenten-reach-the-summit-cross",
+      "title": "Reach the summit cross",
+      "description": "Check in at the summit area.",
+      "verificationType": "Photo"
+    },
+    "badge": "Summit Seeker",
+    "reward": "Trail badge",
+    "rewardType": "Outdoor",
+    "partner": {
+      "name": "Hiking Partner",
+      "type": "Outdoor"
+    },
+    "estimatedVisitTimeMin": 150,
+    "familyFriendly": false,
+    "accessNotes": "Steep sections on the trail.",
+    "sourceOrNotes": "Hackathon demo data"
+  },
+  {
+    "id": "castle-ruin-hapfen",
+    "name": "Castle ruin Hapfen",
+    "category": "Castle",
+    "lat": 47.618,
+    "lng": 10.688,
+    "description": "A mountain with a wonderful view over the valley",
+    "crowdingLevel": "Low",
+    "basePoints": 8,
+    "bikeWalkBonus": 3,
+    "questBonusPoints": 5,
+    "sideQuest": {
+      "id": "castle-ruin-hapfen-find-the-old-tower",
+      "title": "Find the old tower",
+      "description": "Locate the tower remains.",
+      "verificationType": "Photo"
+    },
+    "badge": "Ruin Hunter",
+    "reward": "Souvenir postcard",
+    "rewardType": "Culture",
+    "partner": {
+      "name": "Tourism Office",
+      "type": "Tourist office"
+    },
+    "estimatedVisitTimeMin": 45,
+    "familyFriendly": true,
+    "accessNotes": "Short uphill walk.",
+    "sourceOrNotes": "Hackathon demo data"
+  },
+  {
+    "id": "ruin-att-trauchburg",
+    "name": "Ruin Att-Trauchburg",
+    "category": "Castle",
+    "lat": 47.647,
+    "lng": 10.381,
+    "description": "Impressive medieval ruins away from the main tourist routes.",
+    "crowdingLevel": "Low",
+    "basePoints": 9,
+    "bikeWalkBonus": 4,
+    "questBonusPoints": 6,
+    "sideQuest": {
+      "id": "ruin-att-trauchburg-find-the-castle-gate",
+      "title": "Find the castle gate",
+      "description": "Check in at the main gate remains.",
+      "verificationType": "Photo"
+    },
+    "badge": "Medieval Explorer",
+    "reward": "Local discount",
+    "rewardType": "Culture",
+    "partner": {
+      "name": "Local Museum",
+      "type": "Museum"
+    },
+    "estimatedVisitTimeMin": 60,
+    "familyFriendly": true,
+    "accessNotes": "Moderate walk.",
+    "sourceOrNotes": "Hackathon demo data"
+  },
+  {
+    "id": "eisenberg-hohenfreyberg",
+    "name": "Ruin Eisenberg / Ruin Hohenfreyberg",
+    "category": "Castle",
+    "lat": 47.618,
+    "lng": 10.643,
+    "description": "Twin castle ruins and one of the region's hidden treasures.",
+    "crowdingLevel": "Low",
+    "basePoints": 10,
+    "bikeWalkBonus": 4,
+    "questBonusPoints": 7,
+    "sideQuest": {
+      "id": "eisenberg-hohenfreyberg-visit-both-ruins",
+      "title": "Visit both ruins",
+      "description": "Check in at both castle sites.",
+      "verificationType": "Photo"
+    },
+    "badge": "Twin Castle Master",
+    "reward": "Premium badge",
+    "rewardType": "Culture",
+    "partner": {
+      "name": "Regional Tourism",
+      "type": "Tourist office"
+    },
+    "estimatedVisitTimeMin": 120,
+    "familyFriendly": true,
+    "accessNotes": "Best explored on foot.",
+    "sourceOrNotes": "Hackathon demo data"
+  },
+  {
+    "id": "ruin-ehrenberg",
+    "name": "Ruin Ehrenberg",
+    "category": "Castle",
+    "lat": 47.465774,
+    "lng": 10.717935,
+    "description": "Historic castle ruins above Reutte with panoramic Alpine views.",
+    "crowdingLevel": "Low",
+    "basePoints": 9,
+    "bikeWalkBonus": 4,
+    "questBonusPoints": 6,
+    "sideQuest": {
+      "id": "ruin-ehrenberg-find-the-fortress-gate",
+      "title": "Find the fortress gate",
+      "description": "Locate the main fortress gate and complete a photo check-in.",
+      "verificationType": "Photo"
+    },
+    "badge": "Fortress Explorer",
+    "reward": "Castle voucher",
+    "rewardType": "Culture",
+    "partner": {
+      "name": "Ehrenberg Castle World",
+      "type": "Museum"
+    },
+    "estimatedVisitTimeMin": 90,
+    "familyFriendly": true,
+    "accessNotes": "Accessible via walking paths and suspension bridge.",
+    "sourceOrNotes": "Prototype hotspot data"
+  },
+  {
+    "id": "buchenegger-waterfalls",
+    "name": "Buchenegger waterfalls",
+    "category": "Nature",
+    "lat": 47.52984,
+    "lng": 10.04978,
+    "description": "Popular waterfalls surrounded by forest trails and natural pools.",
+    "crowdingLevel": "Medium",
+    "basePoints": 5,
+    "bikeWalkBonus": 3,
+    "questBonusPoints": 4,
+    "sideQuest": {
+      "id": "buchenegger-waterfalls-reach-the-waterfall-viewpoint",
+      "title": "Reach the waterfall viewpoint",
+      "description": "Check in from the signed waterfall viewing platform.",
+      "verificationType": "Photo"
+    },
+    "badge": "Waterfall Hunter",
+    "reward": "Free drink",
+    "rewardType": "Food",
+    "partner": {
+      "name": "Local Tourist Office",
+      "type": "Tourist office"
+    },
+    "estimatedVisitTimeMin": 75,
+    "familyFriendly": true,
+    "accessNotes": "Some uneven terrain near the falls.",
+    "sourceOrNotes": "Prototype hotspot data"
+  },
+  {
+    "id": "partnachklamm",
+    "name": "Partnachklamm",
+    "category": "Nature",
+    "lat": 47.46281,
+    "lng": 11.12413,
+    "description": "Famous gorge with dramatic rock walls and rushing mountain water.",
+    "crowdingLevel": "High",
+    "basePoints": 3,
+    "bikeWalkBonus": 1,
+    "questBonusPoints": 2,
+    "sideQuest": {
+      "id": "partnachklamm-find-the-gorge-marker",
+      "title": "Find the gorge marker",
+      "description": "Check in at the official Partnach Gorge entrance marker.",
+      "verificationType": "Photo"
+    },
+    "badge": "Gorge Explorer",
+    "reward": "Snack voucher",
+    "rewardType": "Food",
+    "partner": {
+      "name": "Visitor Center",
+      "type": "Tourist office"
+    },
+    "estimatedVisitTimeMin": 90,
+    "familyFriendly": true,
+    "accessNotes": "Path may be wet; suitable footwear recommended.",
+    "sourceOrNotes": "Prototype hotspot data"
+  }
+]

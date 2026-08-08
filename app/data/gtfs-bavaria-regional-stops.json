@@ -1,0 +1,4884 @@
+{
+  "meta": {
+    "source": "GTFS.de regional rail Germany (DELFI e.V.)",
+    "sourceUrl": "https://download.gtfs.de/germany/rv_free/latest.zip",
+    "licence": "Creative Commons 4.0",
+    "extractedAt": "2026-08-07",
+    "coverage": "Regional-rail stops inside the Alpine Bavaria/foothills bounding box 47.2–48.3 N, 9.2–13.9 E",
+    "caveat": "Static timetable locations; not a live journey planner. Valle d’Aosta has no verified regional GTFS feed in this revision."
+  },
+  "stops": [
+    {
+      "id": "558392",
+      "name": "Agatharied",
+      "lat": 47.765606,
+      "lon": 11.82447
+    },
+    {
+      "id": "568738",
+      "name": "Aichstetten",
+      "lat": 47.887882,
+      "lon": 10.07494
+    },
+    {
+      "id": "568738",
+      "name": "Aichstetten Bahnhof",
+      "lat": 47.887985,
+      "lon": 10.074399
+    },
+    {
+      "id": "185396",
+      "name": "Aindorf",
+      "lat": 47.98704,
+      "lon": 12.357746
+    },
+    {
+      "id": "518495",
+      "name": "Ainring",
+      "lat": 47.815033,
+      "lon": 12.964504
+    },
+    {
+      "id": "639184",
+      "name": "Aitrach-Marstetten, Bahnhof",
+      "lat": 47.943424,
+      "lon": 10.080526
+    },
+    {
+      "id": "248059",
+      "name": "Aletshausen",
+      "lat": 48.20131,
+      "lon": 10.383635
+    },
+    {
+      "id": "145849",
+      "name": "Allach",
+      "lat": 48.189938,
+      "lon": 11.467875
+    },
+    {
+      "id": "445021",
+      "name": "Allerheiligenhöfe",
+      "lat": 47.26903,
+      "lon": 11.352969
+    },
+    {
+      "id": "484735",
+      "name": "Altach",
+      "lat": 47.352074,
+      "lon": 9.661128
+    },
+    {
+      "id": "561587",
+      "name": "Altenau (Bay)",
+      "lat": 47.64837,
+      "lon": 11.017379
+    },
+    {
+      "id": "561587",
+      "name": "Altenau(Bay)",
+      "lat": 47.648365,
+      "lon": 11.017375
+    },
+    {
+      "id": "446688",
+      "name": "Altenerding",
+      "lat": 48.293304,
+      "lon": 11.901294
+    },
+    {
+      "id": "578544",
+      "name": "Altenmarkt (Alz)",
+      "lat": 47.999817,
+      "lon": 12.536026
+    },
+    {
+      "id": "578544",
+      "name": "Altenmarkt(Alz)",
+      "lat": 47.999817,
+      "lon": 12.536027
+    },
+    {
+      "id": "222509",
+      "name": "Altenstadt Bahnhof",
+      "lat": 48.16119,
+      "lon": 10.109982
+    },
+    {
+      "id": "222509",
+      "name": "Altenstadt(Iller)",
+      "lat": 48.16119,
+      "lon": 10.109983
+    },
+    {
+      "id": "501464",
+      "name": "Althegnenberg",
+      "lat": 48.236603,
+      "lon": 11.062366
+    },
+    {
+      "id": "523700",
+      "name": "Altnau",
+      "lat": 47.62137,
+      "lon": 9.265918
+    },
+    {
+      "id": "8605",
+      "name": "Altötting",
+      "lat": 48.221245,
+      "lon": 12.674788
+    },
+    {
+      "id": "8605",
+      "name": "Altötting, Bf",
+      "lat": 48.221245,
+      "lon": 12.674788
+    },
+    {
+      "id": "170303",
+      "name": "Altshausen",
+      "lat": 47.93071,
+      "lon": 9.551478
+    },
+    {
+      "id": "170303",
+      "name": "Altshausen Bahnhof",
+      "lat": 47.93062,
+      "lon": 9.551391
+    },
+    {
+      "id": "637437",
+      "name": "Altstädten (Allgäu)",
+      "lat": 47.488552,
+      "lon": 10.280904
+    },
+    {
+      "id": "637437",
+      "name": "Altstädten(Allgäu)",
+      "lat": 47.48855,
+      "lon": 10.280907
+    },
+    {
+      "id": "34847",
+      "name": "Alttann",
+      "lat": 47.841213,
+      "lon": 9.793037
+    },
+    {
+      "id": "422623",
+      "name": "Amerang",
+      "lat": 47.985836,
+      "lon": 12.3063
+    },
+    {
+      "id": "639079",
+      "name": "Ampfing",
+      "lat": 48.25395,
+      "lon": 12.410917
+    },
+    {
+      "id": "274865",
+      "name": "Amriswil",
+      "lat": 47.55045,
+      "lon": 9.302227
+    },
+    {
+      "id": "65532",
+      "name": "Äpfingen",
+      "lat": 48.152626,
+      "lon": 9.853409
+    },
+    {
+      "id": "420096",
+      "name": "Arbon",
+      "lat": 47.51059,
+      "lon": 9.433359
+    },
+    {
+      "id": "461697",
+      "name": "Arbon Seemoosriet",
+      "lat": 47.521194,
+      "lon": 9.42502
+    },
+    {
+      "id": "373341",
+      "name": "Aschau im Chiemgau",
+      "lat": 47.779102,
+      "lon": 12.325568
+    },
+    {
+      "id": "373341",
+      "name": "Aschau(Chiemgau)",
+      "lat": 47.779106,
+      "lon": 12.325564
+    },
+    {
+      "id": "608243",
+      "name": "Aßling",
+      "lat": 47.989567,
+      "lon": 11.99374
+    },
+    {
+      "id": "608243",
+      "name": "Aßling(Oberbay)",
+      "lat": 47.98949,
+      "lon": 11.993518
+    },
+    {
+      "id": "286649",
+      "name": "Attnang-Puchheim",
+      "lat": 48.012802,
+      "lon": 13.720719
+    },
+    {
+      "id": "460023",
+      "name": "Aubing",
+      "lat": 48.155964,
+      "lon": 11.413203
+    },
+    {
+      "id": "573896",
+      "name": "Aulendorf",
+      "lat": 47.953053,
+      "lon": 9.644046
+    },
+    {
+      "id": "573896",
+      "name": "Aulendorf Bahnhof",
+      "lat": 47.953003,
+      "lon": 9.643954
+    },
+    {
+      "id": "167419",
+      "name": "Aying",
+      "lat": 47.969204,
+      "lon": 11.769619
+    },
+    {
+      "id": "198096",
+      "name": "Bachern",
+      "lat": 48.279026,
+      "lon": 11.381547
+    },
+    {
+      "id": "454831",
+      "name": "Bad Aibling",
+      "lat": 47.86203,
+      "lon": 12.00416
+    },
+    {
+      "id": "161499",
+      "name": "Bad Aibling Kurpark",
+      "lat": 47.857616,
+      "lon": 12.013826
+    },
+    {
+      "id": "357337",
+      "name": "Bad Endorf",
+      "lat": 47.905067,
+      "lon": 12.301556
+    },
+    {
+      "id": "223249",
+      "name": "Bad Grönenbach",
+      "lat": 47.88247,
+      "lon": 10.253712
+    },
+    {
+      "id": "505810",
+      "name": "Bad Kohlgrub",
+      "lat": 47.66801,
+      "lon": 11.058207
+    },
+    {
+      "id": "114078",
+      "name": "Bad Kohlgrub Kurhaus",
+      "lat": 47.670216,
+      "lon": 11.039181
+    },
+    {
+      "id": "627232",
+      "name": "Bad Reichenhall",
+      "lat": 47.73117,
+      "lon": 12.881823
+    },
+    {
+      "id": "522788",
+      "name": "Bad Reichenhall-Kirchberg",
+      "lat": 47.71854,
+      "lon": 12.873999
+    },
+    {
+      "id": "451123",
+      "name": "Bad Saulgau",
+      "lat": 48.01359,
+      "lon": 9.501083
+    },
+    {
+      "id": "451123",
+      "name": "Bad Saulgau Bahnhof",
+      "lat": 48.013615,
+      "lon": 9.501247
+    },
+    {
+      "id": "34508",
+      "name": "Bad Schussenried",
+      "lat": 47.994034,
+      "lon": 9.668497
+    },
+    {
+      "id": "34508",
+      "name": "Bad Schussenried Bahnhof",
+      "lat": 47.99385,
+      "lon": 9.668325
+    },
+    {
+      "id": "127482",
+      "name": "Bad Tölz",
+      "lat": 47.760822,
+      "lon": 11.573903
+    },
+    {
+      "id": "506667",
+      "name": "Bad Vigaun",
+      "lat": 47.664158,
+      "lon": 13.124053
+    },
+    {
+      "id": "89548",
+      "name": "Bad Waldsee",
+      "lat": 47.925243,
+      "lon": 9.752274
+    },
+    {
+      "id": "89548",
+      "name": "Bad Waldsee Bahnhof",
+      "lat": 47.925148,
+      "lon": 9.752308
+    },
+    {
+      "id": "388409",
+      "name": "Bad Wörishofen",
+      "lat": 48.00571,
+      "lon": 10.597875
+    },
+    {
+      "id": "142055",
+      "name": "Bad Wurzach",
+      "lat": 47.91026,
+      "lon": 9.889739
+    },
+    {
+      "id": "142055",
+      "name": "Bad Wurzach Bahnhof",
+      "lat": 47.910233,
+      "lon": 9.88967
+    },
+    {
+      "id": "205251",
+      "name": "Baienfurt Niederbiegen Bahnhof",
+      "lat": 47.830456,
+      "lon": 9.620957
+    },
+    {
+      "id": "525729",
+      "name": "Baierbrunn",
+      "lat": 48.018524,
+      "lon": 11.485985
+    },
+    {
+      "id": "398155",
+      "name": "Baldham",
+      "lat": 48.099205,
+      "lon": 11.786992
+    },
+    {
+      "id": "311437",
+      "name": "Barabein",
+      "lat": 48.14544,
+      "lon": 9.825403
+    },
+    {
+      "id": "132117",
+      "name": "Bayerisch Gmain",
+      "lat": 47.72038,
+      "lon": 12.895073
+    },
+    {
+      "id": "390080",
+      "name": "Bayrischzell",
+      "lat": 47.675545,
+      "lon": 12.011158
+    },
+    {
+      "id": "135569",
+      "name": "Bellenberg",
+      "lat": 48.254646,
+      "lon": 10.09039
+    },
+    {
+      "id": "135569",
+      "name": "Bellenberg Bahnhof",
+      "lat": 48.254646,
+      "lon": 10.090389
+    },
+    {
+      "id": "398016",
+      "name": "Benediktbeuern",
+      "lat": 47.709267,
+      "lon": 11.40352
+    },
+    {
+      "id": "303373",
+      "name": "Berchtesgaden Hbf",
+      "lat": 47.626686,
+      "lon": 12.999053
+    },
+    {
+      "id": "164857",
+      "name": "Berg am Laim",
+      "lat": 48.135178,
+      "lon": 11.633408
+    },
+    {
+      "id": "113386",
+      "name": "Bergen (Oberbay)",
+      "lat": 47.82527,
+      "lon": 12.592844
+    },
+    {
+      "id": "113386",
+      "name": "Bergen(Oberbay)",
+      "lat": 47.82527,
+      "lon": 12.592846
+    },
+    {
+      "id": "358747",
+      "name": "Bermatingen-Ahausen",
+      "lat": 47.730488,
+      "lon": 9.345157
+    },
+    {
+      "id": "358747",
+      "name": "Bermatingen-Ahausen Bahnhof",
+      "lat": 47.730354,
+      "lon": 9.345533
+    },
+    {
+      "id": "575589",
+      "name": "Bernau a Chiemsee",
+      "lat": 47.816483,
+      "lon": 12.380957
+    },
+    {
+      "id": "575589",
+      "name": "Bernau am Chiemsee",
+      "lat": 47.816483,
+      "lon": 12.380959
+    },
+    {
+      "id": "458000",
+      "name": "Bernried",
+      "lat": 47.86139,
+      "lon": 11.283657
+    },
+    {
+      "id": "283812",
+      "name": "Bibelöd",
+      "lat": 47.771515,
+      "lon": 12.64668
+    },
+    {
+      "id": "45907",
+      "name": "Biberach Süd",
+      "lat": 48.08712,
+      "lon": 9.803144
+    },
+    {
+      "id": "31054",
+      "name": "Biberach ZOB/Bahnhof",
+      "lat": 48.10193,
+      "lon": 9.79311
+    },
+    {
+      "id": "31054",
+      "name": "Biberach(Riß)",
+      "lat": 48.101845,
+      "lon": 9.793127
+    },
+    {
+      "id": "45907",
+      "name": "Biberach(Riß) Süd",
+      "lat": 48.087017,
+      "lon": 9.803236
+    },
+    {
+      "id": "92343",
+      "name": "Bichl",
+      "lat": 47.72331,
+      "lon": 11.408883
+    },
+    {
+      "id": "543856",
+      "name": "Bichlbach Almkopfbahn",
+      "lat": 47.42763,
+      "lon": 10.776707
+    },
+    {
+      "id": "224805",
+      "name": "Bichlbach-Berwang",
+      "lat": 47.421356,
+      "lon": 10.793384
+    },
+    {
+      "id": "102345",
+      "name": "Biessenhofen",
+      "lat": 47.829956,
+      "lon": 10.640473
+    },
+    {
+      "id": "616975",
+      "name": "Billenhausen",
+      "lat": 48.27556,
+      "lon": 10.358159
+    },
+    {
+      "id": "242359",
+      "name": "Bischofshofen",
+      "lat": 47.41786,
+      "lon": 13.219888
+    },
+    {
+      "id": "83536",
+      "name": "Bischofswiesen",
+      "lat": 47.65189,
+      "lon": 12.960138
+    },
+    {
+      "id": "478663",
+      "name": "Blaichach (Allgäu)",
+      "lat": 47.54374,
+      "lon": 10.258796
+    },
+    {
+      "id": "478663",
+      "name": "Blaichach(Allgäu)",
+      "lat": 47.54374,
+      "lon": 10.258796
+    },
+    {
+      "id": "37621",
+      "name": "Bobingen",
+      "lat": 48.266373,
+      "lon": 10.837886
+    },
+    {
+      "id": "215134",
+      "name": "Bodelsberg",
+      "lat": 47.678112,
+      "lon": 10.411097
+    },
+    {
+      "id": "338117",
+      "name": "Bottighofen",
+      "lat": 47.640705,
+      "lon": 9.213104
+    },
+    {
+      "id": "520274",
+      "name": "Brannenburg",
+      "lat": 47.741356,
+      "lon": 12.10646
+    },
+    {
+      "id": "559529",
+      "name": "Braunau/Inn",
+      "lat": 48.259125,
+      "lon": 13.047988
+    },
+    {
+      "id": "96234",
+      "name": "Bregenz",
+      "lat": 47.503002,
+      "lon": 9.739627
+    },
+    {
+      "id": "261917",
+      "name": "Bregenz Hafen",
+      "lat": 47.50612,
+      "lon": 9.748294
+    },
+    {
+      "id": "423038",
+      "name": "Bregenz Riedenburg",
+      "lat": 47.49291,
+      "lon": 9.721313
+    },
+    {
+      "id": "425916",
+      "name": "Breitenbrunn (Schwab)",
+      "lat": 48.138588,
+      "lon": 10.40851
+    },
+    {
+      "id": "425916",
+      "name": "Breitenbrunn(Schwab)",
+      "lat": 48.138584,
+      "lon": 10.408505
+    },
+    {
+      "id": "306079",
+      "name": "Breitenschützing",
+      "lat": 48.078785,
+      "lon": 13.800888
+    },
+    {
+      "id": "491907",
+      "name": "Bruckmühl",
+      "lat": 47.880825,
+      "lon": 11.915532
+    },
+    {
+      "id": "328679",
+      "name": "Buchenau",
+      "lat": 48.160816,
+      "lon": 11.225204
+    },
+    {
+      "id": "328679",
+      "name": "Buchenau(Oberbay)",
+      "lat": 48.16028,
+      "lon": 11.224497
+    },
+    {
+      "id": "121825",
+      "name": "Buchenhain",
+      "lat": 48.032623,
+      "lon": 11.497951
+    },
+    {
+      "id": "187931",
+      "name": "Buchloe",
+      "lat": 48.033722,
+      "lon": 10.716219
+    },
+    {
+      "id": "16797",
+      "name": "Burghausen",
+      "lat": 48.174202,
+      "lon": 12.828185
+    },
+    {
+      "id": "627328",
+      "name": "Burgkirchen",
+      "lat": 48.166904,
+      "lon": 12.72778
+    },
+    {
+      "id": "399891",
+      "name": "Burgweiler",
+      "lat": 47.922764,
+      "lon": 9.343805
+    },
+    {
+      "id": "399891",
+      "name": "Burgweiler Bahnhof",
+      "lat": 47.92311,
+      "lon": 9.345057
+    },
+    {
+      "id": "146719",
+      "name": "Dachau Bahnhof",
+      "lat": 48.254498,
+      "lon": 11.443252
+    },
+    {
+      "id": "641393",
+      "name": "Dachau Stadt",
+      "lat": 48.266342,
+      "lon": 11.440485
+    },
+    {
+      "id": "642710",
+      "name": "Daglfing",
+      "lat": 48.149143,
+      "lon": 11.649353
+    },
+    {
+      "id": "400759",
+      "name": "Darching",
+      "lat": 47.870796,
+      "lon": 11.777255
+    },
+    {
+      "id": "126525",
+      "name": "Deisenhofen",
+      "lat": 48.020206,
+      "lon": 11.583255
+    },
+    {
+      "id": "226574",
+      "name": "Dießen",
+      "lat": 47.950813,
+      "lon": 11.107543
+    },
+    {
+      "id": "329885",
+      "name": "Dietmannsried",
+      "lat": 47.812866,
+      "lon": 10.29048
+    },
+    {
+      "id": "250277",
+      "name": "Donnersbergerbrücke",
+      "lat": 48.14266,
+      "lon": 11.53515
+    },
+    {
+      "id": "367197",
+      "name": "Dorfen",
+      "lat": 48.26741,
+      "lon": 12.159398
+    },
+    {
+      "id": "367197",
+      "name": "Dorfen Bahnhof",
+      "lat": 48.267048,
+      "lon": 12.159686
+    },
+    {
+      "id": "607169",
+      "name": "Dorfgastein",
+      "lat": 47.238487,
+      "lon": 13.103074
+    },
+    {
+      "id": "74790",
+      "name": "Dornbirn",
+      "lat": 47.41769,
+      "lon": 9.738808
+    },
+    {
+      "id": "580518",
+      "name": "Dornbirn Schoren",
+      "lat": 47.413216,
+      "lon": 9.726722
+    },
+    {
+      "id": "534784",
+      "name": "Durach",
+      "lat": 47.696453,
+      "lon": 10.343795
+    },
+    {
+      "id": "12554",
+      "name": "Dürrnhaar",
+      "lat": 47.99274,
+      "lon": 11.73445
+    },
+    {
+      "id": "489540",
+      "name": "Ebenhausen-Schäftlarn",
+      "lat": 47.97922,
+      "lon": 11.456251
+    },
+    {
+      "id": "106212",
+      "name": "Ebenhofen",
+      "lat": 47.814816,
+      "lon": 10.618482
+    },
+    {
+      "id": "338172",
+      "name": "Ebersberg",
+      "lat": 48.075222,
+      "lon": 11.97006
+    },
+    {
+      "id": "338172",
+      "name": "Ebersberg(Oberbay)",
+      "lat": 48.07497,
+      "lon": 11.970243
+    },
+    {
+      "id": "247476",
+      "name": "Edling",
+      "lat": 48.058147,
+      "lon": 12.163755
+    },
+    {
+      "id": "170769",
+      "name": "Eglharting",
+      "lat": 48.08138,
+      "lon": 11.863466
+    },
+    {
+      "id": "485852",
+      "name": "Egling",
+      "lat": 48.190865,
+      "lon": 10.976504
+    },
+    {
+      "id": "485852",
+      "name": "Egling a.d.Paar",
+      "lat": 48.190865,
+      "lon": 10.976505
+    },
+    {
+      "id": "10827",
+      "name": "Egnach",
+      "lat": 47.54399,
+      "lon": 9.383017
+    },
+    {
+      "id": "637419",
+      "name": "Ehingen Bahnhof",
+      "lat": 48.285606,
+      "lon": 9.724479
+    },
+    {
+      "id": "637419",
+      "name": "Ehingen(Donau)",
+      "lat": 48.28568,
+      "lon": 9.72434
+    },
+    {
+      "id": "231311",
+      "name": "Ehrwald Zugspitzbahn",
+      "lat": 47.410122,
+      "lon": 10.91374
+    },
+    {
+      "id": "102958",
+      "name": "Eibsee Zugspitzbahn, Grainau",
+      "lat": 47.45573,
+      "lon": 10.995691
+    },
+    {
+      "id": "465971",
+      "name": "Eichenau",
+      "lat": 48.179317,
+      "lon": 11.32825
+    },
+    {
+      "id": "465971",
+      "name": "Eichenau(Oberbay)",
+      "lat": 48.179325,
+      "lon": 11.328277
+    },
+    {
+      "id": "146864",
+      "name": "Eisenärzt",
+      "lat": 47.79627,
+      "lon": 12.638308
+    },
+    {
+      "id": "114723",
+      "name": "Elsbethen",
+      "lat": 47.761044,
+      "lon": 13.080397
+    },
+    {
+      "id": "396198",
+      "name": "Englschalking",
+      "lat": 48.15655,
+      "lon": 11.6484
+    },
+    {
+      "id": "515619",
+      "name": "Enzisweiler",
+      "lat": 47.564144,
+      "lon": 9.665432
+    },
+    {
+      "id": "516036",
+      "name": "Eriskirch",
+      "lat": 47.628403,
+      "lon": 9.526672
+    },
+    {
+      "id": "516036",
+      "name": "Eriskirch Bahnhof",
+      "lat": 47.62846,
+      "lon": 9.526876
+    },
+    {
+      "id": "46120",
+      "name": "Erlen",
+      "lat": 47.55146,
+      "lon": 9.226202
+    },
+    {
+      "id": "419708",
+      "name": "Eschenlohe",
+      "lat": 47.60174,
+      "lon": 11.187942
+    },
+    {
+      "id": "611379",
+      "name": "Esting",
+      "lat": 48.212708,
+      "lon": 11.319123
+    },
+    {
+      "id": "341644",
+      "name": "Eugendorf",
+      "lat": 47.87332,
+      "lon": 13.116712
+    },
+    {
+      "id": "130163",
+      "name": "Farchant",
+      "lat": 47.53097,
+      "lon": 11.114864
+    },
+    {
+      "id": "298624",
+      "name": "Fasanenpark",
+      "lat": 48.07959,
+      "lon": 11.608336
+    },
+    {
+      "id": "218088",
+      "name": "Fasanerie",
+      "lat": 48.19695,
+      "lon": 11.524478
+    },
+    {
+      "id": "436296",
+      "name": "Fasangarten",
+      "lat": 48.09338,
+      "lon": 11.604697
+    },
+    {
+      "id": "393254",
+      "name": "Feldafing",
+      "lat": 47.946976,
+      "lon": 11.289973
+    },
+    {
+      "id": "143403",
+      "name": "Feldkirch",
+      "lat": 47.24098,
+      "lon": 9.604102
+    },
+    {
+      "id": "402060",
+      "name": "Feldkirch Amberg",
+      "lat": 47.255203,
+      "lon": 9.621217
+    },
+    {
+      "id": "372420",
+      "name": "Feldkirchen",
+      "lat": 48.151154,
+      "lon": 11.73145
+    },
+    {
+      "id": "372420",
+      "name": "Feldkirchen(b München)",
+      "lat": 48.151848,
+      "lon": 11.732103
+    },
+    {
+      "id": "396209",
+      "name": "Feldmoching",
+      "lat": 48.213833,
+      "lon": 11.540827
+    },
+    {
+      "id": "387963",
+      "name": "Feldolling",
+      "lat": 47.895336,
+      "lon": 11.852246
+    },
+    {
+      "id": "428562",
+      "name": "Finsterwald",
+      "lat": 47.752888,
+      "lon": 11.728171
+    },
+    {
+      "id": "600086",
+      "name": "Fischbachau",
+      "lat": 47.705654,
+      "lon": 11.933544
+    },
+    {
+      "id": "405416",
+      "name": "Fischen",
+      "lat": 47.456596,
+      "lon": 10.271723
+    },
+    {
+      "id": "442449",
+      "name": "Fischhausen-Neuhaus",
+      "lat": 47.706257,
+      "lon": 11.873285
+    },
+    {
+      "id": "26050",
+      "name": "Flintsbach",
+      "lat": 47.72426,
+      "lon": 12.12802
+    },
+    {
+      "id": "346566",
+      "name": "FN Fischbach, Bahnhof",
+      "lat": 47.672516,
+      "lon": 9.417273
+    },
+    {
+      "id": "280397",
+      "name": "FN Löwental Bahnhof",
+      "lat": 47.661522,
+      "lon": 9.499531
+    },
+    {
+      "id": "109749",
+      "name": "FN Manzell, Bahnhof",
+      "lat": 47.664402,
+      "lon": 9.429283
+    },
+    {
+      "id": "535744",
+      "name": "FN-Kluftern Bahnhof",
+      "lat": 47.68725,
+      "lon": 9.410203
+    },
+    {
+      "id": "283672",
+      "name": "Forsting",
+      "lat": 48.082104,
+      "lon": 12.090928
+    },
+    {
+      "id": "300473",
+      "name": "Frankenmarkt",
+      "lat": 47.982864,
+      "lon": 13.431864
+    },
+    {
+      "id": "171886",
+      "name": "Frastanz",
+      "lat": 47.220066,
+      "lon": 9.639181
+    },
+    {
+      "id": "367414",
+      "name": "Freiham",
+      "lat": 48.139866,
+      "lon": 11.410041
+    },
+    {
+      "id": "451680",
+      "name": "Freilassing",
+      "lat": 47.836914,
+      "lon": 12.977197
+    },
+    {
+      "id": "615236",
+      "name": "Freilassing-Hofham",
+      "lat": 47.8312,
+      "lon": 12.968277
+    },
+    {
+      "id": "267424",
+      "name": "Fridolfing",
+      "lat": 47.984203,
+      "lon": 12.799681
+    },
+    {
+      "id": "58948",
+      "name": "Friedrichsh. Bodensee-Airport",
+      "lat": 47.672115,
+      "lon": 9.523193
+    },
+    {
+      "id": "168577",
+      "name": "Friedrichsh. Hafenbahnhof",
+      "lat": 47.65151,
+      "lon": 9.482715
+    },
+    {
+      "id": "597173",
+      "name": "Friedrichsh. Stadtbahnhof",
+      "lat": 47.653057,
+      "lon": 9.473426
+    },
+    {
+      "id": "58948",
+      "name": "Friedrichshafen Flughafen",
+      "lat": 47.672215,
+      "lon": 9.523714
+    },
+    {
+      "id": "168577",
+      "name": "Friedrichshafen Hafen",
+      "lat": 47.651207,
+      "lon": 9.482819
+    },
+    {
+      "id": "630359",
+      "name": "Friedrichshafen Landratsamt",
+      "lat": 47.657402,
+      "lon": 9.451355
+    },
+    {
+      "id": "84056",
+      "name": "Friedrichshafen Ost",
+      "lat": 47.65165,
+      "lon": 9.50193
+    },
+    {
+      "id": "597173",
+      "name": "Friedrichshafen Stadt",
+      "lat": 47.653225,
+      "lon": 9.4739
+    },
+    {
+      "id": "346566",
+      "name": "Friedrichshafen-Fischbach",
+      "lat": 47.67248,
+      "lon": 9.417383
+    },
+    {
+      "id": "535744",
+      "name": "Friedrichshafen-Kluftern",
+      "lat": 47.68815,
+      "lon": 9.409515
+    },
+    {
+      "id": "109749",
+      "name": "Friedrichshafen-Manzell",
+      "lat": 47.66432,
+      "lon": 9.429156
+    },
+    {
+      "id": "108534",
+      "name": "Fürstenfeldbruck",
+      "lat": 48.17206,
+      "lon": 11.262421
+    },
+    {
+      "id": "49066",
+      "name": "Furth",
+      "lat": 48.0349,
+      "lon": 11.592525
+    },
+    {
+      "id": "49066",
+      "name": "Furth(b Deisenhofen)",
+      "lat": 48.035522,
+      "lon": 11.593281
+    },
+    {
+      "id": "262949",
+      "name": "Füssen",
+      "lat": 47.57071,
+      "lon": 10.696788
+    },
+    {
+      "id": "500461",
+      "name": "Gaißach",
+      "lat": 47.737183,
+      "lon": 11.575628
+    },
+    {
+      "id": "96531",
+      "name": "Gammertingen",
+      "lat": 48.250698,
+      "lon": 9.217149
+    },
+    {
+      "id": "96531",
+      "name": "Gammertingen Bahnhof",
+      "lat": 48.250473,
+      "lon": 9.217649
+    },
+    {
+      "id": "475289",
+      "name": "Gammertingen Europastraße",
+      "lat": 48.24219,
+      "lon": 9.210193
+    },
+    {
+      "id": "253834",
+      "name": "Garching (Alz)",
+      "lat": 48.130375,
+      "lon": 12.572991
+    },
+    {
+      "id": "253834",
+      "name": "Garching(Alz)",
+      "lat": 48.13037,
+      "lon": 12.57299
+    },
+    {
+      "id": "171350",
+      "name": "Garmisch-Partenkirchen",
+      "lat": 47.491455,
+      "lon": 11.097014
+    },
+    {
+      "id": "438926",
+      "name": "Garmisch-Partenkirchen Hausberg",
+      "lat": 47.483288,
+      "lon": 11.092137
+    },
+    {
+      "id": "256781",
+      "name": "Garmisch-Partenkirchen, Kreuzeck/Alpspitzbahn",
+      "lat": 47.471867,
+      "lon": 11.063633
+    },
+    {
+      "id": "561603",
+      "name": "Gars (Inn)",
+      "lat": 48.147545,
+      "lon": 12.298547
+    },
+    {
+      "id": "561603",
+      "name": "Gars(Inn)",
+      "lat": 48.14754,
+      "lon": 12.29855
+    },
+    {
+      "id": "465897",
+      "name": "Gauting",
+      "lat": 48.070034,
+      "lon": 11.376265
+    },
+    {
+      "id": "295139",
+      "name": "Geinberg",
+      "lat": 48.266373,
+      "lon": 13.291508
+    },
+    {
+      "id": "470806",
+      "name": "Geisenbrunn",
+      "lat": 48.10768,
+      "lon": 11.323327
+    },
+    {
+      "id": "513888",
+      "name": "Geitau",
+      "lat": 47.693848,
+      "lon": 11.96662
+    },
+    {
+      "id": "164170",
+      "name": "Geltendorf",
+      "lat": 48.10599,
+      "lon": 11.037456
+    },
+    {
+      "id": "355898",
+      "name": "Gendorf",
+      "lat": 48.17948,
+      "lon": 12.721097
+    },
+    {
+      "id": "7349",
+      "name": "Germering-Unterpfaffenhofen",
+      "lat": 48.129295,
+      "lon": 11.364551
+    },
+    {
+      "id": "110763",
+      "name": "Gernlinden",
+      "lat": 48.213684,
+      "lon": 11.299603
+    },
+    {
+      "id": "474025",
+      "name": "Giesing",
+      "lat": 48.110863,
+      "lon": 11.595247
+    },
+    {
+      "id": "636555",
+      "name": "Gießenbach in Tirol",
+      "lat": 47.374382,
+      "lon": 11.236703
+    },
+    {
+      "id": "606420",
+      "name": "Gilching-Argelsried",
+      "lat": 48.106724,
+      "lon": 11.300528
+    },
+    {
+      "id": "258398",
+      "name": "Gmund",
+      "lat": 47.74951,
+      "lon": 11.734872
+    },
+    {
+      "id": "258398",
+      "name": "Gmund(Tegernsee)",
+      "lat": 47.74951,
+      "lon": 11.734868
+    },
+    {
+      "id": "288945",
+      "name": "Golling-Abtenau",
+      "lat": 47.60081,
+      "lon": 13.164054
+    },
+    {
+      "id": "489526",
+      "name": "Gossau SG",
+      "lat": 47.41183,
+      "lon": 9.253051
+    },
+    {
+      "id": "491695",
+      "name": "Götzis",
+      "lat": 47.33661,
+      "lon": 9.636696
+    },
+    {
+      "id": "141775",
+      "name": "Graben (Lechfeld), Gewerbepark",
+      "lat": 48.199146,
+      "lon": 10.852412
+    },
+    {
+      "id": "141775",
+      "name": "Graben(Lechfeld)Gewerbepark",
+      "lat": 48.199146,
+      "lon": 10.852411
+    },
+    {
+      "id": "338210",
+      "name": "Gräfelfing",
+      "lat": 48.120014,
+      "lon": 11.427289
+    },
+    {
+      "id": "276457",
+      "name": "Grafenaschau",
+      "lat": 47.66703,
+      "lon": 11.137403
+    },
+    {
+      "id": "472253",
+      "name": "Grafing Bahnhof",
+      "lat": 48.043224,
+      "lon": 11.940423
+    },
+    {
+      "id": "14578",
+      "name": "Grafing Stadt",
+      "lat": 48.04686,
+      "lon": 11.961616
+    },
+    {
+      "id": "472253",
+      "name": "Grafing-Bahnhof",
+      "lat": 48.043743,
+      "lon": 11.940649
+    },
+    {
+      "id": "12062",
+      "name": "Grafrath",
+      "lat": 48.132366,
+      "lon": 11.152899
+    },
+    {
+      "id": "310053",
+      "name": "Grainau Zugspitzbahnhof",
+      "lat": 47.472103,
+      "lon": 11.025392
+    },
+    {
+      "id": "102958",
+      "name": "Grainau, Eibsee Zugspitzbahn",
+      "lat": 47.45734,
+      "lon": 10.991148
+    },
+    {
+      "id": "563260",
+      "name": "Grainau, Riffelriß",
+      "lat": 47.43411,
+      "lon": 10.986306
+    },
+    {
+      "id": "419141",
+      "name": "Griesen (Oberbay)",
+      "lat": 47.478218,
+      "lon": 10.946124
+    },
+    {
+      "id": "419141",
+      "name": "Griesen(Oberbay)",
+      "lat": 47.478218,
+      "lon": 10.94612
+    },
+    {
+      "id": "445366",
+      "name": "Grieskirchen-Gallspach",
+      "lat": 48.231052,
+      "lon": 13.838907
+    },
+    {
+      "id": "524966",
+      "name": "Gröbenzell",
+      "lat": 48.195507,
+      "lon": 11.373004
+    },
+    {
+      "id": "209811",
+      "name": "Gronsdorf",
+      "lat": 48.11838,
+      "lon": 11.699506
+    },
+    {
+      "id": "480794",
+      "name": "Großhelfendorf",
+      "lat": 47.944515,
+      "lon": 11.782582
+    },
+    {
+      "id": "534665",
+      "name": "Großhesselohe Isartalbf",
+      "lat": 48.071068,
+      "lon": 11.530945
+    },
+    {
+      "id": "534665",
+      "name": "Großhesselohe,  Isartalbahnhof",
+      "lat": 48.071342,
+      "lon": 11.532006
+    },
+    {
+      "id": "405439",
+      "name": "Großkarolinenfeld",
+      "lat": 47.888824,
+      "lon": 12.08482
+    },
+    {
+      "id": "385281",
+      "name": "Grub",
+      "lat": 48.164444,
+      "lon": 11.782231
+    },
+    {
+      "id": "385281",
+      "name": "Grub(Oberbay)",
+      "lat": 48.164524,
+      "lon": 11.782559
+    },
+    {
+      "id": "295496",
+      "name": "Günzach",
+      "lat": 47.8196,
+      "lon": 10.439564
+    },
+    {
+      "id": "227570",
+      "name": "Gurten OÖ",
+      "lat": 48.243244,
+      "lon": 13.335071
+    },
+    {
+      "id": "367450",
+      "name": "Güttingen",
+      "lat": 47.608753,
+      "lon": 9.292243
+    },
+    {
+      "id": "445451",
+      "name": "Haar",
+      "lat": 48.11099,
+      "lon": 11.730488
+    },
+    {
+      "id": "389485",
+      "name": "Hackerbrücke",
+      "lat": 48.142395,
+      "lon": 11.548589
+    },
+    {
+      "id": "571565",
+      "name": "Hagenau im Innkreis",
+      "lat": 48.265076,
+      "lon": 13.113952
+    },
+    {
+      "id": "67203",
+      "name": "Häggenschwil-Winden",
+      "lat": 47.503864,
+      "lon": 9.358723
+    },
+    {
+      "id": "152996",
+      "name": "Halfing",
+      "lat": 47.952946,
+      "lon": 12.279278
+    },
+    {
+      "id": "376552",
+      "name": "Hallein",
+      "lat": 47.68517,
+      "lon": 13.099434
+    },
+    {
+      "id": "276285",
+      "name": "Hallein Burgfried",
+      "lat": 47.67599,
+      "lon": 13.114192
+    },
+    {
+      "id": "436089",
+      "name": "Hallwang-Elixhausen",
+      "lat": 47.85784,
+      "lon": 13.091782
+    },
+    {
+      "id": "42602",
+      "name": "Hammerau",
+      "lat": 47.795883,
+      "lon": 12.946134
+    },
+    {
+      "id": "595326",
+      "name": "Hammersbach",
+      "lat": 47.46494,
+      "lon": 11.044822
+    },
+    {
+      "id": "595326",
+      "name": "Hammersbach Zugspitzbahn, Grainau",
+      "lat": 47.466022,
+      "lon": 11.046595
+    },
+    {
+      "id": "124743",
+      "name": "Hanfertal",
+      "lat": 48.099766,
+      "lon": 9.235652
+    },
+    {
+      "id": "186994",
+      "name": "Hard-Fussach",
+      "lat": 47.47986,
+      "lon": 9.688131
+    },
+    {
+      "id": "305217",
+      "name": "Harras",
+      "lat": 48.116894,
+      "lon": 11.536668
+    },
+    {
+      "id": "585028",
+      "name": "Harthaus",
+      "lat": 48.13378,
+      "lon": 11.388446
+    },
+    {
+      "id": "90751",
+      "name": "Haselstauden (Dornbirn)",
+      "lat": 47.43261,
+      "lon": 9.749185
+    },
+    {
+      "id": "261380",
+      "name": "Haspelmoor",
+      "lat": 48.2233,
+      "lon": 11.098964
+    },
+    {
+      "id": "97389",
+      "name": "Hatlerdorf(Dornbirn)",
+      "lat": 47.398,
+      "lon": 9.724847
+    },
+    {
+      "id": "101270",
+      "name": "Haupeltshofen",
+      "lat": 48.18047,
+      "lon": 10.382432
+    },
+    {
+      "id": "387583",
+      "name": "Hauptbahnhof (U, Tram)",
+      "lat": 48.140026,
+      "lon": 11.561066
+    },
+    {
+      "id": "438926",
+      "name": "Hausberg, Garmisch-Partenkirchen",
+      "lat": 47.48338,
+      "lon": 11.09201
+    },
+    {
+      "id": "453554",
+      "name": "Hausen (Schwab)",
+      "lat": 48.101006,
+      "lon": 10.482513
+    },
+    {
+      "id": "453554",
+      "name": "Hausen(Schwab)",
+      "lat": 48.101006,
+      "lon": 10.482517
+    },
+    {
+      "id": "157737",
+      "name": "Hausham",
+      "lat": 47.75041,
+      "lon": 11.840254
+    },
+    {
+      "id": "300731",
+      "name": "Hebertshausen",
+      "lat": 48.290287,
+      "lon": 11.454481
+    },
+    {
+      "id": "161477",
+      "name": "Heiligenstatt (Obb)",
+      "lat": 48.21336,
+      "lon": 12.609589
+    },
+    {
+      "id": "161477",
+      "name": "Heiligenstatt(Obb)",
+      "lat": 48.21336,
+      "lon": 12.609585
+    },
+    {
+      "id": "176736",
+      "name": "Heimenkirch",
+      "lat": 47.62891,
+      "lon": 9.902102
+    },
+    {
+      "id": "607780",
+      "name": "Heimeranplatz",
+      "lat": 48.133533,
+      "lon": 11.533021
+    },
+    {
+      "id": "188464",
+      "name": "Heimstetten",
+      "lat": 48.15896,
+      "lon": 11.760429
+    },
+    {
+      "id": "10635",
+      "name": "Heiterwang-Plansee",
+      "lat": 47.44234,
+      "lon": 10.748252
+    },
+    {
+      "id": "404309",
+      "name": "Herbertingen",
+      "lat": 48.06362,
+      "lon": 9.413808
+    },
+    {
+      "id": "404309",
+      "name": "Herbertingen Bahnhof",
+      "lat": 48.06385,
+      "lon": 9.414335
+    },
+    {
+      "id": "605688",
+      "name": "Herbertingen Ort",
+      "lat": 48.05411,
+      "lon": 9.433379
+    },
+    {
+      "id": "559438",
+      "name": "Hergatz",
+      "lat": 47.646812,
+      "lon": 9.827381
+    },
+    {
+      "id": "574421",
+      "name": "Herisau",
+      "lat": 47.390163,
+      "lon": 9.276812
+    },
+    {
+      "id": "383855",
+      "name": "Hermentingen",
+      "lat": 48.200844,
+      "lon": 9.217467
+    },
+    {
+      "id": "383855",
+      "name": "Hermentingen Bahnhof",
+      "lat": 48.200993,
+      "lon": 9.217451
+    },
+    {
+      "id": "20565",
+      "name": "Herrlishöfen",
+      "lat": 48.13944,
+      "lon": 9.808465
+    },
+    {
+      "id": "581979",
+      "name": "Herrsching",
+      "lat": 47.998276,
+      "lon": 11.170829
+    },
+    {
+      "id": "188900",
+      "name": "Hettingen Bhf",
+      "lat": 48.217674,
+      "lon": 9.229767
+    },
+    {
+      "id": "188900",
+      "name": "Hettingen(Hohenz)",
+      "lat": 48.217365,
+      "lon": 9.229298
+    },
+    {
+      "id": "583097",
+      "name": "Heufeld",
+      "lat": 47.871197,
+      "lon": 11.967383
+    },
+    {
+      "id": "387229",
+      "name": "Heufeldmühle",
+      "lat": 47.877552,
+      "lon": 11.934352
+    },
+    {
+      "id": "555580",
+      "name": "Hinrichssegen",
+      "lat": 47.87442,
+      "lon": 11.950657
+    },
+    {
+      "id": "351543",
+      "name": "Hirschfelden",
+      "lat": 48.289803,
+      "lon": 10.362291
+    },
+    {
+      "id": "150765",
+      "name": "Hirschgarten",
+      "lat": 48.143467,
+      "lon": 11.519456
+    },
+    {
+      "id": "132553",
+      "name": "Hochzirl",
+      "lat": 47.28094,
+      "lon": 11.24929
+    },
+    {
+      "id": "502467",
+      "name": "Hohenbrunn",
+      "lat": 48.046837,
+      "lon": 11.698895
+    },
+    {
+      "id": "224385",
+      "name": "Hohenems",
+      "lat": 47.364708,
+      "lon": 9.681001
+    },
+    {
+      "id": "108533",
+      "name": "Höhenkirchen-Siegertsbrunn",
+      "lat": 48.018547,
+      "lon": 11.719188
+    },
+    {
+      "id": "264389",
+      "name": "Hohenpeißenberg",
+      "lat": 47.78879,
+      "lon": 10.999251
+    },
+    {
+      "id": "259574",
+      "name": "Hohenschäftlarn",
+      "lat": 47.99051,
+      "lon": 11.456511
+    },
+    {
+      "id": "484343",
+      "name": "Höllriegelskreuth",
+      "lat": 48.042973,
+      "lon": 11.509844
+    },
+    {
+      "id": "167232",
+      "name": "Holzkirchen",
+      "lat": 47.884384,
+      "lon": 11.697233
+    },
+    {
+      "id": "334456",
+      "name": "Höpfling",
+      "lat": 47.811226,
+      "lon": 12.651163
+    },
+    {
+      "id": "261384",
+      "name": "Hörlkofen",
+      "lat": 48.243114,
+      "lon": 11.942347
+    },
+    {
+      "id": "204437",
+      "name": "Horn(Bodensee)",
+      "lat": 47.49318,
+      "lon": 9.463388
+    },
+    {
+      "id": "538900",
+      "name": "Hörpolding",
+      "lat": 47.964134,
+      "lon": 12.568257
+    },
+    {
+      "id": "430198",
+      "name": "Hoßkirch Königseggsee",
+      "lat": 47.93372,
+      "lon": 9.437613
+    },
+    {
+      "id": "430198",
+      "name": "Hoßkirch-Königseggsee",
+      "lat": 47.933773,
+      "lon": 9.437575
+    },
+    {
+      "id": "191315",
+      "name": "Hufschlag",
+      "lat": 47.8756,
+      "lon": 12.664943
+    },
+    {
+      "id": "297274",
+      "name": "Huglfing",
+      "lat": 47.776737,
+      "lon": 11.140556
+    },
+    {
+      "id": "281472",
+      "name": "Icking",
+      "lat": 47.953617,
+      "lon": 11.437844
+    },
+    {
+      "id": "126286",
+      "name": "Iffeldorf",
+      "lat": 47.782063,
+      "lon": 11.329022
+    },
+    {
+      "id": "144760",
+      "name": "Illertissen",
+      "lat": 48.222828,
+      "lon": 10.099942
+    },
+    {
+      "id": "144760",
+      "name": "Illertissen Bahnhof",
+      "lat": 48.222824,
+      "lon": 10.099938
+    },
+    {
+      "id": "254740",
+      "name": "Immenstadt",
+      "lat": 47.559204,
+      "lon": 10.213997
+    },
+    {
+      "id": "514238",
+      "name": "Innsbruck Hauptbahnhof",
+      "lat": 47.263233,
+      "lon": 11.401031
+    },
+    {
+      "id": "514238",
+      "name": "Innsbruck Hbf",
+      "lat": 47.263237,
+      "lon": 11.401028
+    },
+    {
+      "id": "266360",
+      "name": "Innsbruck Hötting",
+      "lat": 47.26077,
+      "lon": 11.374001
+    },
+    {
+      "id": "584801",
+      "name": "Innsbruck Westbahnhof",
+      "lat": 47.255585,
+      "lon": 11.391868
+    },
+    {
+      "id": "631740",
+      "name": "Isartor",
+      "lat": 48.13387,
+      "lon": 11.582922
+    },
+    {
+      "id": "153160",
+      "name": "Ismaning",
+      "lat": 48.22592,
+      "lon": 11.679078
+    },
+    {
+      "id": "169",
+      "name": "Jenbach",
+      "lat": 47.388447,
+      "lon": 11.778454
+    },
+    {
+      "id": "90832",
+      "name": "Jettenbach",
+      "lat": 48.17143,
+      "lon": 12.366819
+    },
+    {
+      "id": "274827",
+      "name": "Johanneskirchen",
+      "lat": 48.16853,
+      "lon": 11.645957
+    },
+    {
+      "id": "487317",
+      "name": "Julbach",
+      "lat": 48.250896,
+      "lon": 12.958027
+    },
+    {
+      "id": "40890",
+      "name": "Jungnau",
+      "lat": 48.13899,
+      "lon": 9.213741
+    },
+    {
+      "id": "360191",
+      "name": "Karlsfeld",
+      "lat": 48.21115,
+      "lon": 11.46067
+    },
+    {
+      "id": "456005",
+      "name": "Karlsplatz (Stachus)",
+      "lat": 48.139503,
+      "lon": 11.566133
+    },
+    {
+      "id": "335334",
+      "name": "Kastl (Oberbay)",
+      "lat": 48.193867,
+      "lon": 12.711548
+    },
+    {
+      "id": "335334",
+      "name": "Kastl(Oberbay)",
+      "lat": 48.193867,
+      "lon": 12.711546
+    },
+    {
+      "id": "623027",
+      "name": "Kaufbeuren",
+      "lat": 47.87543,
+      "lon": 10.629495
+    },
+    {
+      "id": "16899",
+      "name": "Kaufering",
+      "lat": 48.081078,
+      "lon": 10.85491
+    },
+    {
+      "id": "527238",
+      "name": "Kehlen",
+      "lat": 47.68303,
+      "lon": 9.548184
+    },
+    {
+      "id": "255603",
+      "name": "Kellmünz",
+      "lat": 48.120285,
+      "lon": 10.124616
+    },
+    {
+      "id": "255603",
+      "name": "Kellmünz Bahnhof",
+      "lat": 48.12028,
+      "lon": 10.124615
+    },
+    {
+      "id": "404812",
+      "name": "Kempten (Allgäu) Hbf",
+      "lat": 47.711746,
+      "lon": 10.317618
+    },
+    {
+      "id": "306345",
+      "name": "Kempten (Allgäu) Ost",
+      "lat": 47.73129,
+      "lon": 10.332045
+    },
+    {
+      "id": "404812",
+      "name": "Kempten(Allgäu)Hbf",
+      "lat": 47.711746,
+      "lon": 10.31761
+    },
+    {
+      "id": "306345",
+      "name": "Kempten(Allgäu)Ost",
+      "lat": 47.731293,
+      "lon": 10.33205
+    },
+    {
+      "id": "225529",
+      "name": "Kesswil",
+      "lat": 47.595497,
+      "lon": 9.317427
+    },
+    {
+      "id": "607161",
+      "name": "Kiefersfelden",
+      "lat": 47.609837,
+      "lon": 12.190534
+    },
+    {
+      "id": "410669",
+      "name": "Kimpling",
+      "lat": 48.26665,
+      "lon": 13.67094
+    },
+    {
+      "id": "502000",
+      "name": "Kirchanschöring",
+      "lat": 47.953415,
+      "lon": 12.831518
+    },
+    {
+      "id": "451430",
+      "name": "Kirchseeon",
+      "lat": 48.07138,
+      "lon": 11.887765
+    },
+    {
+      "id": "298661",
+      "name": "Kirchweidach",
+      "lat": 48.09295,
+      "lon": 12.648171
+    },
+    {
+      "id": "611669",
+      "name": "Kißlegg",
+      "lat": 47.793533,
+      "lon": 9.881921
+    },
+    {
+      "id": "611669",
+      "name": "Kißlegg Bahnhof",
+      "lat": 47.793507,
+      "lon": 9.881845
+    },
+    {
+      "id": "196591",
+      "name": "Klais",
+      "lat": 47.483032,
+      "lon": 11.238589
+    },
+    {
+      "id": "459432",
+      "name": "Klaus in Vorarlberg",
+      "lat": 47.308945,
+      "lon": 9.624272
+    },
+    {
+      "id": "51976",
+      "name": "Klosterlechfeld",
+      "lat": 48.155396,
+      "lon": 10.832631
+    },
+    {
+      "id": "262000",
+      "name": "Kochel",
+      "lat": 47.660267,
+      "lon": 11.370462
+    },
+    {
+      "id": "233517",
+      "name": "Kolbermoor",
+      "lat": 47.85193,
+      "lon": 12.06415
+    },
+    {
+      "id": "543114",
+      "name": "Köstendorf Weng",
+      "lat": 47.936745,
+      "lon": 13.175342
+    },
+    {
+      "id": "572124",
+      "name": "Kranebitten",
+      "lat": 47.269623,
+      "lon": 11.328687
+    },
+    {
+      "id": "438657",
+      "name": "Krauchenwies",
+      "lat": 48.019684,
+      "lon": 9.23794
+    },
+    {
+      "id": "66786",
+      "name": "Kressbronn",
+      "lat": 47.59424,
+      "lon": 9.598854
+    },
+    {
+      "id": "66786",
+      "name": "Kressbronn Bahnhof",
+      "lat": 47.594208,
+      "lon": 9.598714
+    },
+    {
+      "id": "256781",
+      "name": "Kreuzeck/Alpspitzbahn Bahnhof, Garmisch-Partenkirc",
+      "lat": 47.472103,
+      "lon": 11.062936
+    },
+    {
+      "id": "600816",
+      "name": "Kreuzstraße",
+      "lat": 47.91689,
+      "lon": 11.75927
+    },
+    {
+      "id": "538638",
+      "name": "Krumbach (Schwab)",
+      "lat": 48.24759,
+      "lon": 10.358617
+    },
+    {
+      "id": "289415",
+      "name": "Krumbach (Schwab) Schule",
+      "lat": 48.23542,
+      "lon": 10.361168
+    },
+    {
+      "id": "538638",
+      "name": "Krumbach(Schwab)",
+      "lat": 48.24759,
+      "lon": 10.358619
+    },
+    {
+      "id": "289415",
+      "name": "Krumbach(Schwab)Schule",
+      "lat": 48.23542,
+      "lon": 10.361165
+    },
+    {
+      "id": "243682",
+      "name": "Kuchl",
+      "lat": 47.625816,
+      "lon": 13.141529
+    },
+    {
+      "id": "488723",
+      "name": "Kuchl Garnei",
+      "lat": 47.6515,
+      "lon": 13.128377
+    },
+    {
+      "id": "303192",
+      "name": "Kufstein",
+      "lat": 47.58308,
+      "lon": 12.16555
+    },
+    {
+      "id": "632965",
+      "name": "Kumpfmühl",
+      "lat": 48.26968,
+      "lon": 13.620207
+    },
+    {
+      "id": "404548",
+      "name": "Lagerlechfeld",
+      "lat": 48.18295,
+      "lon": 10.844202
+    },
+    {
+      "id": "20058",
+      "name": "Lähn",
+      "lat": 47.41991,
+      "lon": 10.833844
+    },
+    {
+      "id": "62751",
+      "name": "Laim",
+      "lat": 48.143906,
+      "lon": 11.50326
+    },
+    {
+      "id": "441545",
+      "name": "Lambach",
+      "lat": 48.09409,
+      "lon": 13.888346
+    },
+    {
+      "id": "561290",
+      "name": "Lambach Markt",
+      "lat": 48.09443,
+      "lon": 13.870318
+    },
+    {
+      "id": "254928",
+      "name": "Landsberg",
+      "lat": 48.04727,
+      "lon": 10.871699
+    },
+    {
+      "id": "287005",
+      "name": "Landsberg Schule",
+      "lat": 48.05418,
+      "lon": 10.869642
+    },
+    {
+      "id": "287005",
+      "name": "Landsberg(L)Schule",
+      "lat": 48.05418,
+      "lon": 10.869641
+    },
+    {
+      "id": "254928",
+      "name": "Landsberg(Lech)",
+      "lat": 48.047276,
+      "lon": 10.871701
+    },
+    {
+      "id": "517446",
+      "name": "Landschlacht",
+      "lat": 47.62889,
+      "lon": 9.246949
+    },
+    {
+      "id": "520642",
+      "name": "Langenargen",
+      "lat": 47.59949,
+      "lon": 9.544837
+    },
+    {
+      "id": "520642",
+      "name": "Langenargen Bahnhof",
+      "lat": 47.59939,
+      "lon": 9.544564
+    },
+    {
+      "id": "120242",
+      "name": "Langenwang (Schwab)",
+      "lat": 47.43659,
+      "lon": 10.276035
+    },
+    {
+      "id": "120242",
+      "name": "Langenwang(Schwab)",
+      "lat": 47.43659,
+      "lon": 10.276032
+    },
+    {
+      "id": "533281",
+      "name": "Langwied",
+      "lat": 48.16306,
+      "lon": 11.432418
+    },
+    {
+      "id": "161768",
+      "name": "Laufen (Oberbay)",
+      "lat": 47.93365,
+      "lon": 12.922364
+    },
+    {
+      "id": "161768",
+      "name": "Laufen(Oberbay)",
+      "lat": 47.933655,
+      "lon": 12.922363
+    },
+    {
+      "id": "306091",
+      "name": "Laupheim Stadt",
+      "lat": 48.233303,
+      "lon": 9.878394
+    },
+    {
+      "id": "129927",
+      "name": "Laupheim West",
+      "lat": 48.231113,
+      "lon": 9.848251
+    },
+    {
+      "id": "129927",
+      "name": "Laupheim Westbahnhof",
+      "lat": 48.230938,
+      "lon": 9.848168
+    },
+    {
+      "id": "306091",
+      "name": "Laupheim ZOB/Stadtbahnhof",
+      "lat": 48.23378,
+      "lon": 9.878836
+    },
+    {
+      "id": "163747",
+      "name": "Lauterach",
+      "lat": 47.477413,
+      "lon": 9.724285
+    },
+    {
+      "id": "112361",
+      "name": "Lauterach Unterfeld",
+      "lat": 47.480778,
+      "lon": 9.714746
+    },
+    {
+      "id": "541914",
+      "name": "Leienfelsstraße",
+      "lat": 48.154568,
+      "lon": 11.428313
+    },
+    {
+      "id": "38398",
+      "name": "Leithen b.Seefeld",
+      "lat": 47.290787,
+      "lon": 11.221932
+    },
+    {
+      "id": "449953",
+      "name": "Lengenwang",
+      "lat": 47.6974,
+      "lon": 10.601216
+    },
+    {
+      "id": "339511",
+      "name": "Lenggries",
+      "lat": 47.68016,
+      "lon": 11.574038
+    },
+    {
+      "id": "572525",
+      "name": "Lermoos",
+      "lat": 47.405422,
+      "lon": 10.87857
+    },
+    {
+      "id": "483478",
+      "name": "Leuchtenbergring",
+      "lat": 48.134266,
+      "lon": 11.615944
+    },
+    {
+      "id": "38460",
+      "name": "Leuterschach",
+      "lat": 47.74564,
+      "lon": 10.58122
+    },
+    {
+      "id": "569598",
+      "name": "Leutkirch",
+      "lat": 47.826168,
+      "lon": 10.015836
+    },
+    {
+      "id": "569598",
+      "name": "Leutkirch Bahnhof",
+      "lat": 47.826405,
+      "lon": 10.016377
+    },
+    {
+      "id": "30566",
+      "name": "Lindau-Aeschach",
+      "lat": 47.559624,
+      "lon": 9.684665
+    },
+    {
+      "id": "465018",
+      "name": "Lindau-Insel",
+      "lat": 47.544346,
+      "lon": 9.68047
+    },
+    {
+      "id": "166564",
+      "name": "Lindau-Reutin",
+      "lat": 47.552383,
+      "lon": 9.703292
+    },
+    {
+      "id": "400010",
+      "name": "Lochau-Hörbranz",
+      "lat": 47.52962,
+      "lon": 9.742196
+    },
+    {
+      "id": "646496",
+      "name": "Lochham",
+      "lat": 48.129116,
+      "lon": 11.431879
+    },
+    {
+      "id": "131212",
+      "name": "Lochhausen",
+      "lat": 48.176426,
+      "lon": 11.407984
+    },
+    {
+      "id": "98689",
+      "name": "Lohhof",
+      "lat": 48.288326,
+      "lon": 11.581629
+    },
+    {
+      "id": "294200",
+      "name": "Loppenhausen",
+      "lat": 48.162506,
+      "lon": 10.390903
+    },
+    {
+      "id": "280397",
+      "name": "Löwental",
+      "lat": 47.66143,
+      "lon": 9.499387
+    },
+    {
+      "id": "556412",
+      "name": "Lustenau",
+      "lat": 47.45034,
+      "lon": 9.667113
+    },
+    {
+      "id": "4453",
+      "name": "Mägerkingen",
+      "lat": 48.2878,
+      "lon": 9.222604
+    },
+    {
+      "id": "4453",
+      "name": "Mägerkingen Bahnhof",
+      "lat": 48.287884,
+      "lon": 9.22276
+    },
+    {
+      "id": "629217",
+      "name": "Maisach",
+      "lat": 48.214443,
+      "lon": 11.257301
+    },
+    {
+      "id": "306172",
+      "name": "Malching",
+      "lat": 48.216095,
+      "lon": 11.219464
+    },
+    {
+      "id": "306172",
+      "name": "Malching(Oberbay)",
+      "lat": 48.21545,
+      "lon": 11.219064
+    },
+    {
+      "id": "133962",
+      "name": "Mammendorf",
+      "lat": 48.216682,
+      "lon": 11.174539
+    },
+    {
+      "id": "413699",
+      "name": "Maria Rain",
+      "lat": 47.632553,
+      "lon": 10.480276
+    },
+    {
+      "id": "124457",
+      "name": "Marienplatz",
+      "lat": 48.137245,
+      "lon": 11.575421
+    },
+    {
+      "id": "319591",
+      "name": "Markdorf Bahnhof",
+      "lat": 47.71692,
+      "lon": 9.389281
+    },
+    {
+      "id": "319591",
+      "name": "Markdorf(Baden)",
+      "lat": 47.716656,
+      "lon": 9.38877
+    },
+    {
+      "id": "541007",
+      "name": "Markt Schwaben",
+      "lat": 48.192806,
+      "lon": 11.861876
+    },
+    {
+      "id": "548762",
+      "name": "Marktl",
+      "lat": 48.2567,
+      "lon": 12.852475
+    },
+    {
+      "id": "353018",
+      "name": "Marktoberdorf",
+      "lat": 47.779213,
+      "lon": 10.614224
+    },
+    {
+      "id": "337649",
+      "name": "Marktoberdorf Nord",
+      "lat": 47.789654,
+      "lon": 10.615529
+    },
+    {
+      "id": "496045",
+      "name": "Marktoberdorf Schule",
+      "lat": 47.7741,
+      "lon": 10.609993
+    },
+    {
+      "id": "337649",
+      "name": "Marktoberdorf, Nord",
+      "lat": 47.789654,
+      "lon": 10.615529
+    },
+    {
+      "id": "639184",
+      "name": "Marstetten-Aitrach",
+      "lat": 47.943558,
+      "lon": 10.080171
+    },
+    {
+      "id": "225051",
+      "name": "Martinszell (Allgäu)",
+      "lat": 47.629406,
+      "lon": 10.273888
+    },
+    {
+      "id": "225051",
+      "name": "Martinszell(Allgäu)",
+      "lat": 47.629406,
+      "lon": 10.273885
+    },
+    {
+      "id": "447267",
+      "name": "Maselheim",
+      "lat": 48.133247,
+      "lon": 9.877614
+    },
+    {
+      "id": "12378",
+      "name": "Matzing",
+      "lat": 47.93553,
+      "lon": 12.592386
+    },
+    {
+      "id": "80214",
+      "name": "Meckenbeuren",
+      "lat": 47.69976,
+      "lon": 9.558393
+    },
+    {
+      "id": "80214",
+      "name": "Meckenbeuren Bahnhof",
+      "lat": 47.69967,
+      "lon": 9.558587
+    },
+    {
+      "id": "527238",
+      "name": "Meckenbeuren Kehlen, Bahnhof",
+      "lat": 47.68297,
+      "lon": 9.548103
+    },
+    {
+      "id": "31115",
+      "name": "Memmingen",
+      "lat": 47.985584,
+      "lon": 10.18685
+    },
+    {
+      "id": "335057",
+      "name": "Mengen",
+      "lat": 48.053516,
+      "lon": 9.336619
+    },
+    {
+      "id": "335057",
+      "name": "Mengen Bahnhof",
+      "lat": 48.05343,
+      "lon": 9.336281
+    },
+    {
+      "id": "19392",
+      "name": "Merching",
+      "lat": 48.24577,
+      "lon": 10.979398
+    },
+    {
+      "id": "84336",
+      "name": "Mering",
+      "lat": 48.262695,
+      "lon": 10.988291
+    },
+    {
+      "id": "421063",
+      "name": "Mering-St Afra",
+      "lat": 48.27428,
+      "lon": 10.971202
+    },
+    {
+      "id": "421063",
+      "name": "Mering-St. Afra",
+      "lat": 48.27428,
+      "lon": 10.971205
+    },
+    {
+      "id": "15540",
+      "name": "Miesbach",
+      "lat": 47.790833,
+      "lon": 11.830812
+    },
+    {
+      "id": "606739",
+      "name": "Mindelheim",
+      "lat": 48.044918,
+      "lon": 10.50162
+    },
+    {
+      "id": "304792",
+      "name": "Mining",
+      "lat": 48.271297,
+      "lon": 13.171771
+    },
+    {
+      "id": "290962",
+      "name": "Mittenwald",
+      "lat": 47.44003,
+      "lon": 11.265709
+    },
+    {
+      "id": "526401",
+      "name": "Mittenwald (Gr)",
+      "lat": 47.39807,
+      "lon": 11.267443
+    },
+    {
+      "id": "526401",
+      "name": "Mittenwald(Gr)",
+      "lat": 47.39807,
+      "lon": 11.267441
+    },
+    {
+      "id": "366046",
+      "name": "Mitterberghütten",
+      "lat": 47.39537,
+      "lon": 13.22216
+    },
+    {
+      "id": "359946",
+      "name": "Mittersendling",
+      "lat": 48.107796,
+      "lon": 11.536416
+    },
+    {
+      "id": "495320",
+      "name": "Mochenwangen",
+      "lat": 47.87257,
+      "lon": 9.637901
+    },
+    {
+      "id": "495320",
+      "name": "Mochenwangen Bahnhof",
+      "lat": 47.872124,
+      "lon": 9.637647
+    },
+    {
+      "id": "540823",
+      "name": "Moosach",
+      "lat": 48.180794,
+      "lon": 11.507643
+    },
+    {
+      "id": "491592",
+      "name": "Moosrain",
+      "lat": 47.767574,
+      "lon": 11.720553
+    },
+    {
+      "id": "537265",
+      "name": "Mühldorf (Oberbay)",
+      "lat": 48.24821,
+      "lon": 12.51964
+    },
+    {
+      "id": "537265",
+      "name": "Mühldorf(Oberbay)",
+      "lat": 48.248207,
+      "lon": 12.519638
+    },
+    {
+      "id": "146725",
+      "name": "Mühlheim am Inn",
+      "lat": 48.269737,
+      "lon": 13.220859
+    },
+    {
+      "id": "250277",
+      "name": "München Donnersbergerbrücke",
+      "lat": 48.142624,
+      "lon": 11.536537
+    },
+    {
+      "id": "389485",
+      "name": "München Hackerbrücke",
+      "lat": 48.141968,
+      "lon": 11.548572
+    },
+    {
+      "id": "305217",
+      "name": "München Harras",
+      "lat": 48.11775,
+      "lon": 11.536311
+    },
+    {
+      "id": "463395",
+      "name": "München Hbf",
+      "lat": 48.14029,
+      "lon": 11.559602
+    },
+    {
+      "id": "387583",
+      "name": "München Hbf (tief)",
+      "lat": 48.14117,
+      "lon": 11.560493
+    },
+    {
+      "id": "463395",
+      "name": "München Hbf Gl.27-36",
+      "lat": 48.14153,
+      "lon": 11.556708
+    },
+    {
+      "id": "463395",
+      "name": "München Hbf Gl.5-10",
+      "lat": 48.13993,
+      "lon": 11.554814
+    },
+    {
+      "id": "607780",
+      "name": "München Heimeranplatz",
+      "lat": 48.13296,
+      "lon": 11.5315
+    },
+    {
+      "id": "150765",
+      "name": "München Hirschgarten",
+      "lat": 48.14354,
+      "lon": 11.519245
+    },
+    {
+      "id": "631740",
+      "name": "München Isartor",
+      "lat": 48.1342,
+      "lon": 11.583234
+    },
+    {
+      "id": "456005",
+      "name": "München Karlsplatz",
+      "lat": 48.139454,
+      "lon": 11.565619
+    },
+    {
+      "id": "541914",
+      "name": "München Leienfelsstr.",
+      "lat": 48.154537,
+      "lon": 11.428524
+    },
+    {
+      "id": "483478",
+      "name": "München Leuchtenbergring",
+      "lat": 48.13425,
+      "lon": 11.615986
+    },
+    {
+      "id": "124457",
+      "name": "München Marienplatz",
+      "lat": 48.137047,
+      "lon": 11.575386
+    },
+    {
+      "id": "550953",
+      "name": "München Ost",
+      "lat": 48.12744,
+      "lon": 11.604971
+    },
+    {
+      "id": "640779",
+      "name": "München Rosenheimer Platz",
+      "lat": 48.12917,
+      "lon": 11.593049
+    },
+    {
+      "id": "114315",
+      "name": "München Siemenswerke",
+      "lat": 48.0945,
+      "lon": 11.532799
+    },
+    {
+      "id": "70323",
+      "name": "München St.Martin-Str.",
+      "lat": 48.11854,
+      "lon": 11.595785
+    },
+    {
+      "id": "526641",
+      "name": "München Süd",
+      "lat": 48.120907,
+      "lon": 11.555407
+    },
+    {
+      "id": "145849",
+      "name": "München-Allach",
+      "lat": 48.189934,
+      "lon": 11.468036
+    },
+    {
+      "id": "460023",
+      "name": "München-Aubing",
+      "lat": 48.155968,
+      "lon": 11.413309
+    },
+    {
+      "id": "164857",
+      "name": "München-Berg am Laim",
+      "lat": 48.134003,
+      "lon": 11.633295
+    },
+    {
+      "id": "642710",
+      "name": "München-Daglfing",
+      "lat": 48.149624,
+      "lon": 11.64933
+    },
+    {
+      "id": "396198",
+      "name": "München-Englschalking",
+      "lat": 48.156914,
+      "lon": 11.648335
+    },
+    {
+      "id": "218088",
+      "name": "München-Fasanerie",
+      "lat": 48.19781,
+      "lon": 11.525924
+    },
+    {
+      "id": "436296",
+      "name": "München-Fasangarten",
+      "lat": 48.092747,
+      "lon": 11.606009
+    },
+    {
+      "id": "396209",
+      "name": "München-Feldmoching",
+      "lat": 48.213814,
+      "lon": 11.541318
+    },
+    {
+      "id": "367414",
+      "name": "München-Freiham",
+      "lat": 48.14,
+      "lon": 11.410112
+    },
+    {
+      "id": "474025",
+      "name": "München-Giesing",
+      "lat": 48.1108,
+      "lon": 11.596346
+    },
+    {
+      "id": "274827",
+      "name": "München-Johanneskirchen",
+      "lat": 48.167637,
+      "lon": 11.646058
+    },
+    {
+      "id": "360191",
+      "name": "München-Karlsfeld",
+      "lat": 48.211178,
+      "lon": 11.459568
+    },
+    {
+      "id": "62751",
+      "name": "München-Laim",
+      "lat": 48.14437,
+      "lon": 11.503669
+    },
+    {
+      "id": "533281",
+      "name": "München-Langwied",
+      "lat": 48.163113,
+      "lon": 11.432508
+    },
+    {
+      "id": "131212",
+      "name": "München-Lochhausen",
+      "lat": 48.176506,
+      "lon": 11.407895
+    },
+    {
+      "id": "359946",
+      "name": "München-Mittersendling",
+      "lat": 48.107822,
+      "lon": 11.536354
+    },
+    {
+      "id": "540823",
+      "name": "München-Moosach",
+      "lat": 48.18026,
+      "lon": 11.506237
+    },
+    {
+      "id": "405011",
+      "name": "München-Neuaubing",
+      "lat": 48.141705,
+      "lon": 11.422197
+    },
+    {
+      "id": "596440",
+      "name": "München-Neuperlach Süd",
+      "lat": 48.088684,
+      "lon": 11.645175
+    },
+    {
+      "id": "497137",
+      "name": "München-Obermenzing",
+      "lat": 48.164223,
+      "lon": 11.478117
+    },
+    {
+      "id": "23169",
+      "name": "München-Pasing",
+      "lat": 48.149853,
+      "lon": 11.461872
+    },
+    {
+      "id": "85246",
+      "name": "München-Perlach",
+      "lat": 48.093426,
+      "lon": 11.631208
+    },
+    {
+      "id": "105744",
+      "name": "München-Riem",
+      "lat": 48.143982,
+      "lon": 11.678049
+    },
+    {
+      "id": "619179",
+      "name": "München-Solln",
+      "lat": 48.07992,
+      "lon": 11.526954
+    },
+    {
+      "id": "628909",
+      "name": "München-Trudering",
+      "lat": 48.126064,
+      "lon": 11.663375
+    },
+    {
+      "id": "61199",
+      "name": "München-Untermenzing",
+      "lat": 48.177673,
+      "lon": 11.472792
+    },
+    {
+      "id": "136318",
+      "name": "München-Westkreuz",
+      "lat": 48.149025,
+      "lon": 11.44394
+    },
+    {
+      "id": "172569",
+      "name": "Munderkingen",
+      "lat": 48.237873,
+      "lon": 9.645671
+    },
+    {
+      "id": "172569",
+      "name": "Munderkingen Bahnhof",
+      "lat": 48.237778,
+      "lon": 9.645427
+    },
+    {
+      "id": "547812",
+      "name": "Münsterlingen Spital",
+      "lat": 47.632046,
+      "lon": 9.236117
+    },
+    {
+      "id": "184954",
+      "name": "Münsterlingen-Scherzingen",
+      "lat": 47.633427,
+      "lon": 9.227012
+    },
+    {
+      "id": "379848",
+      "name": "Muolen",
+      "lat": 47.517624,
+      "lon": 9.337093
+    },
+    {
+      "id": "65249",
+      "name": "Murnau",
+      "lat": 47.682266,
+      "lon": 11.192631
+    },
+    {
+      "id": "218549",
+      "name": "Murnau Ort",
+      "lat": 47.678837,
+      "lon": 11.195658
+    },
+    {
+      "id": "331049",
+      "name": "Musau",
+      "lat": 47.531643,
+      "lon": 10.672701
+    },
+    {
+      "id": "453145",
+      "name": "Nassenbeuren",
+      "lat": 48.078068,
+      "lon": 10.503794
+    },
+    {
+      "id": "434313",
+      "name": "Nesselwang",
+      "lat": 47.623943,
+      "lon": 10.504423
+    },
+    {
+      "id": "405011",
+      "name": "Neuaubing",
+      "lat": 48.141895,
+      "lon": 11.423157
+    },
+    {
+      "id": "237210",
+      "name": "Neubiberg",
+      "lat": 48.07662,
+      "lon": 11.660294
+    },
+    {
+      "id": "63193",
+      "name": "Neugilching",
+      "lat": 48.097977,
+      "lon": 11.288392
+    },
+    {
+      "id": "586525",
+      "name": "Neukirch-Egnach",
+      "lat": 47.5388,
+      "lon": 9.375853
+    },
+    {
+      "id": "449319",
+      "name": "Neukirchen b.Lambach",
+      "lat": 48.095436,
+      "lon": 13.832156
+    },
+    {
+      "id": "33161",
+      "name": "Neukirchen-Gampern",
+      "lat": 48.02028,
+      "lon": 13.549311
+    },
+    {
+      "id": "223724",
+      "name": "Neumarkt am Wallersee",
+      "lat": 47.95532,
+      "lon": 13.225574
+    },
+    {
+      "id": "123163",
+      "name": "Neumarkt-Kallham",
+      "lat": 48.271545,
+      "lon": 13.725044
+    },
+    {
+      "id": "303824",
+      "name": "Neuötting",
+      "lat": 48.26116,
+      "lon": 12.690428
+    },
+    {
+      "id": "596440",
+      "name": "Neuperlach Süd",
+      "lat": 48.08937,
+      "lon": 11.644609
+    },
+    {
+      "id": "131663",
+      "name": "Neuratting",
+      "lat": 48.227135,
+      "lon": 13.373892
+    },
+    {
+      "id": "205251",
+      "name": "Niederbiegen",
+      "lat": 47.830627,
+      "lon": 9.620958
+    },
+    {
+      "id": "11345",
+      "name": "Niederraunau",
+      "lat": 48.221344,
+      "lon": 10.374499
+    },
+    {
+      "id": "265153",
+      "name": "Nonnenhorn",
+      "lat": 47.575123,
+      "lon": 9.612674
+    },
+    {
+      "id": "451196",
+      "name": "Oberaach",
+      "lat": 47.553318,
+      "lon": 9.271062
+    },
+    {
+      "id": "403676",
+      "name": "Oberalm",
+      "lat": 47.69984,
+      "lon": 13.093211
+    },
+    {
+      "id": "551090",
+      "name": "Oberammergau",
+      "lat": 47.599545,
+      "lon": 11.057075
+    },
+    {
+      "id": "565198",
+      "name": "Oberau",
+      "lat": 47.559273,
+      "lon": 11.139271
+    },
+    {
+      "id": "210510",
+      "name": "Oberaudorf",
+      "lat": 47.652794,
+      "lon": 12.175262
+    },
+    {
+      "id": "360242",
+      "name": "Obergries",
+      "lat": 47.70679,
+      "lon": 11.563644
+    },
+    {
+      "id": "224322",
+      "name": "Oberhofen-Zell am Moos",
+      "lat": 47.95886,
+      "lon": 13.301464
+    },
+    {
+      "id": "497137",
+      "name": "Obermenzing",
+      "lat": 48.164223,
+      "lon": 11.478035
+    },
+    {
+      "id": "503663",
+      "name": "Obernberg-Altheim",
+      "lat": 48.270103,
+      "lon": 13.25978
+    },
+    {
+      "id": "398676",
+      "name": "Oberottmarshausen",
+      "lat": 48.235867,
+      "lon": 10.851837
+    },
+    {
+      "id": "431224",
+      "name": "Oberschleißheim",
+      "lat": 48.258446,
+      "lon": 11.55776
+    },
+    {
+      "id": "45599",
+      "name": "Oberstaufen",
+      "lat": 47.55421,
+      "lon": 10.025288
+    },
+    {
+      "id": "14174",
+      "name": "Oberstdorf",
+      "lat": 47.411034,
+      "lon": 10.278092
+    },
+    {
+      "id": "429472",
+      "name": "Obertrattnach-Markt Hofkirchen",
+      "lat": 48.245945,
+      "lon": 13.766864
+    },
+    {
+      "id": "595479",
+      "name": "Oberzell",
+      "lat": 47.751728,
+      "lon": 9.574475
+    },
+    {
+      "id": "347809",
+      "name": "Obing",
+      "lat": 47.99878,
+      "lon": 12.403156
+    },
+    {
+      "id": "298927",
+      "name": "Ochsenhausen",
+      "lat": 48.071068,
+      "lon": 9.947367
+    },
+    {
+      "id": "158156",
+      "name": "Ohlstadt",
+      "lat": 47.634098,
+      "lon": 11.218071
+    },
+    {
+      "id": "460466",
+      "name": "Olching",
+      "lat": 48.20988,
+      "lon": 11.334286
+    },
+    {
+      "id": "550953",
+      "name": "Ostbahnhof",
+      "lat": 48.12815,
+      "lon": 11.604545
+    },
+    {
+      "id": "584776",
+      "name": "Osterhofen (Oberbay)",
+      "lat": 47.687653,
+      "lon": 11.986886
+    },
+    {
+      "id": "584776",
+      "name": "Osterhofen(Oberbay)",
+      "lat": 47.687656,
+      "lon": 11.986881
+    },
+    {
+      "id": "41603",
+      "name": "Ostermünchen",
+      "lat": 47.94215,
+      "lon": 12.041584
+    },
+    {
+      "id": "158234",
+      "name": "Ostrach Bahnhof",
+      "lat": 47.946644,
+      "lon": 9.378564
+    },
+    {
+      "id": "103249",
+      "name": "Ottenhofen",
+      "lat": 48.218178,
+      "lon": 11.878495
+    },
+    {
+      "id": "103249",
+      "name": "Ottenhofen(Oberbay)",
+      "lat": 48.218136,
+      "lon": 11.879385
+    },
+    {
+      "id": "446907",
+      "name": "Otterfing",
+      "lat": 47.91139,
+      "lon": 11.682123
+    },
+    {
+      "id": "323713",
+      "name": "Otting",
+      "lat": 47.92871,
+      "lon": 12.703597
+    },
+    {
+      "id": "28290",
+      "name": "Ottobrunn",
+      "lat": 48.062805,
+      "lon": 11.679123
+    },
+    {
+      "id": "241927",
+      "name": "Oy-Mittelberg",
+      "lat": 47.646152,
+      "lon": 10.458133
+    },
+    {
+      "id": "23169",
+      "name": "Pasing",
+      "lat": 48.149143,
+      "lon": 11.460697
+    },
+    {
+      "id": "192330",
+      "name": "Peiß",
+      "lat": 47.960056,
+      "lon": 11.776788
+    },
+    {
+      "id": "63503",
+      "name": "Peißenberg",
+      "lat": 47.797493,
+      "lon": 11.060282
+    },
+    {
+      "id": "635790",
+      "name": "Peißenberg Nord",
+      "lat": 47.815678,
+      "lon": 11.077305
+    },
+    {
+      "id": "311153",
+      "name": "Peiting Nord",
+      "lat": 47.801567,
+      "lon": 10.926667
+    },
+    {
+      "id": "411906",
+      "name": "Peiting Ost",
+      "lat": 47.792957,
+      "lon": 10.936692
+    },
+    {
+      "id": "44447",
+      "name": "Penzberg",
+      "lat": 47.749245,
+      "lon": 11.371872
+    },
+    {
+      "id": "85246",
+      "name": "Perlach",
+      "lat": 48.093555,
+      "lon": 11.630569
+    },
+    {
+      "id": "417524",
+      "name": "Peterskirchen",
+      "lat": 48.2341,
+      "lon": 13.549436
+    },
+    {
+      "id": "81804",
+      "name": "Pfaffenhausen",
+      "lat": 48.117794,
+      "lon": 10.451826
+    },
+    {
+      "id": "477783",
+      "name": "Pfarrwerfen",
+      "lat": 47.460983,
+      "lon": 13.199945
+    },
+    {
+      "id": "108176",
+      "name": "Pflach",
+      "lat": 47.514114,
+      "lon": 10.718022
+    },
+    {
+      "id": "357926",
+      "name": "Pfronten-Ried",
+      "lat": 47.58359,
+      "lon": 10.561026
+    },
+    {
+      "id": "503171",
+      "name": "Pfronten-Steinach",
+      "lat": 47.566116,
+      "lon": 10.574572
+    },
+    {
+      "id": "385138",
+      "name": "Pfronten-Weißbach",
+      "lat": 47.5957,
+      "lon": 10.557738
+    },
+    {
+      "id": "371971",
+      "name": "Pfullendorf",
+      "lat": 47.92288,
+      "lon": 9.255728
+    },
+    {
+      "id": "371971",
+      "name": "Pfullendorf Bf./Stadtgarten",
+      "lat": 47.92266,
+      "lon": 9.255351
+    },
+    {
+      "id": "570765",
+      "name": "Piding",
+      "lat": 47.75954,
+      "lon": 12.91153
+    },
+    {
+      "id": "247642",
+      "name": "Pittenhart",
+      "lat": 47.986763,
+      "lon": 12.376341
+    },
+    {
+      "id": "249752",
+      "name": "Planegg",
+      "lat": 48.104977,
+      "lon": 11.414749
+    },
+    {
+      "id": "414278",
+      "name": "Poing",
+      "lat": 48.17147,
+      "lon": 11.810214
+    },
+    {
+      "id": "84256",
+      "name": "Pöndorf",
+      "lat": 47.986736,
+      "lon": 13.355736
+    },
+    {
+      "id": "220316",
+      "name": "Possenhofen",
+      "lat": 47.962708,
+      "lon": 11.306268
+    },
+    {
+      "id": "125554",
+      "name": "Pram-Haag",
+      "lat": 48.23177,
+      "lon": 13.618879
+    },
+    {
+      "id": "111559",
+      "name": "Prien",
+      "lat": 47.854946,
+      "lon": 12.347532
+    },
+    {
+      "id": "111559",
+      "name": "Prien am Chiemsee",
+      "lat": 47.855515,
+      "lon": 12.346616
+    },
+    {
+      "id": "380713",
+      "name": "Prien, Hafen",
+      "lat": 47.860355,
+      "lon": 12.36292
+    },
+    {
+      "id": "380713",
+      "name": "Prien/Stock (Hafen)",
+      "lat": 47.860844,
+      "lon": 12.365337
+    },
+    {
+      "id": "596842",
+      "name": "Puch b.Hallein Urstein",
+      "lat": 47.72392,
+      "lon": 13.088182
+    },
+    {
+      "id": "285241",
+      "name": "Puch bei Hallein",
+      "lat": 47.71285,
+      "lon": 13.090623
+    },
+    {
+      "id": "151303",
+      "name": "Puchheim",
+      "lat": 48.172237,
+      "lon": 11.352648
+    },
+    {
+      "id": "404241",
+      "name": "Pullach",
+      "lat": 48.05778,
+      "lon": 11.521585
+    },
+    {
+      "id": "199227",
+      "name": "Raisting",
+      "lat": 47.91208,
+      "lon": 11.114163
+    },
+    {
+      "id": "426879",
+      "name": "Ramerberg",
+      "lat": 48.01964,
+      "lon": 12.146705
+    },
+    {
+      "id": "459965",
+      "name": "Rammingen (Bay)",
+      "lat": 48.052437,
+      "lon": 10.58979
+    },
+    {
+      "id": "459965",
+      "name": "Rammingen(Bay)",
+      "lat": 48.052437,
+      "lon": 10.589788
+    },
+    {
+      "id": "2943",
+      "name": "Rankweil",
+      "lat": 47.273018,
+      "lon": 9.637252
+    },
+    {
+      "id": "417267",
+      "name": "Raubling",
+      "lat": 47.78851,
+      "lon": 12.110152
+    },
+    {
+      "id": "115336",
+      "name": "Ravensburg",
+      "lat": 47.78448,
+      "lon": 9.6061
+    },
+    {
+      "id": "595479",
+      "name": "Ravensburg Oberzell, Bahnhof",
+      "lat": 47.751835,
+      "lon": 9.574604
+    },
+    {
+      "id": "331533",
+      "name": "Ravensburg Weißenau, Bahnhof",
+      "lat": 47.765926,
+      "lon": 9.594726
+    },
+    {
+      "id": "115336",
+      "name": "Ravensburg, Bahnhof",
+      "lat": 47.784554,
+      "lon": 9.606673
+    },
+    {
+      "id": "245424",
+      "name": "Rechtenstein",
+      "lat": 48.24001,
+      "lon": 9.551309
+    },
+    {
+      "id": "245424",
+      "name": "Rechtenstein Bahnhof",
+      "lat": 48.24044,
+      "lon": 9.554445
+    },
+    {
+      "id": "396555",
+      "name": "Redl-Zipf",
+      "lat": 48.026226,
+      "lon": 13.515069
+    },
+    {
+      "id": "500788",
+      "name": "Reichersbeuern",
+      "lat": 47.774353,
+      "lon": 11.635743
+    },
+    {
+      "id": "353979",
+      "name": "Reinstetten",
+      "lat": 48.109047,
+      "lon": 9.93981
+    },
+    {
+      "id": "568436",
+      "name": "Reith b.Seefeld",
+      "lat": 47.300846,
+      "lon": 11.200652
+    },
+    {
+      "id": "68965",
+      "name": "Reutte in Tirol",
+      "lat": 47.493088,
+      "lon": 10.721652
+    },
+    {
+      "id": "204449",
+      "name": "Reutte in Tirol Schulzentrum",
+      "lat": 47.489742,
+      "lon": 10.725157
+    },
+    {
+      "id": "501652",
+      "name": "Ried im Innkreis",
+      "lat": 48.200447,
+      "lon": 13.488202
+    },
+    {
+      "id": "166621",
+      "name": "Riederau",
+      "lat": 47.98258,
+      "lon": 11.097158
+    },
+    {
+      "id": "519833",
+      "name": "Riedlingen",
+      "lat": 48.149574,
+      "lon": 9.48498
+    },
+    {
+      "id": "519833",
+      "name": "Riedlingen ZOB/Bahnhof",
+      "lat": 48.150043,
+      "lon": 9.484718
+    },
+    {
+      "id": "105744",
+      "name": "Riem",
+      "lat": 48.143383,
+      "lon": 11.679015
+    },
+    {
+      "id": "563260",
+      "name": "Riffelriß, Grainau",
+      "lat": 47.43554,
+      "lon": 10.987337
+    },
+    {
+      "id": "431290",
+      "name": "Roggwil-Berg",
+      "lat": 47.48559,
+      "lon": 9.392023
+    },
+    {
+      "id": "594492",
+      "name": "Rohrbach (Oberbay)",
+      "lat": 48.29809,
+      "lon": 12.551522
+    },
+    {
+      "id": "594492",
+      "name": "Rohrbach(Oberbay)",
+      "lat": 48.29816,
+      "lon": 12.551407
+    },
+    {
+      "id": "132281",
+      "name": "Romanshorn",
+      "lat": 47.56552,
+      "lon": 9.379371
+    },
+    {
+      "id": "234221",
+      "name": "Rorschach",
+      "lat": 47.478,
+      "lon": 9.505141
+    },
+    {
+      "id": "126081",
+      "name": "Rorschach Hafen",
+      "lat": 47.47859,
+      "lon": 9.492923
+    },
+    {
+      "id": "19312",
+      "name": "Rosenheim",
+      "lat": 47.850018,
+      "lon": 12.119207
+    },
+    {
+      "id": "413007",
+      "name": "Rosenheim Aicherpark",
+      "lat": 47.85165,
+      "lon": 12.089467
+    },
+    {
+      "id": "99834",
+      "name": "Rosenheim Hochschule",
+      "lat": 47.866302,
+      "lon": 12.104178
+    },
+    {
+      "id": "413007",
+      "name": "Rosenheim-Aicherpark",
+      "lat": 47.85165,
+      "lon": 12.089464
+    },
+    {
+      "id": "99834",
+      "name": "Rosenheim-Hochschule",
+      "lat": 47.86635,
+      "lon": 12.104241
+    },
+    {
+      "id": "640779",
+      "name": "Rosenheimer Platz",
+      "lat": 48.12884,
+      "lon": 11.594061
+    },
+    {
+      "id": "211812",
+      "name": "Roßberg",
+      "lat": 47.864933,
+      "lon": 9.787137
+    },
+    {
+      "id": "221980",
+      "name": "Röthenbach (Allgäu)",
+      "lat": 47.62062,
+      "lon": 9.95354
+    },
+    {
+      "id": "221980",
+      "name": "Röthenbach(Allgäu)",
+      "lat": 47.620617,
+      "lon": 9.953543
+    },
+    {
+      "id": "379739",
+      "name": "Rott (Inn)",
+      "lat": 47.98612,
+      "lon": 12.135754
+    },
+    {
+      "id": "379739",
+      "name": "Rott(Inn)",
+      "lat": 47.986115,
+      "lon": 12.135751
+    },
+    {
+      "id": "165156",
+      "name": "Rottenacker",
+      "lat": 48.234844,
+      "lon": 9.694364
+    },
+    {
+      "id": "165156",
+      "name": "Rottenacker Bahnhof",
+      "lat": 48.234863,
+      "lon": 9.694394
+    },
+    {
+      "id": "39292",
+      "name": "Ruhpolding",
+      "lat": 47.762245,
+      "lon": 12.649034
+    },
+    {
+      "id": "534578",
+      "name": "Salem",
+      "lat": 47.757793,
+      "lon": 9.297266
+    },
+    {
+      "id": "534578",
+      "name": "Salem, Bahnhof",
+      "lat": 47.758003,
+      "lon": 9.296288
+    },
+    {
+      "id": "344311",
+      "name": "Salzburg Aigen",
+      "lat": 47.788723,
+      "lon": 13.078535
+    },
+    {
+      "id": "177505",
+      "name": "Salzburg Aiglhof",
+      "lat": 47.807827,
+      "lon": 13.026729
+    },
+    {
+      "id": "525456",
+      "name": "Salzburg Gnigl",
+      "lat": 47.811848,
+      "lon": 13.066356
+    },
+    {
+      "id": "476573",
+      "name": "Salzburg Hbf",
+      "lat": 47.81305,
+      "lon": 13.04582
+    },
+    {
+      "id": "155772",
+      "name": "Salzburg Kasern",
+      "lat": 47.838875,
+      "lon": 13.06534
+    },
+    {
+      "id": "291179",
+      "name": "Salzburg Liefering",
+      "lat": 47.824184,
+      "lon": 13.000623
+    },
+    {
+      "id": "412164",
+      "name": "Salzburg Mülln-Altstadt",
+      "lat": 47.8084,
+      "lon": 13.034178
+    },
+    {
+      "id": "318883",
+      "name": "Salzburg Parsch",
+      "lat": 47.799194,
+      "lon": 13.073073
+    },
+    {
+      "id": "173331",
+      "name": "Salzburg Sam",
+      "lat": 47.8196,
+      "lon": 13.063153
+    },
+    {
+      "id": "622906",
+      "name": "Salzburg Süd",
+      "lat": 47.770226,
+      "lon": 13.078491
+    },
+    {
+      "id": "289613",
+      "name": "Salzburg Taxham Europark",
+      "lat": 47.81631,
+      "lon": 13.010388
+    },
+    {
+      "id": "445291",
+      "name": "Sauerlach",
+      "lat": 47.973846,
+      "lon": 11.654473
+    },
+    {
+      "id": "514382",
+      "name": "Saulgrub",
+      "lat": 47.666092,
+      "lon": 11.025392
+    },
+    {
+      "id": "599364",
+      "name": "Schaftlach",
+      "lat": 47.79547,
+      "lon": 11.684117
+    },
+    {
+      "id": "434707",
+      "name": "Schalchen",
+      "lat": 48.056744,
+      "lon": 12.57088
+    },
+    {
+      "id": "321409",
+      "name": "Scharnitz",
+      "lat": 47.392258,
+      "lon": 11.266927
+    },
+    {
+      "id": "172675",
+      "name": "Schechen",
+      "lat": 47.927048,
+      "lon": 12.126726
+    },
+    {
+      "id": "471908",
+      "name": "Schemmerberg",
+      "lat": 48.18923,
+      "lon": 9.829031
+    },
+    {
+      "id": "471908",
+      "name": "Schemmerberg Bahnhof",
+      "lat": 48.189426,
+      "lon": 9.829114
+    },
+    {
+      "id": "608099",
+      "name": "Schliersee",
+      "lat": 47.73558,
+      "lon": 11.859585
+    },
+    {
+      "id": "380166",
+      "name": "Schlüßlberg",
+      "lat": 48.223667,
+      "lon": 13.869182
+    },
+    {
+      "id": "423033",
+      "name": "Schmiechen(Schwab)",
+      "lat": 48.21305,
+      "lon": 10.978087
+    },
+    {
+      "id": "47188",
+      "name": "Schondorf am Ammersee",
+      "lat": 48.052845,
+      "lon": 11.089846
+    },
+    {
+      "id": "47188",
+      "name": "Schondorf(Bay)",
+      "lat": 48.05285,
+      "lon": 11.089847
+    },
+    {
+      "id": "81744",
+      "name": "Schongau",
+      "lat": 47.812332,
+      "lon": 10.902457
+    },
+    {
+      "id": "577492",
+      "name": "Schöngeising",
+      "lat": 48.146393,
+      "lon": 11.191562
+    },
+    {
+      "id": "28913",
+      "name": "Schwabmünchen",
+      "lat": 48.178688,
+      "lon": 10.768285
+    },
+    {
+      "id": "116550",
+      "name": "Schwanenstadt",
+      "lat": 48.054,
+      "lon": 13.76788
+    },
+    {
+      "id": "137687",
+      "name": "Schwarzach i Vorarl.",
+      "lat": 47.446133,
+      "lon": 9.754395
+    },
+    {
+      "id": "122485",
+      "name": "Schwarzach-St.Veit",
+      "lat": 47.318535,
+      "lon": 13.154464
+    },
+    {
+      "id": "524928",
+      "name": "Schwindegg",
+      "lat": 48.27319,
+      "lon": 12.249697
+    },
+    {
+      "id": "345722",
+      "name": "Seefeld in Tirol",
+      "lat": 47.32873,
+      "lon": 11.189483
+    },
+    {
+      "id": "256498",
+      "name": "Seefeld-Hechendorf",
+      "lat": 48.040962,
+      "lon": 11.197662
+    },
+    {
+      "id": "54591",
+      "name": "Seeg",
+      "lat": 47.655266,
+      "lon": 10.613981
+    },
+    {
+      "id": "15165",
+      "name": "Seekirchen am Wallersee",
+      "lat": 47.899418,
+      "lon": 13.13001
+    },
+    {
+      "id": "422668",
+      "name": "Seekirchen/Wallersee Stadt",
+      "lat": 47.89058,
+      "lon": 13.119961
+    },
+    {
+      "id": "237876",
+      "name": "Seeleiten-Berggeist",
+      "lat": 47.67223,
+      "lon": 11.16623
+    },
+    {
+      "id": "55509",
+      "name": "Seeshaupt",
+      "lat": 47.82278,
+      "lon": 11.287035
+    },
+    {
+      "id": "569479",
+      "name": "Seiboldsdorf",
+      "lat": 47.85716,
+      "lon": 12.636772
+    },
+    {
+      "id": "223287",
+      "name": "Siegsdorf",
+      "lat": 47.821827,
+      "lon": 12.646006
+    },
+    {
+      "id": "114315",
+      "name": "Siemenswerke",
+      "lat": 48.09455,
+      "lon": 11.532832
+    },
+    {
+      "id": "314855",
+      "name": "Sigmaringen",
+      "lat": 48.086983,
+      "lon": 9.221851
+    },
+    {
+      "id": "314855",
+      "name": "Sigmaringen Bahnhof",
+      "lat": 48.086613,
+      "lon": 9.222913
+    },
+    {
+      "id": "124743",
+      "name": "Sigmaringen Hanfertal Bhf.",
+      "lat": 48.09979,
+      "lon": 9.235669
+    },
+    {
+      "id": "75156",
+      "name": "Sigmaringendorf",
+      "lat": 48.068897,
+      "lon": 9.260724
+    },
+    {
+      "id": "75156",
+      "name": "Sigmaringendorf Bahnhof",
+      "lat": 48.068066,
+      "lon": 9.261343
+    },
+    {
+      "id": "514832",
+      "name": "Simbach (Inn)",
+      "lat": 48.26281,
+      "lon": 13.022958
+    },
+    {
+      "id": "514832",
+      "name": "Simbach(Inn)",
+      "lat": 48.262814,
+      "lon": 13.022952
+    },
+    {
+      "id": "619179",
+      "name": "Solln",
+      "lat": 48.079105,
+      "lon": 11.526939
+    },
+    {
+      "id": "260192",
+      "name": "Sontheim (Schwab)",
+      "lat": 48.01181,
+      "lon": 10.346939
+    },
+    {
+      "id": "260192",
+      "name": "Sontheim(Schwab)",
+      "lat": 48.01181,
+      "lon": 10.346939
+    },
+    {
+      "id": "69344",
+      "name": "Sonthofen",
+      "lat": 47.513283,
+      "lon": 10.272092
+    },
+    {
+      "id": "240471",
+      "name": "Soyen",
+      "lat": 48.108086,
+      "lon": 12.20974
+    },
+    {
+      "id": "283066",
+      "name": "St Alban",
+      "lat": 47.964134,
+      "lon": 11.105359
+    },
+    {
+      "id": "339482",
+      "name": "St Mang",
+      "lat": 47.7089,
+      "lon": 10.325539
+    },
+    {
+      "id": "472447",
+      "name": "St Ottilien",
+      "lat": 48.094543,
+      "lon": 11.04839
+    },
+    {
+      "id": "283066",
+      "name": "St. Alban",
+      "lat": 47.964134,
+      "lon": 11.10536
+    },
+    {
+      "id": "422293",
+      "name": "St. Gallen(CH)",
+      "lat": 47.42318,
+      "lon": 9.369897
+    },
+    {
+      "id": "170674",
+      "name": "St. Gallen(CH) Winkeln",
+      "lat": 47.40393,
+      "lon": 9.30086
+    },
+    {
+      "id": "187229",
+      "name": "St. Gallen(CH), Bruggen",
+      "lat": 47.407204,
+      "lon": 9.329655
+    },
+    {
+      "id": "275068",
+      "name": "St. Gallen(CH), St. Fiden",
+      "lat": 47.43454,
+      "lon": 9.393444
+    },
+    {
+      "id": "61827",
+      "name": "St. Johann im Pongau",
+      "lat": 47.348377,
+      "lon": 13.194961
+    },
+    {
+      "id": "339482",
+      "name": "St. Mang",
+      "lat": 47.7089,
+      "lon": 10.325541
+    },
+    {
+      "id": "220407",
+      "name": "St. Margrethen SG",
+      "lat": 47.453217,
+      "lon": 9.638262
+    },
+    {
+      "id": "472447",
+      "name": "St. Ottilien",
+      "lat": 48.094543,
+      "lon": 11.048389
+    },
+    {
+      "id": "70323",
+      "name": "St.-Martin-Straße",
+      "lat": 48.11856,
+      "lon": 11.595777
+    },
+    {
+      "id": "611695",
+      "name": "Starnberg",
+      "lat": 47.99652,
+      "lon": 11.344204
+    },
+    {
+      "id": "179221",
+      "name": "Starnberg Nord",
+      "lat": 48.005386,
+      "lon": 11.347968
+    },
+    {
+      "id": "604385",
+      "name": "Stein (Traun)",
+      "lat": 47.985355,
+      "lon": 12.546123
+    },
+    {
+      "id": "604385",
+      "name": "Stein(Traun)",
+      "lat": 47.985355,
+      "lon": 12.546124
+    },
+    {
+      "id": "71308",
+      "name": "Steinach(Bodensee)",
+      "lat": 47.500957,
+      "lon": 9.442003
+    },
+    {
+      "id": "409146",
+      "name": "Steinebach",
+      "lat": 48.06155,
+      "lon": 11.20695
+    },
+    {
+      "id": "290117",
+      "name": "Steinebrunn(CH)",
+      "lat": 47.531532,
+      "lon": 9.349859
+    },
+    {
+      "id": "622618",
+      "name": "Steinhöring",
+      "lat": 48.083664,
+      "lon": 12.031649
+    },
+    {
+      "id": "20105",
+      "name": "Stetten (Schwab)",
+      "lat": 48.02766,
+      "lon": 10.436043
+    },
+    {
+      "id": "20105",
+      "name": "Stetten(Schwab)",
+      "lat": 48.027664,
+      "lon": 10.43604
+    },
+    {
+      "id": "348413",
+      "name": "Stockdorf",
+      "lat": 48.0929,
+      "lon": 11.399881
+    },
+    {
+      "id": "95214",
+      "name": "Straßwalchen",
+      "lat": 47.971916,
+      "lon": 13.264822
+    },
+    {
+      "id": "499202",
+      "name": "Sulmingen",
+      "lat": 48.1521,
+      "lon": 9.866732
+    },
+    {
+      "id": "636848",
+      "name": "Sulz-Röthis",
+      "lat": 47.29387,
+      "lon": 9.634743
+    },
+    {
+      "id": "539089",
+      "name": "Sulzberg",
+      "lat": 47.675213,
+      "lon": 10.363935
+    },
+    {
+      "id": "579027",
+      "name": "Tacherting",
+      "lat": 48.078743,
+      "lon": 12.567332
+    },
+    {
+      "id": "378569",
+      "name": "Tannheim Bahnhof",
+      "lat": 47.99491,
+      "lon": 10.096803
+    },
+    {
+      "id": "378569",
+      "name": "Tannheim(Württ)",
+      "lat": 47.994953,
+      "lon": 10.09692
+    },
+    {
+      "id": "614367",
+      "name": "Taufkirchen",
+      "lat": 48.051464,
+      "lon": 11.609252
+    },
+    {
+      "id": "111797",
+      "name": "Tegernsee",
+      "lat": 47.714474,
+      "lon": 11.75662
+    },
+    {
+      "id": "285989",
+      "name": "Teisendorf",
+      "lat": 47.849396,
+      "lon": 12.834455
+    },
+    {
+      "id": "569165",
+      "name": "Tenneck",
+      "lat": 47.494354,
+      "lon": 13.178956
+    },
+    {
+      "id": "63633",
+      "name": "Thann-Matzbach",
+      "lat": 48.266342,
+      "lon": 12.046938
+    },
+    {
+      "id": "71619",
+      "name": "Timelkam",
+      "lat": 48.00794,
+      "lon": 13.595975
+    },
+    {
+      "id": "124342",
+      "name": "Tittmoning-Wiesmühl",
+      "lat": 48.023907,
+      "lon": 12.744902
+    },
+    {
+      "id": "93",
+      "name": "Töging (Inn)",
+      "lat": 48.259014,
+      "lon": 12.594865
+    },
+    {
+      "id": "93",
+      "name": "Töging(Inn)",
+      "lat": 48.259014,
+      "lon": 12.59487
+    },
+    {
+      "id": "350805",
+      "name": "Traundorf",
+      "lat": 47.838375,
+      "lon": 12.63988
+    },
+    {
+      "id": "302265",
+      "name": "Traunreut",
+      "lat": 47.965065,
+      "lon": 12.589763
+    },
+    {
+      "id": "496868",
+      "name": "Traunstein",
+      "lat": 47.86973,
+      "lon": 12.638802
+    },
+    {
+      "id": "508194",
+      "name": "Traunstein Klinikum",
+      "lat": 47.874557,
+      "lon": 12.633439
+    },
+    {
+      "id": "188062",
+      "name": "Trostberg",
+      "lat": 48.024734,
+      "lon": 12.555645
+    },
+    {
+      "id": "628909",
+      "name": "Trudering",
+      "lat": 48.125706,
+      "lon": 11.663241
+    },
+    {
+      "id": "114806",
+      "name": "Tulling",
+      "lat": 48.082657,
+      "lon": 12.060718
+    },
+    {
+      "id": "470941",
+      "name": "Türkenfeld",
+      "lat": 48.104942,
+      "lon": 11.077871
+    },
+    {
+      "id": "494039",
+      "name": "Türkheim(Bay)Bahnhof",
+      "lat": 48.045692,
+      "lon": 10.61744
+    },
+    {
+      "id": "494039",
+      "name": "Türkheim(Bay)Bf",
+      "lat": 48.04569,
+      "lon": 10.617439
+    },
+    {
+      "id": "68694",
+      "name": "Tüßling",
+      "lat": 48.21188,
+      "lon": 12.589071
+    },
+    {
+      "id": "96237",
+      "name": "Tutzing",
+      "lat": 47.9074,
+      "lon": 11.273731
+    },
+    {
+      "id": "476297",
+      "name": "Übersee",
+      "lat": 47.822044,
+      "lon": 12.487337
+    },
+    {
+      "id": "78839",
+      "name": "Uffing a Staffelsee",
+      "lat": 47.720146,
+      "lon": 11.158953
+    },
+    {
+      "id": "372558",
+      "name": "Uhldingen-Mühlhofen",
+      "lat": 47.736996,
+      "lon": 9.248419
+    },
+    {
+      "id": "372558",
+      "name": "Uhldingen-Mühlhofen, Bahnhof",
+      "lat": 47.7368,
+      "lon": 9.248479
+    },
+    {
+      "id": "80594",
+      "name": "Ulrichsbrücke-Füssen",
+      "lat": 47.542973,
+      "lon": 10.664502
+    },
+    {
+      "id": "549539",
+      "name": "Umrathshausen Ort",
+      "lat": 47.805744,
+      "lon": 12.326961
+    },
+    {
+      "id": "378301",
+      "name": "Unterammergau",
+      "lat": 47.617466,
+      "lon": 11.030054
+    },
+    {
+      "id": "323432",
+      "name": "Unteraschau",
+      "lat": 47.922955,
+      "lon": 12.697803
+    },
+    {
+      "id": "234088",
+      "name": "Unterföhring",
+      "lat": 48.191463,
+      "lon": 11.64726
+    },
+    {
+      "id": "71603",
+      "name": "Untergrainau",
+      "lat": 47.481113,
+      "lon": 11.042819
+    },
+    {
+      "id": "314681",
+      "name": "Unterhaching",
+      "lat": 48.06523,
+      "lon": 11.61324
+    },
+    {
+      "id": "61199",
+      "name": "Untermenzing",
+      "lat": 48.177635,
+      "lon": 11.472986
+    },
+    {
+      "id": "103602",
+      "name": "Unterschleißheim",
+      "lat": 48.273106,
+      "lon": 11.568226
+    },
+    {
+      "id": "474109",
+      "name": "Urschalling",
+      "lat": 47.835815,
+      "lon": 12.338693
+    },
+    {
+      "id": "437791",
+      "name": "Utting",
+      "lat": 48.02274,
+      "lon": 11.093969
+    },
+    {
+      "id": "499789",
+      "name": "Uttwil",
+      "lat": 47.586025,
+      "lon": 9.339703
+    },
+    {
+      "id": "484749",
+      "name": "Vachendorf",
+      "lat": 47.826813,
+      "lon": 12.321876
+    },
+    {
+      "id": "506362",
+      "name": "Vaterstetten",
+      "lat": 48.104736,
+      "lon": 11.765828
+    },
+    {
+      "id": "117875",
+      "name": "Veringenstadt",
+      "lat": 48.18141,
+      "lon": 9.210822
+    },
+    {
+      "id": "117875",
+      "name": "Veringenstadt Bahnhof",
+      "lat": 48.181343,
+      "lon": 9.210912
+    },
+    {
+      "id": "458806",
+      "name": "Vils Stadt",
+      "lat": 47.549812,
+      "lon": 10.631642
+    },
+    {
+      "id": "87942",
+      "name": "Vöcklabruck",
+      "lat": 48.010067,
+      "lon": 13.663703
+    },
+    {
+      "id": "446679",
+      "name": "Vöcklamarkt",
+      "lat": 47.998035,
+      "lon": 13.489546
+    },
+    {
+      "id": "258005",
+      "name": "Vöhringen",
+      "lat": 48.279087,
+      "lon": 10.083628
+    },
+    {
+      "id": "258005",
+      "name": "Vöhringen Bahnhof",
+      "lat": 48.27909,
+      "lon": 10.083625
+    },
+    {
+      "id": "612081",
+      "name": "Wächterhof",
+      "lat": 48.037117,
+      "lon": 11.713376
+    },
+    {
+      "id": "117108",
+      "name": "Waging",
+      "lat": 47.931618,
+      "lon": 12.727088
+    },
+    {
+      "id": "593918",
+      "name": "Waldkraiburg-Kraiburg",
+      "lat": 48.20295,
+      "lon": 12.408016
+    },
+    {
+      "id": "234770",
+      "name": "Wallersee",
+      "lat": 47.91942,
+      "lon": 13.159328
+    },
+    {
+      "id": "126429",
+      "name": "Walleshausen",
+      "lat": 48.150215,
+      "lon": 10.980997
+    },
+    {
+      "id": "370489",
+      "name": "Walpertskirchen",
+      "lat": 48.26124,
+      "lon": 11.970348
+    },
+    {
+      "id": "170530",
+      "name": "Wangen Bahnhof",
+      "lat": 47.689056,
+      "lon": 9.830543
+    },
+    {
+      "id": "170530",
+      "name": "Wangen(Allgäu)",
+      "lat": 47.689228,
+      "lon": 9.830573
+    },
+    {
+      "id": "80413",
+      "name": "Warngau",
+      "lat": 47.833572,
+      "lon": 11.709477
+    },
+    {
+      "id": "489023",
+      "name": "Warthausen",
+      "lat": 48.129913,
+      "lon": 9.801661
+    },
+    {
+      "id": "489023",
+      "name": "Warthausen Bahnhof",
+      "lat": 48.129986,
+      "lon": 9.801644
+    },
+    {
+      "id": "293484",
+      "name": "Wasserburg (Bodensee)",
+      "lat": 47.571903,
+      "lon": 9.639067
+    },
+    {
+      "id": "113306",
+      "name": "Wasserburg (Inn) Bahnhof",
+      "lat": 48.061565,
+      "lon": 12.185225
+    },
+    {
+      "id": "293484",
+      "name": "Wasserburg(Bodensee)",
+      "lat": 47.571903,
+      "lon": 9.639064
+    },
+    {
+      "id": "113306",
+      "name": "Wasserburg(Inn)Bf",
+      "lat": 48.06156,
+      "lon": 12.18523
+    },
+    {
+      "id": "566536",
+      "name": "Weibhausen",
+      "lat": 47.89857,
+      "lon": 12.692476
+    },
+    {
+      "id": "583513",
+      "name": "Weidenbach",
+      "lat": 48.254124,
+      "lon": 12.347317
+    },
+    {
+      "id": "583513",
+      "name": "Weidenbach bei Ampfing",
+      "lat": 48.25396,
+      "lon": 12.347011
+    },
+    {
+      "id": "219636",
+      "name": "Weilbach (Unterallg)",
+      "lat": 48.126,
+      "lon": 10.42962
+    },
+    {
+      "id": "219636",
+      "name": "Weilbach(Unterallg)",
+      "lat": 48.125996,
+      "lon": 10.429623
+    },
+    {
+      "id": "54915",
+      "name": "Weilheim",
+      "lat": 47.845364,
+      "lon": 11.142855
+    },
+    {
+      "id": "54915",
+      "name": "Weilheim(Oberbay)",
+      "lat": 47.845364,
+      "lon": 11.14286
+    },
+    {
+      "id": "603346",
+      "name": "Weingarten Berg",
+      "lat": 47.816853,
+      "lon": 9.616876
+    },
+    {
+      "id": "603346",
+      "name": "Weingarten BOB-Bahnhof",
+      "lat": 47.816963,
+      "lon": 9.616762
+    },
+    {
+      "id": "331533",
+      "name": "Weißenau",
+      "lat": 47.765976,
+      "lon": 9.594383
+    },
+    {
+      "id": "21362",
+      "name": "Weizern-Hopferau",
+      "lat": 47.614594,
+      "lon": 10.620458
+    },
+    {
+      "id": "111920",
+      "name": "Wendling b.Haag",
+      "lat": 48.2467,
+      "lon": 13.650305
+    },
+    {
+      "id": "448094",
+      "name": "Wennedach",
+      "lat": 48.11758,
+      "lon": 9.905437
+    },
+    {
+      "id": "60765",
+      "name": "Werfen",
+      "lat": 47.4726,
+      "lon": 13.195183
+    },
+    {
+      "id": "247420",
+      "name": "Wertach-Haslach",
+      "lat": 47.628914,
+      "lon": 10.460244
+    },
+    {
+      "id": "167578",
+      "name": "Weßling",
+      "lat": 48.076923,
+      "lon": 11.250519
+    },
+    {
+      "id": "167578",
+      "name": "Weßling(Oberbay)",
+      "lat": 48.077374,
+      "lon": 11.251768
+    },
+    {
+      "id": "12655",
+      "name": "Westerham",
+      "lat": 47.903893,
+      "lon": 11.828486
+    },
+    {
+      "id": "136318",
+      "name": "Westkreuz",
+      "lat": 48.148952,
+      "lon": 11.443854
+    },
+    {
+      "id": "71524",
+      "name": "Wiesmühl (Alz)",
+      "lat": 48.105995,
+      "lon": 12.564314
+    },
+    {
+      "id": "71524",
+      "name": "Wiesmühl(Alz)",
+      "lat": 48.106,
+      "lon": 12.564312
+    },
+    {
+      "id": "301432",
+      "name": "Wittenbach",
+      "lat": 47.46285,
+      "lon": 9.388548
+    },
+    {
+      "id": "355450",
+      "name": "Wolfegg",
+      "lat": 47.824265,
+      "lon": 9.808665
+    },
+    {
+      "id": "34847",
+      "name": "Wolfegg Alttann, Bahnhof",
+      "lat": 47.841286,
+      "lon": 9.79302
+    },
+    {
+      "id": "355450",
+      "name": "Wolfegg Bahnhof",
+      "lat": 47.824123,
+      "lon": 9.808758
+    },
+    {
+      "id": "107071",
+      "name": "Wolfratshausen",
+      "lat": 47.9133,
+      "lon": 11.426508
+    },
+    {
+      "id": "615803",
+      "name": "Wolfurt",
+      "lat": 47.457188,
+      "lon": 9.740966
+    },
+    {
+      "id": "435278",
+      "name": "Wörgl Hbf",
+      "lat": 47.4918,
+      "lon": 12.060581
+    },
+    {
+      "id": "34743",
+      "name": "Zollhaus-Petersthal",
+      "lat": 47.665825,
+      "lon": 10.418041
+    },
+    {
+      "id": "543007",
+      "name": "Zorneding",
+      "lat": 48.088894,
+      "lon": 11.832438
+    },
+    {
+      "id": "171350",
+      "name": "Zugspitzbahnhof, Garmisch-Partenkirchen",
+      "lat": 47.4902,
+      "lon": 11.0961
+    },
+    {
+      "id": "310053",
+      "name": "Zugspitzbahnhof, Grainau",
+      "lat": 47.471893,
+      "lon": 11.023823
+    },
+    {
+      "id": "551275",
+      "name": "Zugspitze Bahnhof Zugspitzplatt, Garmisch-Partenki",
+      "lat": 47.41428,
+      "lon": 10.985411
+    },
+    {
+      "id": "551275",
+      "name": "Zugspitze, Bf Zugspitzplatt",
+      "lat": 47.413586,
+      "lon": 10.980224
+    }
+  ]
+}

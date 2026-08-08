@@ -1,0 +1,73 @@
+.global-site-footer {
+  position: relative;
+  z-index: 20;
+  margin-top: auto;
+  padding: 34px max(24px, calc((100vw - 1320px) / 2)) 18px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background: #062d31;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.global-footer-main {
+  display: grid;
+  grid-template-columns: auto minmax(240px, 1fr) auto;
+  gap: 28px;
+  align-items: center;
+}
+
+.global-footer-brand {
+  display: flex;
+  gap: 11px;
+  align-items: center;
+  color: #fff;
+  text-decoration: none;
+}
+
+.global-footer-brand img { width: 38px; height: 44px; object-fit: contain; }
+.global-footer-brand span { display: grid; line-height: 1.05; }
+.global-footer-brand strong { font-size: 1.2rem; letter-spacing: -0.04em; }
+.global-footer-brand small { color: rgba(255,255,255,.62); font-size: .66rem; }
+.global-footer-main > p { max-width: 620px; margin: 0; text-align: center; font-size: .82rem; line-height: 1.5; }
+.global-footer-main nav { display: flex; flex-wrap: wrap; gap: 8px 15px; justify-content: flex-end; }
+.global-footer-main nav a { display: inline-flex; gap: 6px; align-items: center; color: #fff; font-size: .77rem; font-weight: 760; text-decoration: none; }
+.global-footer-main nav a:hover { color: #8fe0b9; }
+
+.global-footer-meta {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) auto auto;
+  gap: 14px 22px;
+  align-items: center;
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255,255,255,.1);
+}
+
+.global-footer-meta small { font-size: .66rem; line-height: 1.4; }
+.global-footer-meta button {
+  display: inline-flex;
+  gap: 7px;
+  align-items: center;
+  min-height: 38px;
+  padding: 7px 11px;
+  border: 1px solid rgba(255,255,255,.18);
+  border-radius: 999px;
+  background: rgba(255,255,255,.06);
+  color: #fff;
+  font-size: .69rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+.global-footer-meta button:hover { background: rgba(255,255,255,.12); }
+.global-footer-meta code { color: #9fddc0; font-family: var(--font-geist-mono), monospace; font-size: .63rem; text-align: right; white-space: nowrap; }
+
+@media (max-width: 860px) {
+  .global-footer-main, .global-footer-meta { grid-template-columns: 1fr; text-align: center; }
+  .global-footer-main { justify-items: center; }
+  .global-footer-main nav { justify-content: center; }
+  .global-footer-meta { justify-items: center; }
+  .global-footer-meta code { text-align: center; white-space: normal; }
+}
+
+@media (max-width: 720px) {
+  .global-site-footer { padding: 30px 18px calc(96px + env(safe-area-inset-bottom)); }
+}

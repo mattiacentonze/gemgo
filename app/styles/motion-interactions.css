@@ -1,0 +1,28 @@
+.motion-item.is-revealed {
+  will-change: auto;
+}
+
+.motion-item.is-revealed.experience-card:hover,
+.motion-item.is-revealed.saved-trip-card:hover,
+.motion-item.is-revealed.reward-card:hover {
+  transform: translateY(-3px);
+}
+
+.motion-item.is-revealed.compact-result:hover,
+.motion-item.is-revealed.show-more-button:hover,
+.motion-item.is-revealed.catalogue-card:hover,
+.motion-item.is-revealed.content-card:hover {
+  transform: translateY(-1px);
+}
+
+@media (hover: none) {
+  .motion-item.is-revealed.experience-card:hover,
+  .motion-item.is-revealed.saved-trip-card:hover,
+  .motion-item.is-revealed.reward-card:hover,
+  .motion-item.is-revealed.compact-result:hover,
+  .motion-item.is-revealed.show-more-button:hover,
+  .motion-item.is-revealed.catalogue-card:hover,
+  .motion-item.is-revealed.content-card:hover {
+    transform: none;
+  }
+}

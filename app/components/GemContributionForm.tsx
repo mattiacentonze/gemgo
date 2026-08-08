@@ -1,9 +1,9 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import { Gem, LoaderCircle, MapPinned, Sparkles } from "lucide-react";
+import { Camera, Gem, LoaderCircle, MapPinned, Sparkles } from "lucide-react";
 import { regionCodes, type Locale, type RegionCode } from "../domain";
-import { msg } from "../i18n/catalogs.mjs";
+import { msg } from "../i18n/catalogs";
 
 type AcceptedContribution = { id: string; name: string; reward: number };
 
@@ -32,12 +32,21 @@ export default function GemContributionForm({ locale, onAccepted }: Props) {
     setSubmitting(true);
     setStatus(null);
     const form = new FormData(formElement);
+    const photo = form.get("photo");
+    if (!(photo instanceof File) || !photo.type.startsWith("image/") || photo.size > 8 * 1024 * 1024) {
+      setStatus(locale === "it" ? "Aggiungi una foto JPG, PNG o WebP fino a 8 MB." : "Add a JPG, PNG or WebP photo up to 8 MB.");
+      setSubmitting(false);
+      return;
+    }
     const payload = {
       name: String(form.get("name") ?? ""),
       description: String(form.get("description") ?? ""),
       region: String(form.get("region") ?? ""),
       category: String(form.get("category") ?? ""),
       mapUrl: String(form.get("mapUrl") ?? ""),
+      photoName: photo.name,
+      photoType: photo.type,
+      photoSize: photo.size,
     };
     try {
       const response = await fetch("/api/gems", {
@@ -116,6 +125,11 @@ export default function GemContributionForm({ locale, onAccepted }: Props) {
           <span><MapPinned aria-hidden="true" size={16} />{t("contribute.mapUrl")}</span>
           <input name="mapUrl" type="url" inputMode="url" placeholder="https://maps.google.com/…" />
           <small>{t("contribute.mapHelp")}</small>
+        </label>
+        <label className="contribution-photo">
+          <span><Camera aria-hidden="true" size={16} />{locale === "it" ? "Foto del luogo" : "Photo of the place"}</span>
+          <input name="photo" type="file" accept="image/jpeg,image/png,image/webp" required />
+          <small>{locale === "it" ? "Non includere volti o dati personali. Massimo 8 MB." : "Do not include faces or personal data. Maximum 8 MB."}</small>
         </label>
         <p className="contribution-disclosure">{t("contribute.disclosure")}</p>
         <button className="primary-button" disabled={submitting}>

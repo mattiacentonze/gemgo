@@ -1,0 +1,129 @@
+html.has-open-modal,
+html.has-open-modal body {
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+.modal-backdrop {
+  z-index: 1000;
+  overflow: auto;
+  padding: max(20px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) max(20px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left));
+  animation: modal-backdrop-enter 180ms ease both;
+}
+
+.gemdrop-panel,
+.verification-modal,
+.account-modal,
+.reward-qr-modal {
+  animation: modal-panel-enter 260ms cubic-bezier(.2,.8,.2,1) both;
+  box-shadow: 0 30px 90px rgba(3, 25, 21, 0.32);
+}
+
+.modal-close {
+  z-index: 8;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  box-shadow: 0 7px 20px rgba(10, 45, 37, 0.12);
+}
+
+.modal-close:hover {
+  border-color: rgba(38, 116, 95, 0.35);
+  background: var(--mint);
+  color: var(--forest);
+}
+
+.gemdrop-panel {
+  padding: 32px;
+}
+
+.gemdrop-panel > .eyebrow {
+  padding-right: 52px;
+}
+
+.gemdrop-actions {
+  position: sticky;
+  z-index: 6;
+  bottom: -32px;
+  display: flex;
+  gap: 10px;
+  margin: 24px -32px -32px;
+  padding: 18px 32px max(20px, env(safe-area-inset-bottom));
+  border-top: 1px solid var(--line);
+  background: rgba(255, 253, 248, 0.94);
+  backdrop-filter: blur(18px);
+}
+
+.verification-modal,
+.account-modal,
+.reward-qr-modal {
+  scrollbar-gutter: stable;
+}
+
+@keyframes modal-backdrop-enter {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes modal-panel-enter {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (max-width: 720px) {
+  .modal-backdrop {
+    align-items: end;
+    padding: 10px 10px max(10px, env(safe-area-inset-bottom));
+  }
+
+  .gemdrop-panel,
+  .verification-modal,
+  .account-modal,
+  .reward-qr-modal {
+    width: 100%;
+    max-height: calc(100svh - max(20px, env(safe-area-inset-top)) - max(10px, env(safe-area-inset-bottom)));
+    padding: 24px 18px 18px;
+    border-radius: 24px 24px 18px 18px;
+  }
+
+  .gemdrop-panel h2,
+  .verification-modal h2,
+  .account-modal h2 {
+    padding-right: 38px;
+    font-size: clamp(30px, 9vw, 40px);
+    line-height: 1.04;
+  }
+
+  .modal-close {
+    top: 12px;
+    right: 12px;
+    width: 38px;
+    height: 38px;
+  }
+
+  .gemdrop-actions {
+    bottom: -18px;
+    display: grid;
+    margin: 20px -18px -18px;
+    padding: 14px 18px max(16px, env(safe-area-inset-bottom));
+  }
+
+  .gemdrop-actions .button {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .modal-backdrop,
+  .gemdrop-panel,
+  .verification-modal,
+  .account-modal {
+    animation: none;
+  }
+}

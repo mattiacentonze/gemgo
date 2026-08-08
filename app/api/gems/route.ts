@@ -26,6 +26,10 @@ const contributionKey = (name: string, region: string) =>
 const isUniqueViolation = (error: unknown) =>
   error instanceof Error && /unique|constraint/i.test(error.message);
 
+const sitesApiBaseUrl =
+  process.env.GEMGO_SITES_API_BASE_URL ??
+  "https://gemgo-pan-alpine.aloneeagle.chatgpt.site";
+
 export async function POST(request: Request) {
   try {
     const payload = (await request.json()) as Record<string, unknown>;
@@ -35,8 +39,11 @@ export async function POST(request: Request) {
     const category = cleanText(payload.category, 40);
     const rawMapUrl = cleanText(payload.mapUrl, 500);
     const mapUrl = rawMapUrl ? new URL(rawMapUrl) : null;
+    const photoName = cleanText(payload.photoName, 180);
+    const photoType = cleanText(payload.photoType, 80);
+    const photoSize = Number(payload.photoSize);
 
-    if (name.length < 3 || description.length < 20) {
+    if (name.length < 3 || description.length < 20 || !photoName || !["image/jpeg", "image/png", "image/webp"].includes(photoType) || !Number.isFinite(photoSize) || photoSize <= 0 || photoSize > 8 * 1024 * 1024) {
       return Response.json({ error: "invalid_contribution" }, { status: 400 });
     }
     if (!regionCodes.includes(region as (typeof regionCodes)[number]) || region === "all") {
@@ -59,6 +66,34 @@ export async function POST(request: Request) {
       normalizedKey: contributionKey(name, region),
       status: "pending",
     };
+
+    // The contest deployment runs on Vercel while the existing moderated
+    // contribution store remains on Sites/D1. Keep this bridge server-side so
+    // the public app has one origin and can be migrated to Supabase later
+    // without changing the client contract.
+    if (process.env.VERCEL) {
+      const upstream = await fetch(new URL("/api/gems", sitesApiBaseUrl), {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          ...payload,
+          name,
+          description,
+          region,
+          category,
+          mapUrl: mapUrl?.toString() ?? "",
+          photoName,
+          photoType,
+          photoSize,
+        }),
+        cache: "no-store",
+      });
+      return new Response(await upstream.text(), {
+        status: upstream.status,
+        headers: { "content-type": "application/json" },
+      });
+    }
+
     const db = await getDb();
     const [created] = await db
       .insert(gemSuggestions)

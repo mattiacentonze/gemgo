@@ -2,113 +2,106 @@
 
 ## Runtime
 
-GemGo is a React 19 application served through Next.js-compatible Vinext and
-deployed as a Cloudflare Worker by OpenAI Sites. The current MVP is primarily a
-client-side SPA: route changes update browser history and application state
-without a full document reload.
+GemGo is a React 19 application served through Next.js-compatible Vinext and deployed as a Cloudflare Worker by OpenAI Sites. The hosting identity and deployment contract remain unchanged by the product redesign.
 
-## Main boundaries
+## Product boundary
 
-- `app/page.tsx`: application state, natural-language parsing, planning,
-  location gates, points, notifications and SPA routing.
-- `app/components/DestinationMap.tsx`: Leaflet lifecycle, zoom-aware marker
-  clustering, dominant crowd-category styling, centered crowd-level logos
-  inside compact white pins, first-tap popups and an optional canvas crowd veil
-  anchored to geographic coordinates.
-- `app/api/gems/route.ts`: validation, duplicate protection and persistence for
-  moderated community gem suggestions.
-- `app/lib/`: shared prompt, destination-region, travel-time and Wikimedia
-  Commons helpers used by both page and map components.
-- `db/schema.ts`: D1 schema for pending gem suggestions. It is deliberately
-  separate from the local GemXP ledger and future spendable rewards.
-- `app/data/destinations.json`: public-safe names, coordinates and place types;
-  descriptive copy, tags and crowd values are generated as illustrative MVP
-  data in the client.
-- `public/sw.js`: service-worker registration target and notification-click
-  behaviour.
+The redesigned product is organised around one measurable cycle:
+
+**Predict → Recommend → Redirect → Verify → Reward → Measure**
+
+The visible application has four primary sections: Explore, My Trip, Rewards and About. Saved ideas are incorporated into the trip workflow, accommodation is contextual rather than a top-level catalogue, and GemDrop is an event-driven intervention rather than a destination in the menu.
+
+## Main modules
+
+- `app/page.tsx`: pan-Alpine marketing homepage and `/app` route handoff.
+- `app/components/AppShell.tsx`: tourist journey, deterministic ranking, trip state, contextual GemDrop, verification, rewards, impact, methodology, privacy and territory dashboard.
+- `app/components/AlpineOverview.tsx`: reusable pan-Alpine coverage and tourism-pressure visualisation.
+- `app/components/ExperienceCard.tsx`: explainable result card with travel time, crowd window, confidence, recommendation reasons and validation level.
+- `app/product/types.ts`: product-domain types independent from presentation.
+- `app/product/data.ts`: curated demonstration experiences and their explicit confidence, trade-offs, mobility, safety and local-benefit fields.
+- `app/styles/`: foundation, product, institutional and responsive style layers.
+- `.openai/hosting.json`: existing OpenAI Sites hosting identity.
+
+Legacy destination, map, parser and moderation modules remain in the repository while the redesigned path is evaluated. They can be migrated into the new feature boundaries incrementally instead of being deleted before parity is proven.
+
+## Catalogue boundary
+
+The application combines the official 50-place team dataset with the Bavaria subset of the Alpify repository catalogue. The Tyrol entry (`ruin-ehrenberg`) is excluded and a deterministic identity-and-distance merge removes one known duplicate (`Partnachklamm`) while preserving distinct nearby sites, producing 66 catalogue entries with explicit source provenance. Active coverage is limited to Bavaria and Valle d’Aosta.
+
+## Recommendation model
+
+The current redesign uses a deterministic score. It rewards:
+
+- overlap with requested experience types;
+- matching difficulty;
+- reachability within the selected travel-time budget and transport mode;
+- lower predicted crowd pressure;
+- validation depth;
+- compatibility with accessibility, family and indoor requirements.
+
+Quietness alone cannot make a result valid. Production ranking must first apply minimum quality, safety, access, territorial-capacity and data-confidence gates. The interface exposes why a result fits, the known trade-offs and the difference from the original plan.
 
 ## State
 
-Transient state is held in React. The MVP persists only presentation data in
-`localStorage`:
+The demonstration persists only device-local presentation state:
 
-- GemXP balance
-- append-only-style local GemXP history with reason, timestamp and resulting balance
-- a collection of saved itineraries, including name, dates, route preferences
-  and migration from the former single-plan key
-- simulated location
-- notification history and read state
-- action-sound preference
-- interface locale (`EN`, `IT`, `DE` or `FR`)
-- bounded account-prompt impression and seven-day snooze timestamps
-- one-time crowd-report and photo reward keys
-- one-time local reward keys for accepted gem-suggestion submissions
-- local GemDrop activity completion metadata; arrival photos are not uploaded
+- selected and saved experiences;
+- one active trip;
+- contextual GemDrop acceptance;
+- visit-verification state;
+- GemPoints balance.
 
-Map clusters are rendered only when more than five destination markers occupy
-the same visual neighbourhood. Groups of five or fewer remain individual and
-separate progressively as the user zooms; street-level zoom disables clustering
-entirely. Marker SVGs embed their raster source so browser resource isolation
-cannot leave the pins empty. The crowd layer is a low-opacity interpolated
-field tied to projected destination coordinates; it is not a screen-fixed
-gradient and does not claim administrative-boundary precision.
+This state is not a production financial ledger and does not follow a user across devices. Production accounts and rewards must use a server-side append-only event ledger, signed/idempotent verification sessions and auditable partner redemption records.
 
-There is no shared account database yet. D1 stores only explicitly submitted
-gem suggestions for moderation; it does not sync profiles, plans or balances.
-Consequently, state does not follow a user across devices and is not suitable
-for monetary rewards. The account
-prompt is a capability explainer, not a simulated registration flow: it appears
-only after a saved plan or GemXP milestone, never as a daily system
-notification, and is capped at two impressions with a seven-day snooze.
+## GemPoints
 
-## Reward vocabulary
+GemPoints are the only visible reward currency. The former GemXP/GemCredits split is removed from the redesigned journey. Points are secondary to recommendation quality and are awarded only after a verifiable action in the intended production model.
 
-- **GemXP** represents participation and progress. It starts without
-  registration, stays local in the MVP and is not directly spendable.
-- **GemCredits** represents a future account-linked balance that can be
-  redeemed with partners. Only eligible, verified XP may be converted.
+The demonstration can illustrate:
 
-The separation prevents the interface from implying that an unverified local
-browser balance already has monetary value. GemDeals never deduct GemXP.
+- verified experience completion;
+- eligible lower-pressure timing;
+- accepted GemDrop changes;
+- verified lower-impact mobility;
+- participating partner visits.
 
-## Planner behaviour
+It does not claim that the current browser balance has monetary value.
 
-The automatic planner scores preferences, transport fit and estimated crowd
-conditions. A destination whose date-aware result is `Busy` is excluded from
-automatic plans. A user can still explicitly add a place from Explore; this is
-treated as an intentional choice and receives an off-peak suggested time.
+## GemDrop
 
-Natural-language destination names are resolved to their region before
-planning, so a place such as Torgnon updates the Valle d’Aosta area filter.
-Itinerary days always receive a validated start date and distinct render key.
-Travel durations use hours and minutes when appropriate and name their origin.
-When a popular place is excluded, the plan explains the crowd reason before
-presenting the quieter alternative.
+GemDrop is contextual. It may be triggered when crowd, parking, weather, road, schedule or compatibility conditions change. The user receives a comparison between the original plan and an alternative and can switch, keep the original plan or inspect the full comparison. A reward bonus is optional and must never replace the primary experiential reason.
 
-The “Why this plan?” panel exposes the main ranking inputs. Saved Plans can be
-opened, renamed, duplicated and deleted locally. Explore keeps planned places
-visible and labelled by default; users may explicitly hide them.
+## Institutional boundary
 
-## Navigation and localisation
+The `For Alpine destinations` dashboard is separated from the tourist journey. It demonstrates the intended metrics:
 
-Desktop and mobile navigation share a single measured active indicator that
-translates and resizes between routes. The mobile bar remains fixed to the
-viewport and is covered by responsive visual tests.
+- diversion rate;
+- off-peak shift;
+- recommendation satisfaction;
+- verified local partner visits;
+- reward redemption;
+- geographic distribution.
 
-The interface locale is stored locally and controls navigation, core planning
-copy, settings, Saved Plans and date/time formatting in English, Italian,
-German, French and Slovenian. Destination names remain
-proper nouns. Country flags are not used as language selectors.
+Until real operational data exists, all such values are labelled `Demonstration data`. Production dashboards must aggregate and anonymise events and suppress output below a sufficient sample threshold.
 
-## Location trust model
+## Privacy boundary
 
-GPS and simulated MVP location use the same feature gates, but the UI labels a
-simulated location. Crowd ratings, check-ins and photo rewards are only enabled
-for the active destination. Photo upload is tied to the check-in session; EXIF
-metadata is not treated as proof.
+Visitors may explore and receive recommendations without an account. Location is requested only for nearby search, navigation or visit verification. Detailed movement history is not required. An account becomes relevant only for protected synchronisation of plans, preferences and reward balances.
 
-## Future backend boundary
+## Responsive system
 
-Production-grade accounts and rewards should move to a server-side ledger with
-idempotent point events, signed verification sessions and append-only audit
-records. Client code must never directly mutate a spendable balance.
+The same semantic components serve notebook and phone layouts. Desktop uses split planning/result layouts and a full header. Mobile uses stacked content, a compact header and a fixed four-item bottom navigation. Critical cards, comparison blocks, metrics and GemDrop controls collapse without hiding decision-relevant information.
+
+## Production migration
+
+The next backend phase should provide:
+
+1. account and passkey authentication;
+2. append-only GemPoints ledger;
+3. signed GPS/QR/offline verification sessions;
+4. partner and reward redemption records;
+5. versioned recommendation inputs and explanations;
+6. real/estimated/demonstration data provenance;
+7. anonymised territory metrics with sample thresholds;
+8. moderation and fragile-place protection controls.

@@ -1,0 +1,5 @@
+:root {
+  --forest-deep: var(--ink);
+  --slate: var(--muted);
+  --shadow-soft: var(--shadow);
+}

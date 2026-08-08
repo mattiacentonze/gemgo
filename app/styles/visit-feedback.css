@@ -1,0 +1,92 @@
+.visit-feedback-card {
+  display: grid;
+  gap: 14px;
+  padding: 20px;
+  border: 1px solid rgba(38, 116, 95, 0.16);
+  border-radius: 20px;
+  background: linear-gradient(145deg, #fffefa, #edf5ef);
+  box-shadow: var(--shadow-soft);
+}
+
+.visit-feedback-heading,
+.visit-feedback-complete {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.visit-feedback-heading > svg,
+.visit-feedback-complete > svg {
+  flex: 0 0 auto;
+  color: var(--green);
+}
+
+.visit-feedback-heading > div,
+.visit-feedback-complete > div {
+  display: grid;
+  gap: 4px;
+}
+
+.visit-feedback-heading span,
+.visit-feedback-complete span {
+  color: var(--slate);
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+
+.visit-rating-options {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.visit-rating-options button {
+  min-height: 42px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--slate);
+  font-weight: 760;
+}
+
+.visit-rating-options button.is-selected {
+  border-color: var(--green);
+  background: var(--mint);
+  color: var(--forest);
+}
+
+.visit-feedback-note {
+  display: grid;
+  gap: 7px;
+}
+
+.visit-feedback-note > span {
+  font-weight: 760;
+}
+
+.visit-feedback-note > span small,
+.visit-feedback-note > small {
+  color: var(--slate);
+  font-weight: 500;
+}
+
+.visit-feedback-note textarea {
+  width: 100%;
+  resize: vertical;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  background: #fff;
+  color: var(--forest-deep);
+}
+
+.visit-feedback-note > small {
+  justify-self: end;
+}
+
+@media (max-width: 520px) {
+  .visit-rating-options {
+    grid-template-columns: 1fr;
+  }
+}

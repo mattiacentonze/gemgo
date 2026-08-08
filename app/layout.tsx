@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import GlobalFooter from "./components/GlobalFooter";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -13,15 +14,16 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "GemGo — More Alps. Fewer queues.",
+  title: "GemGo — Better Alpine choices",
   description:
-    "Mobile-first Alpine planner with live weather, crowd-smart itineraries, GemDrop, GemPoints and GemDeals across Bavaria and Valle d’Aosta.",
+    "A pan-Alpine recommendation and visitor-flow redistribution system that turns crowded plans into personalised alternatives, verified visits and local rewards.",
   other: {
     "codex-preview": "development",
   },
   icons: {
     icon: "/favicon.svg",
     shortcut: "/favicon.svg",
+    apple: "/assets/gemgo-logo-green.svg?v=2",
   },
   manifest: "/manifest.webmanifest",
 };
@@ -31,16 +33,18 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const registerServiceWorker =
+    process.env.NODE_ENV === "production"
+      ? "if('serviceWorker' in navigator){window.addEventListener('load',()=>{const r=()=>navigator.serviceWorker.register('/sw.js').catch(()=>{});if('requestIdleCallback' in window){requestIdleCallback(r,{timeout:3000})}else{setTimeout(r,1200)}})}"
+      : "";
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      <body className={`${geistSans.variable} ${geistMono.variable}`}>
         {children}
+        <GlobalFooter />
         <script
           dangerouslySetInnerHTML={{
-            __html:
-              "if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(()=>{}))}",
+            __html: registerServiceWorker,
           }}
         />
       </body>
