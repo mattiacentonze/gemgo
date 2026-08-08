@@ -2153,6 +2153,19 @@ export default function IntegratedAppShell() {
     else setVerificationMessage(systemUi[locale].invalidQr);
   };
 
+  const closeGemDrop = () => {
+    setGemDropOpen(false);
+    const params = new URLSearchParams(window.location.search);
+    if (!params.has("gemdrop")) return;
+    params.delete("gemdrop");
+    const query = params.toString();
+    window.history.replaceState(
+      null,
+      "",
+      `${window.location.pathname}${query ? `?${query}` : ""}`,
+    );
+  };
+
   const switchGemDrop = () => {
     if (!activeTrip || !gemDropAlternative) return;
     setUndoSnapshot({
@@ -2173,7 +2186,7 @@ export default function IntegratedAppShell() {
         acceptedGemDrop: true,
       },
     });
-    setGemDropOpen(false);
+    closeGemDrop();
     setToast(systemUi[locale].switched);
   };
 
@@ -3394,7 +3407,7 @@ export default function IntegratedAppShell() {
           locale={locale}
           original={activeExperience}
           alternative={gemDropAlternative}
-          onClose={() => setGemDropOpen(false)}
+          onClose={closeGemDrop}
           onSwitch={switchGemDrop}
         />
       )}
