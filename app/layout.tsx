@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import MotionEnhancer from "./components/MotionEnhancer";
+import GlobalFooter from "./components/GlobalFooter";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -33,15 +33,18 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const registerServiceWorker =
+    process.env.NODE_ENV === "production"
+      ? "if('serviceWorker' in navigator){window.addEventListener('load',()=>{const r=()=>navigator.serviceWorker.register('/sw.js').catch(()=>{});if('requestIdleCallback' in window){requestIdleCallback(r,{timeout:3000})}else{setTimeout(r,1200)}})}"
+      : "";
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         {children}
-        <MotionEnhancer />
+        <GlobalFooter />
         <script
           dangerouslySetInnerHTML={{
-            __html:
-              "if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(()=>{}))}",
+            __html: registerServiceWorker,
           }}
         />
       </body>

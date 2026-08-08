@@ -34,6 +34,7 @@ body {
 }
 
 .desktop-nav button,
+.desktop-nav a,
 .mobile-bottom-nav button,
 .choice-grid button,
 .chip-grid button,
@@ -49,6 +50,7 @@ body {
 }
 
 .desktop-nav button:hover,
+.desktop-nav a:hover,
 .choice-grid button:hover,
 .chip-grid button:hover,
 .saved-trip-actions button:hover,

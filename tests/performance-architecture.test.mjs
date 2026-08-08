@@ -7,9 +7,11 @@ const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf
 test("the app route mounts a minimal shell without global DOM enhancer scans", () => {
   const route = read("app/app/page.tsx");
   const appLayout = read("app/app/layout.tsx");
+  const routeLayout = read("app/components/AppRouteLayout.tsx");
   const layout = read("app/layout.tsx");
-  assert.match(appLayout, /<IntegratedAppShell \/>/);
-  assert.match(appLayout, /<UiSoundController \/>/);
+  assert.match(appLayout, /<AppRouteLayout>/);
+  assert.match(routeLayout, /<IntegratedAppShell \/>/);
+  assert.match(routeLayout, /<UiSoundController \/>/);
   assert.match(route, /return null/);
   for (const enhancer of [
     "CurrentLocationControl",
@@ -24,7 +26,7 @@ test("the app route mounts a minimal shell without global DOM enhancer scans", (
     "UndoActionController",
     "VisitFeedback",
   ]) {
-    assert.doesNotMatch(appLayout, new RegExp(enhancer));
+    assert.doesNotMatch(routeLayout, new RegExp(enhancer));
   }
   assert.doesNotMatch(layout, /MotionEnhancer/);
 });
@@ -46,12 +48,12 @@ test("loaded interactive components never observe the entire document body", () 
   }
 });
 
-test("typing stays draft-only and secondary planning code is lazy-loaded", () => {
+test("typing stays draft-only and the removed multi-day planner stays out of the shell", () => {
   const shell = read("app/components/IntegratedAppShell.tsx");
   assert.match(shell, /const \[promptDraft, setPromptDraft\]/);
   assert.match(shell, /value=\{promptDraft\}/);
   assert.match(shell, /applyPromptToPreferences\(promptDraft/);
-  assert.match(shell, /dynamic\(\(\) => import\("\.\/MultiDayTripPlanner"\)/);
+  assert.doesNotMatch(shell, /MultiDayTripPlanner/);
   assert.match(shell, /dynamic\(\(\) => import\("\.\/ExperienceMap"\)/);
 });
 
@@ -84,7 +86,23 @@ test("map keeps one base layer and assigns semantic styles to each travel mode",
   assert.match(map, /car: \{ color: "#7856a8" \}/);
   assert.match(map, /mixed: \{ color: "#0b9fa5", dashArray: "12 6 3 6" \}/);
   assert.doesNotMatch(map, /map\?\.on\("zoomend moveend"/);
-  assert.match(map, /\}, \[experiences, locale, mapReady, origin\]\);/);
+  assert.match(map, /map\.on\("zoomend", onZoomEnd\)/);
+  assert.doesNotMatch(map, /map\.on\("moveend"/);
+  assert.match(map, /zoomRevision/);
   assert.doesNotMatch(map, /if \(selected\) marker\.openPopup\(\)/);
   assert.match(map, /focusRequestId/);
+});
+
+test("Vercel uses the native Next build and preserves the Sites contribution backend", () => {
+  const packageJson = JSON.parse(read("package.json"));
+  const vercel = JSON.parse(read("vercel.json"));
+  const route = read("app/api/gems/route.ts");
+
+  assert.match(packageJson.scripts["build:vercel"], /next build/);
+  assert.equal(vercel.framework, "nextjs");
+  assert.equal(vercel.buildCommand, "npm run build:vercel");
+  assert.equal(vercel.outputDirectory, undefined);
+  assert.match(route, /process\.env\.VERCEL/);
+  assert.match(route, /gemgo-pan-alpine\.aloneeagle\.chatgpt\.site/);
+  assert.match(route, /cache: "no-store"/);
 });

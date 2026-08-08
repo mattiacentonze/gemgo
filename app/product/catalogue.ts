@@ -1,5 +1,8 @@
 import alpifyData from "../data/alpify-locations.json";
 import destinationData from "../data/destinations.json";
+import { catalogueEditorial } from "./catalogue-editorial";
+import { curatedScenarioExperiences } from "./curated-alternatives";
+import { BASE_VISIT_POINTS } from "./gempoints";
 import type {
   CrowdLevel,
   Difficulty,
@@ -12,6 +15,26 @@ type CatalogueSource = "official-team" | "alpify";
 
 export const pilotRegions = ["Bavaria", "Valle d’Aosta"] as const;
 export type PilotRegion = (typeof pilotRegions)[number];
+
+export const catalogueMetadata = {
+  scope: "Hackathon prototype catalogue",
+  officialTeam: {
+    acquiredAt: "2026-06-07",
+    source: "GemGo team-curated pilot dataset",
+    usage:
+      "Prototype use; operational details require local verification before production",
+  },
+  alpify: {
+    acquiredAt: "2026-08-07",
+    source: "Alpify hackathon repository dataset",
+    usage: "Hackathon demo data; deduplicated against the team catalogue",
+  },
+  eusAlp: {
+    memberRegions: 48,
+    pilotRegions,
+    source: "https://alpine-region.eu/about/territories",
+  },
+} as const;
 
 export type PublicDestination = {
   id: string;
@@ -203,6 +226,10 @@ const kindsFor = (destination: PublicDestination): ExperienceKind[] => {
     )
   )
     kinds.add("culture");
+  if (contains(value, /castle|castello|château|schloss|burg|fortress|fortified|ruin/))
+    kinds.add("castle");
+  if (contains(value, /museum|museo|musée|heritage centre|visitor centre/))
+    kinds.add("museum");
   if (contains(value, /wine|market|food|cuisine/)) kinds.add("food");
   if (contains(value, /family|easy|car-free|lake village|market town/))
     kinds.add("family");
@@ -240,21 +267,6 @@ const toneFor = (type: string): Experience["imageTone"] => {
   if (contains(type, /forest|reserve|nature|waterfall|gorge/)) return "forest";
   if (contains(type, /village|town/)) return "village";
   return "valley";
-};
-
-const promiseFor = (
-  destination: PublicDestination,
-  kinds: ExperienceKind[],
-) => {
-  if (kinds.includes("water"))
-    return `A calmer Alpine water experience around ${destination.name}`;
-  if (kinds.includes("culture"))
-    return `Local heritage and an unhurried visit to ${destination.name}`;
-  if (kinds.includes("villages"))
-    return `A slower village experience in ${destination.name}`;
-  if (kinds.includes("hiking"))
-    return `A flexible outdoor route around ${destination.name}`;
-  return `A quieter way to experience ${destination.name}`;
 };
 
 const demoComparison: Record<string, Experience["comparison"]> = {
@@ -320,16 +332,17 @@ export const demoAlternativeIds = {
 } as const;
 
 const adaptDestination = (destination: PublicDestination): Experience => {
+  const editorial = catalogueEditorial[destination.id];
+  if (!editorial) {
+    throw new Error(`Missing editorial catalogue entry for ${destination.id}`);
+  }
+  const displayName = editorial.name ?? destination.name;
   const kinds = kindsFor(destination);
   const difficulty = difficultyFor(destination);
   const crowd = crowdFor(destination);
   const durationMinutes =
     difficulty === "moderate" ? 180 : kinds.includes("culture") ? 105 : 135;
-  const points = Math.round(
-    35 +
-      destination.hidden_gem_score * 20 +
-      destination.sustainability_score * 20,
-  );
+  const points = BASE_VISIT_POINTS;
   const validation: ValidationLevel = "Data-based suggestion";
   const comparison = demoComparison[destination.id] ?? {
     original: "A better-known nearby Alpine destination",
@@ -344,11 +357,19 @@ const adaptDestination = (destination: PublicDestination): Experience => {
 
   return {
     id: `catalogue-${destination.id}`,
-    name: destination.name,
-    promise: promiseFor(destination, kinds),
+    name: displayName,
+    promise: editorial.caption,
     region: destination.region,
     country: destination.country,
     kind: kinds,
+    destinationType: destination.destination_type,
+    tags: [...destination.tags, ...editorial.seasons.map((season) => `season:${season}`)],
+    catalogueSource: destination.source ?? "official-team",
+    seasons: editorial.seasons,
+    peakSeasons: editorial.peakSeasons,
+    editorialSourceUrl: editorial.sourceUrl,
+    editorialSourceLabel: editorial.sourceLabel,
+    operationalNote: editorial.operationalNote,
     difficulty,
     latitude: destination.latitude,
     longitude: destination.longitude,
@@ -368,27 +389,25 @@ const adaptDestination = (destination: PublicDestination): Experience => {
           ? "09:00–12:00"
           : "10:00–16:00",
     confidence: "Low",
-    updated: isAlpify
-      ? "Alpify repository dataset · 7 August 2026"
-      : "Official team dataset · 7 June 2026",
+    updated: `${isAlpify ? "Alpify prototype entry" : "GemGo team entry"} · editorial check 8 August 2026`,
     validation,
     imageTone: toneFor(destination.destination_type),
-    summary: destination.description,
+    summary: editorial.caption,
     reasons: [
       isAlpify
         ? `Curated Alpify entry for ${destination.region}`
         : `Official ${destination.region} pilot entry`,
-      `Hidden-gem score ${Math.round(destination.hidden_gem_score * 100)} / 100`,
-      `Sustainability score ${Math.round(destination.sustainability_score * 100)} / 100`,
+      `Factual caption checked against ${editorial.sourceLabel}`,
+      `Suitable seasons: ${editorial.seasons.join(", ")}`,
     ],
     tradeoffs: [
-      "Operational details require local confirmation",
+      editorial.operationalNote ?? "Operational details require local confirmation",
       "Crowd levels are prototype estimates, not live occupancy",
     ],
     comparison,
     itinerary: [
       { time: "00:00", label: "Leave from your selected starting point" },
-      { time: "+travel", label: `Arrive at ${destination.name}` },
+      { time: "+travel", label: `Arrive at ${displayName}` },
       {
         time: "+30m",
         label: `Begin the ${destination.destination_type.toLowerCase()} experience`,
@@ -400,7 +419,7 @@ const adaptDestination = (destination: PublicDestination): Experience => {
       "Public transport requires a verified provider route",
       "Check seasonal access before departure",
     ],
-    localBenefit: `A visit to ${destination.name} can distribute time and spending beyond the main tourism corridors of ${destination.region}.`,
+    localBenefit: `A visit to ${displayName} can distribute time and spending beyond the main tourism corridors of ${destination.region}.`,
     safety: [
       "Check official local conditions before departure",
       difficulty === "moderate"
@@ -419,9 +438,10 @@ const adaptDestination = (destination: PublicDestination): Experience => {
 };
 
 export const catalogueDestinations = catalogueMerge.merged;
-export const allExperiences: Experience[] = catalogueDestinations.map(
+export const catalogueExperiences: Experience[] = catalogueDestinations.map(
   adaptDestination,
 );
+export const allExperiences: Experience[] = [...catalogueExperiences, ...curatedScenarioExperiences];
 
 export const catalogueSummary = catalogueDestinations.reduce<
   Record<string, number>
@@ -430,4 +450,6 @@ export const catalogueSummary = catalogueDestinations.reduce<
   return summary;
 }, {});
 
-export const totalCatalogueEntries = allExperiences.length;
+export const totalCatalogueEntries = catalogueExperiences.length;
+export const totalCuratedScenarioEntries = curatedScenarioExperiences.length;
+export const totalMappedPrototypeLocations = allExperiences.length;

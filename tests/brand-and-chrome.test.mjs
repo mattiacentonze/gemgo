@@ -27,9 +27,9 @@ test("map uses the branded crowd-level marker assets", () => {
 
 test("notification bell opens device-local history rather than being decorative", () => {
   const shell = read("app/components/IntegratedAppShell.tsx");
-  const notifications = read("app/notifications/page.tsx");
+  const notifications = read("app/app/notifications/page.tsx");
   const css = read("app/styles/info-pages.css");
-  assert.match(shell, /href="\/notifications"/);
+  assert.match(shell, /href="\/app\/notifications"/);
   assert.match(shell, /<Bell/);
   assert.match(notifications, /gemgo-points-ledger-v3/);
   assert.match(notifications, /gemgo-active-trip-v3/);
@@ -92,7 +92,7 @@ test("GemDrop shows galleries for the original and proposed alternative", () => 
 });
 
 test("optional sounds are opt-in and controlled from the local profile", () => {
-  const page = read("app/app/layout.tsx");
+  const page = read("app/components/AppRouteLayout.tsx");
   const sound = read("app/components/UiSoundController.tsx");
   const profile = read("app/components/LocalProfilePanel.tsx");
   assert.match(page, /<UiSoundController \/>/);
@@ -118,7 +118,7 @@ test("trip planning starts only from official Alpine pilot locations", () => {
   const shell = read("app/components/IntegratedAppShell.tsx");
   assert.match(shell, /originExperienceId/);
   assert.match(shell, /<select/);
-  assert.match(shell, /allExperiences\s*\.filter/);
+  assert.match(shell, /catalogueExperiences\s*\.filter/);
   assert.match(shell, /official Alpine pilot locations/);
   assert.doesNotMatch(shell, /nominatim\.openstreetmap\.org\/reverse/);
 });

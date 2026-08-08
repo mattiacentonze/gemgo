@@ -22,6 +22,7 @@ import {
   X,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import type { ComponentType } from "react";
 import { createPortal } from "react-dom";
 import type { GemPointEvent, RewardUnlock, SavedTrip } from "../product/storage";
 import type { Locale } from "../domain";
@@ -222,7 +223,7 @@ function MapBadge({ size = 20 }: { size?: number }) {
   return <Trophy size={size} />;
 }
 
-function BadgeCard({ label, detail, value, goal, icon: Icon, labels }: { label: string; detail: string; value: number; goal: number; icon: typeof Trophy; labels: typeof text.en | typeof text.it | typeof text.de | typeof text.fr | typeof text.sl }) {
+function BadgeCard({ label, detail, value, goal, icon: Icon, labels }: { label: string; detail: string; value: number; goal: number; icon: ComponentType<{ size?: number }>; labels: typeof text.en | typeof text.it | typeof text.de | typeof text.fr | typeof text.sl }) {
   const state = value >= goal ? "earned" : value > 0 ? "progress" : "locked";
   const status = state === "earned" ? labels.earned : state === "progress" ? labels.progress : labels.locked;
   return <article className={`badge-card is-${state}`}><div className="badge-emblem"><Icon size={23} />{state === "earned" && <Check size={13} />}</div><div><span>{status}</span><strong>{label}</strong><p>{detail}</p><div className="badge-progress"><i style={{ width: `${Math.min(100, (value / goal) * 100)}%` }} /></div><small>{Math.min(value, goal)} / {goal}</small></div></article>;

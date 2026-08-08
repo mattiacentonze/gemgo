@@ -1,17 +1,19 @@
-import { parsePrompt } from "../lib/prompt-parser.mjs";
+import { parsePrompt } from "../lib/prompt-parser.ts";
 import type {
   Experience,
   ExperienceKind,
   SearchPreferences,
   TransportMode,
 } from "./types";
+import { seasonForDate } from "./catalogue-editorial.ts";
+import { curatedAlternativeFor, curatedScenarioFor } from "./curated-alternatives.ts";
 
 export type OriginPoint = { label: string; lat: number; lng: number };
 export type WeatherContext = {
   temperature?: number;
   precipitationProbability?: number;
   weatherCode?: number;
-  source: "live" | "unavailable";
+  source: "live" | "forecast" | "unavailable";
 };
 
 export type RankedExperience = {
@@ -24,10 +26,26 @@ export type RankedExperience = {
 
 const interestMap: Record<string, ExperienceKind[]> = {
   lakes: ["water", "nature"],
-  quiet: ["nature", "villages"],
+  quiet: [],
   culture: ["culture", "villages"],
   views: ["nature", "hiking"],
   nature: ["nature", "hiking"],
+};
+
+const requiredInterestMap: Record<string, ExperienceKind[]> = {
+  lakes: ["water"],
+  culture: ["culture"],
+  nature: ["nature"],
+  quiet: [],
+  views: [],
+};
+
+const pilotRegionFor = (region?: string) => {
+  if (region === "aosta") return "Valle d’Aosta" as const;
+  if (region === "bavaria" || region === "fussen_allgau") {
+    return "Bavaria" as const;
+  }
+  return undefined;
 };
 
 const legacyTransportToMode: Record<string, TransportMode> = {
@@ -104,9 +122,21 @@ export const applyPromptToPreferences = (
   current: SearchPreferences,
 ): SearchPreferences => {
   const parsed = parsePrompt(prompt);
-  const kinds = unique(
-    parsed.interests.flatMap((interest: string) => interestMap[interest] ?? []),
-  );
+  const promptText = normalize(prompt);
+  const specificKinds: ExperienceKind[] = [
+    ...(/\b(castle|castles|castello|castelli|schloss|schlösser|château|châteaux|grad|gradovi)\b/.test(promptText) ? ["castle" as const] : []),
+    ...(/\b(museum|museums|museo|musei|museen|musée|musées|muzej|muzeji)\b/.test(promptText) ? ["museum" as const] : []),
+  ];
+  const kinds = unique([
+    ...parsed.interests.flatMap((interest: string) => interestMap[interest] ?? []),
+    ...specificKinds,
+  ]);
+  const requiredKinds = unique([
+    ...specificKinds,
+    ...parsed.interests.flatMap(
+      (interest: string) => requiredInterestMap[interest] ?? [],
+    ),
+  ]);
   const parsedWindow = parseAvailableWindow(prompt);
   const timeWindow = parseTimeWindow(prompt);
   const origin = parseOrigin(prompt);
@@ -114,11 +144,15 @@ export const applyPromptToPreferences = (
     ...current,
     prompt,
     origin: origin ?? current.origin,
+    region: pilotRegionFor(parsed.region) ?? current.region,
     transport: parsed.transport ? legacyTransportToMode[parsed.transport] ?? current.transport : current.transport,
     availableTime: parsedWindow ?? (parsed.days && parsed.days > 1 ? "multi" : current.availableTime),
     availableFrom: timeWindow.from ?? current.availableFrom,
     availableTo: timeWindow.to ?? current.availableTo,
     kinds: kinds.length > 0 ? kinds : current.kinds,
+    requiredKinds:
+      parsed.interests.length > 0 ? requiredKinds : current.requiredKinds,
+    avoidCrowds: parsed.avoidCrowds ?? current.avoidCrowds,
     difficulty:
       parsed.difficulty === "moderate"
         ? "moderate"
@@ -174,6 +208,10 @@ const availableMinutes = (preferences: SearchPreferences) => {
     full: 600,
     multi: 1440,
   };
+  if (preferences.startsAt && preferences.endsAt) {
+    const difference = Date.parse(preferences.endsAt) - Date.parse(preferences.startsAt);
+    if (Number.isFinite(difference) && difference > 0) return Math.round(difference / 60000);
+  }
   if (preferences.availableFrom && preferences.availableTo) {
     const [fromHour, fromMinute] = preferences.availableFrom.split(":").map(Number);
     const [toHour, toMinute] = preferences.availableTo.split(":").map(Number);
@@ -194,6 +232,75 @@ const needFit = (experience: Experience, need: string) => {
   return true;
 };
 
+const eligibilityFor = (
+  experience: Experience,
+  preferences: SearchPreferences,
+  origin: OriginPoint | null,
+  routeTimes: Record<string, number>,
+) => {
+  const travelMinutes =
+    routeTimes[experience.id] ??
+    estimateTravelMinutes(origin, experience, preferences.transport);
+  const totalWindow = availableMinutes(preferences);
+  const totalRequired = experience.durationMinutes + (travelMinutes ?? 0) * 2;
+  const curatedScenario = curatedScenarioFor(preferences);
+  const curatedAlternative = curatedAlternativeFor(curatedScenario, experience.id);
+  const regionFits =
+    !preferences.region || experience.region === preferences.region;
+  const requiredKindsFit = Boolean(curatedAlternative) ||
+    (preferences.requiredKinds ?? []).every((kind) => experience.kind.includes(kind));
+  const allNeedsFit = preferences.needs.every((need) =>
+    needFit(experience, need),
+  );
+  const difficultyFits = Boolean(curatedAlternative) ||
+    preferences.difficulty !== "easy" || experience.difficulty === "easy";
+  const crowdFits = !preferences.avoidCrowds || experience.crowd !== "high";
+  const travelFits =
+    !origin || travelMinutes === null || travelMinutes <= preferences.maxTravelMinutes;
+  const selectedSeason = seasonForDate(preferences.startsAt);
+  const seasonFits =
+    !experience.seasons?.length || experience.seasons.includes(selectedSeason);
+  const expertScenarioFits =
+    experience.catalogueSource !== "team-expert" ||
+    Boolean(curatedAlternative);
+
+  return {
+    travelMinutes,
+    totalWindow,
+    totalRequired,
+    eligible:
+      regionFits &&
+      requiredKindsFit &&
+      allNeedsFit &&
+      difficultyFits &&
+      crowdFits &&
+      seasonFits &&
+      expertScenarioFits &&
+      travelFits &&
+      totalRequired <= totalWindow,
+  };
+};
+
+export const getEligibleExperiences = (
+  experiences: Experience[],
+  preferences: SearchPreferences,
+  options: {
+    origin: OriginPoint | null;
+    routeTimes?: Record<string, number>;
+  },
+) => {
+  const routeTimes = options.routeTimes ?? {};
+  const eligible = experiences.filter(
+    (experience) =>
+      eligibilityFor(experience, preferences, options.origin, routeTimes)
+        .eligible,
+  );
+  const curatedScenario = curatedScenarioFor(preferences);
+  if (!curatedScenario) return eligible;
+  const order = new Map(curatedScenario.alternatives.map((alternative, index) => [alternative.id, index]));
+  return eligible.sort((first, second) => (order.get(first.id) ?? 999) - (order.get(second.id) ?? 999));
+};
+
 const scoreExperience = (
   experience: Experience,
   preferences: SearchPreferences,
@@ -201,17 +308,24 @@ const scoreExperience = (
   weather: WeatherContext,
   routeTimes: Record<string, number>,
 ) => {
-  const travelMinutes = routeTimes[experience.id] ?? estimateTravelMinutes(origin, experience, preferences.transport);
+  const eligibility = eligibilityFor(
+    experience,
+    preferences,
+    origin,
+    routeTimes,
+  );
+  const travelMinutes = eligibility.travelMinutes;
   const selectedKinds = preferences.kinds.length > 0 ? preferences.kinds : ["nature"];
   const kindMatches = experience.kind.filter((kind) => selectedKinds.includes(kind)).length;
-  const totalWindow = availableMinutes(preferences);
-  const totalRequired = experience.durationMinutes + (travelMinutes ?? 0) * 2;
+  const totalWindow = eligibility.totalWindow;
+  const totalRequired = eligibility.totalRequired;
   const allNeedsFit = preferences.needs.every((need) => needFit(experience, need));
 
   let score = kindMatches * 20;
   if (experience.difficulty === preferences.difficulty) score += 14;
   else if (preferences.difficulty === "easy" && experience.difficulty === "challenging") score -= 28;
-  if (travelMinutes !== null && travelMinutes <= preferences.maxTravelMinutes) score += 22;
+  if (!origin) score += 4;
+  else if (travelMinutes !== null && travelMinutes <= preferences.maxTravelMinutes) score += 22;
   else if (travelMinutes !== null) score -= Math.min(35, travelMinutes - preferences.maxTravelMinutes);
   if (totalRequired <= totalWindow) score += 18;
   else score -= Math.min(30, Math.round((totalRequired - totalWindow) / 10));
@@ -227,6 +341,26 @@ const scoreExperience = (
   if (experience.validation === "Verified Gem") score += 8;
   if (experience.validation === "Locally reviewed") score += 5;
   if (experience.partner) score += 4;
+  const selectedSeason = seasonForDate(preferences.startsAt);
+  if (experience.seasons?.includes(selectedSeason)) score += 12;
+  if (experience.peakSeasons?.includes(selectedSeason)) score += 4;
+  const curatedScenario = curatedScenarioFor(preferences);
+  const scenarioIndex = curatedScenario?.alternatives.findIndex((alternative) => alternative.id === experience.id) ?? -1;
+  if (scenarioIndex >= 0) score += 240 - scenarioIndex * 18;
+  if (preferences.startsAt) {
+    const visitDate = new Date(preferences.startsAt);
+    const isWeekend = visitDate.getDay() === 0 || visitDate.getDay() === 6;
+    const monthDay = `${String(visitDate.getMonth() + 1).padStart(2, "0")}-${String(visitDate.getDate()).padStart(2, "0")}`;
+    const commonHolidays = new Set(["01-01", "05-01", "12-25", "12-26"]);
+    const regionalHolidays = experience.region === "Bavaria"
+      ? new Set(["01-06", "08-15", "10-03", "11-01"])
+      : new Set(["04-25", "06-02", "08-15", "11-01", "12-08"]);
+    const isDeterministicHoliday = commonHolidays.has(monthDay) || regionalHolidays.has(monthDay);
+    if (isWeekend && experience.crowd === "high") score -= 12;
+    if (isWeekend && experience.crowd === "low") score += 4;
+    if (isDeterministicHoliday && experience.crowd === "high") score -= 10;
+    if (isDeterministicHoliday && experience.crowd === "low") score += 3;
+  }
   if (origin) {
     const pilotIds = origin.lat >= 47
       ? ["catalogue-bav_020", "catalogue-bav_013", "catalogue-bav_014"]
@@ -245,6 +379,12 @@ const reasonsFor = (
   weather: WeatherContext,
 ) => {
   const reasons: string[] = [];
+  const curatedScenario = curatedScenarioFor(preferences);
+  const curatedAlternative = curatedAlternativeFor(curatedScenario, experience.id);
+  if (curatedAlternative) {
+    reasons.push(`${curatedAlternative.travelNote} · team estimate`);
+    if (curatedAlternative.accessNote) reasons.push(curatedAlternative.accessNote);
+  }
   const matchedKinds = experience.kind.filter((kind) => preferences.kinds.includes(kind));
   if (matchedKinds.length > 0) reasons.push(`Matches your ${matchedKinds.slice(0, 2).join(" and ")} interests`);
   if (travelMinutes !== null && travelMinutes <= preferences.maxTravelMinutes) {
@@ -256,6 +396,8 @@ const reasonsFor = (
   else reasons.push(`A lower-pressure arrival window is available`);
   if ((weather.precipitationProbability ?? 0) >= 50 && experience.kind.includes("culture")) reasons.push("More resilient to expected rain");
   if (preferences.needs.length > 0 && preferences.needs.every((need) => needFit(experience, need))) reasons.push("Compatible with your specific needs");
+  const selectedSeason = seasonForDate(preferences.startsAt);
+  if (experience.seasons?.includes(selectedSeason)) reasons.push(`Suitable for a ${selectedSeason} visit`);
   return unique([...reasons, ...experience.reasons]).slice(0, 4);
 };
 
@@ -269,7 +411,11 @@ export const rankExperiences = (
   },
 ): RankedExperience[] => {
   const routeTimes = options.routeTimes ?? {};
-  const scored = experiences
+  const eligible = getEligibleExperiences(experiences, preferences, {
+    origin: options.origin,
+    routeTimes,
+  });
+  const scored = eligible
     .map((experience) => {
       const result = scoreExperience(experience, preferences, options.origin, options.weather, routeTimes);
       return {
@@ -283,18 +429,7 @@ export const rankExperiences = (
     .filter((item) => item.allNeedsFit)
     .sort((first, second) => second.score - first.score);
 
-  const source = scored.length >= 3 ? scored : experiences
-    .map((experience) => {
-      const result = scoreExperience(experience, preferences, options.origin, options.weather, routeTimes);
-      return {
-        experience,
-        score: result.score,
-        travelMinutes: result.travelMinutes,
-        allNeedsFit: result.allNeedsFit,
-        reasons: reasonsFor(experience, preferences, result.travelMinutes, options.weather),
-      };
-    })
-    .sort((first, second) => second.score - first.score);
+  const source = scored;
 
   const best = source[0];
   const quietest = source
@@ -318,5 +453,5 @@ export const rankExperiences = (
     best && { ...best, label: "Best match" as const },
     quietest && { ...quietest, label: "Quietest choice" as const },
     localImpact && { ...localImpact, label: "Most local impact" as const },
-  ].filter((item): item is RankedExperience => Boolean(item));
+  ].filter(Boolean) as RankedExperience[];
 };

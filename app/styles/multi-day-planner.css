@@ -103,6 +103,27 @@
   color: var(--slate);
 }
 
+.multi-day-route-card {
+  display: grid;
+  gap: 14px;
+  margin-top: 18px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: #f7faf8;
+}
+
+.multi-day-route-card .experience-map {
+  min-height: 360px;
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.multi-day-route-card > p {
+  margin: 0;
+  color: var(--slate);
+}
+
 .multi-day-trip-pool {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

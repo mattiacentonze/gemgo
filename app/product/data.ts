@@ -2,14 +2,20 @@ import type { Experience, SearchPreferences } from "./types";
 
 export const defaultPreferences: SearchPreferences = {
   prompt:
-    "I’m staying near Aosta, I have half a day and I’d like an easy nature experience without large crowds.",
-  origin: "Aosta",
-  maxTravelMinutes: 45,
+    "I’m starting in Cogne, I have half a day and I’d like an easy nature experience without large crowds.",
+  origin: "Cogne",
+  region: "Valle d’Aosta",
+  maxTravelMinutes: 90,
+  originMode: "far",
   transport: "car",
   availableTime: "half",
   availableFrom: "14:00",
   availableTo: "18:00",
+  startsAt: "",
+  endsAt: "",
   kinds: ["nature", "villages"],
+  requiredKinds: ["nature"],
+  avoidCrowds: true,
   difficulty: "easy",
   needs: [],
 };

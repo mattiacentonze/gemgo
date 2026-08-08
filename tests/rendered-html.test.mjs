@@ -55,10 +55,10 @@ test("renders the integrated application route", async () => {
   assert.match(html, /Show my best alternatives/i);
   assert.match(html, /My Trip/i);
   assert.match(html, /GemPoints/i);
-  assert.match(html, /Current catalogue/i);
+  assert.match(html, /Mapped prototype locations/i);
   assert.match(html, />66<\/strong>/i);
-  assert.match(html, /<span>Bavaria<\/span><strong>41<\/strong>/i);
-  assert.match(html, /<span>Valle d’Aosta<\/span><strong>25<\/strong>/i);
+  assert.match(html, /Bavaria<!-- -->: <!-- -->41/i);
+  assert.match(html, /Valle d’Aosta<!-- -->: <!-- -->25/i);
   assert.doesNotMatch(html, /Tyrol/i);
 });
 

@@ -1,8 +1,9 @@
 import type { Locale } from "../domain";
 
 export type MarketingCopy = {
-  navigation: { how: string; coverage: string; why: string; team: string; menu: string; tryApp: string; language: string };
+  navigation: { how: string; about: string; team: string; menu: string; openApp: string; profile: string; language: string };
   tagline: string;
+  quickLinks: string;
   hero: { eyebrow: string; title: string; emphasis: string; body: string; find: string; map: string; trust: string[] };
   map: { coverage: string; catalogue: string; pilotPlaces: string; lower: string; moderate: string; higher: string; lowerWindow: string; lowerPlace: string; alternative: string; alternativeTime: string };
   problem: { title: string; body: string; cycle: string[] };
@@ -17,14 +18,15 @@ export type MarketingCopy = {
 
 export const marketingCopy: Record<Locale, MarketingCopy> = {
   en: {
-    navigation: { how: "How it works", coverage: "Across the Alps", why: "Why GemGo", team: "Meet the team", menu: "Open homepage menu", tryApp: "Try the app now", language: "Interface language" },
+    navigation: { how: "How it works", about: "About us", team: "Meet the team", menu: "Open homepage menu", openApp: "Try GemGo", profile: "Profile", language: "Interface language" },
     tagline: "Better Alpine choices",
+    quickLinks: "Explore GemGo",
     hero: { eyebrow: "Fighting overtourism across the Alps", title: "Too crowded? Find a better", emphasis: "Alpine alternative.", body: "GemGo redirects visitors from overcrowded Alpine hotspots towards personalised, less crowded places and better visiting times — rewarding choices that spread tourism benefits across local communities.", find: "Find a better alternative", map: "Explore the Alpine map", trust: ["Personalised for you", "Better times, less crowd", "Supporting local communities"] },
-    map: { coverage: "Pan-Alpine coverage", catalogue: "current catalogue entries", pilotPlaces: "pilot places", lower: "Lower estimate", moderate: "Moderate estimate", higher: "Higher estimate", lowerWindow: "Lower-pressure window", lowerPlace: "Valpelline · after 15:00", alternative: "Comparable alternative", alternativeTime: "28 min from your starting point" },
+    map: { coverage: "Pan-Alpine coverage", catalogue: "mapped prototype locations", pilotPlaces: "pilot places", lower: "Lower estimate", moderate: "Moderate estimate", higher: "Higher estimate", lowerWindow: "Lower-pressure window", lowerPlace: "Valpelline · after 15:00", alternative: "Comparable alternative", alternativeTime: "28 min from your starting point" },
     problem: { title: "Popular plans concentrate pressure.", body: "GemGo does not ask visitors to travel less. It helps them choose better.", cycle: ["Predict", "Recommend", "Redirect", "Verify", "Reward", "Measure"] },
     how: { eyebrow: "How it works", title: "From an intended hotspot to a better Alpine experience", body: "GemGo stays focused on one decision: finding a compatible alternative that the visitor will genuinely value.", steps: [
       { title: "Tell us what you are looking for", body: "Location, available time, interests, mobility, difficulty, weather and crowd preference.", note: "Less than one minute" },
-      { title: "Choose a better alternative", body: "Three motivated options, including travel time, honest trade-offs and comparison with the original plan.", note: "Quality before quietness" },
+      { title: "Choose a better alternative", body: "Three motivated options, including travel time, honest trade-offs and comparison with the original plan.", note: "A better experience, not just a quieter one" },
       { title: "Visit, verify and earn", body: "Complete the experience, verify the visit and earn GemPoints with participating local partners.", note: "One clear reward currency" },
     ] },
     coverage: { eyebrow: "Pan-Alpine by design", title: "One system, across the Alps. Local recommendations, shared Alpine standards.", body: "GemGo is structured for multiple Alpine regions, while validation, local knowledge and partnerships grow territory by territory.", principles: [
@@ -39,14 +41,15 @@ export const marketingCopy: Record<Locale, MarketingCopy> = {
     footer: { body: "Pan-Alpine recommendation, verification and visitor-flow redistribution.", method: "Methodology", privacy: "Privacy", institutions: "For Alpine destinations", disclosure: "Demo content and institutional metrics are clearly identified where not based on live operations." },
   },
   it: {
-    navigation: { how: "Come funziona", coverage: "Nelle Alpi", why: "Perché GemGo", team: "Conosci il team", menu: "Apri menu homepage", tryApp: "Prova l’app", language: "Lingua dell’interfaccia" },
+    navigation: { how: "Come funziona", about: "Chi siamo", team: "Conosci il team", menu: "Apri menu homepage", openApp: "Prova GemGo", profile: "Profilo", language: "Lingua dell’interfaccia" },
     tagline: "Scelte alpine migliori",
+    quickLinks: "Esplora GemGo",
     hero: { eyebrow: "Contro l’overtourism in tutte le Alpi", title: "Troppo affollato? Trova una", emphasis: "migliore alternativa alpina.", body: "GemGo reindirizza i visitatori dagli hotspot alpini sovraffollati verso luoghi personalizzati e meno affollati, in orari migliori, premiando le scelte che distribuiscono i benefici del turismo tra le comunità locali.", find: "Trova un’alternativa migliore", map: "Esplora la mappa alpina", trust: ["Personalizzato per te", "Orari migliori, meno folla", "Sostegno alle comunità locali"] },
-    map: { coverage: "Copertura pan-alpina", catalogue: "luoghi nel catalogo", pilotPlaces: "luoghi pilota", lower: "Stima bassa", moderate: "Stima moderata", higher: "Stima alta", lowerWindow: "Fascia meno affollata", lowerPlace: "Valpelline · dopo le 15:00", alternative: "Alternativa comparabile", alternativeTime: "28 min dal punto di partenza" },
+    map: { coverage: "Copertura pan-alpina", catalogue: "luoghi mappati nel prototipo", pilotPlaces: "luoghi pilota", lower: "Stima bassa", moderate: "Stima moderata", higher: "Stima alta", lowerWindow: "Fascia meno affollata", lowerPlace: "Valpelline · dopo le 15:00", alternative: "Alternativa comparabile", alternativeTime: "28 min dal punto di partenza" },
     problem: { title: "I programmi più popolari concentrano la pressione.", body: "GemGo non chiede di viaggiare meno, ma aiuta a scegliere meglio.", cycle: ["Prevedi", "Consiglia", "Reindirizza", "Verifica", "Premia", "Misura"] },
     how: { eyebrow: "Come funziona", title: "Da una meta affollata a un’esperienza alpina migliore", body: "GemGo si concentra su una decisione: trovare un’alternativa compatibile che il visitatore apprezzi davvero.", steps: [
       { title: "Raccontaci cosa cerchi", body: "Posizione, tempo disponibile, interessi, mobilità, difficoltà, meteo e preferenza sull’affollamento.", note: "Meno di un minuto" },
-      { title: "Scegli un’alternativa migliore", body: "Tre opzioni motivate, con tempi di viaggio, compromessi chiari e confronto con il piano originale.", note: "Prima la qualità, poi la tranquillità" },
+      { title: "Scegli un’alternativa migliore", body: "Tre opzioni motivate, con tempi di viaggio, compromessi chiari e confronto con il piano originale.", note: "Un’esperienza migliore, non solo più tranquilla" },
       { title: "Visita, verifica e guadagna", body: "Completa l’esperienza, verifica la visita e ottieni GemPoints con i partner locali aderenti.", note: "Una sola valuta premio" },
     ] },
     coverage: { eyebrow: "Pan-alpino per progettazione", title: "Un sistema per tutte le Alpi. Consigli locali, standard condivisi.", body: "GemGo è strutturato per più regioni alpine, mentre validazione, conoscenza locale e partnership crescono territorio per territorio.", principles: [
@@ -61,14 +64,15 @@ export const marketingCopy: Record<Locale, MarketingCopy> = {
     footer: { body: "Consigli pan-alpini, verifica e ridistribuzione dei flussi turistici.", method: "Metodologia", privacy: "Privacy", institutions: "Per le destinazioni alpine", disclosure: "I contenuti demo e le metriche istituzionali sono indicati chiaramente quando non derivano da operazioni reali." },
   },
   de: {
-    navigation: { how: "So funktioniert es", coverage: "In den Alpen", why: "Warum GemGo", team: "Das Team", menu: "Homepage-Menü öffnen", tryApp: "App testen", language: "Oberflächensprache" },
+    navigation: { how: "So funktioniert es", about: "Über uns", team: "Das Team", menu: "Homepage-Menü öffnen", openApp: "GemGo testen", profile: "Profil", language: "Oberflächensprache" },
     tagline: "Bessere Entscheidungen in den Alpen",
+    quickLinks: "GemGo entdecken",
     hero: { eyebrow: "Gemeinsam gegen Overtourism im Alpenraum", title: "Zu voll? Finde eine bessere", emphasis: "Alternative in den Alpen.", body: "GemGo leitet Besucher von überfüllten Hotspots zu persönlichen, weniger belasteten Orten und besseren Besuchszeiten um – und belohnt Entscheidungen, die den Tourismusnutzen auf lokale Gemeinschaften verteilen.", find: "Bessere Alternative finden", map: "Alpenkarte erkunden", trust: ["Auf dich zugeschnitten", "Bessere Zeiten, weniger Andrang", "Lokale Gemeinschaften stärken"] },
-    map: { coverage: "Alpenweite Abdeckung", catalogue: "aktuelle Katalogeinträge", pilotPlaces: "Pilotorte", lower: "Niedrige Schätzung", moderate: "Mittlere Schätzung", higher: "Hohe Schätzung", lowerWindow: "Ruhigeres Zeitfenster", lowerPlace: "Valpelline · nach 15:00 Uhr", alternative: "Vergleichbare Alternative", alternativeTime: "28 Min. vom Startpunkt" },
+    map: { coverage: "Alpenweite Abdeckung", catalogue: "im Prototyp kartierte Orte", pilotPlaces: "Pilotorte", lower: "Niedrige Schätzung", moderate: "Mittlere Schätzung", higher: "Hohe Schätzung", lowerWindow: "Ruhigeres Zeitfenster", lowerPlace: "Valpelline · nach 15:00 Uhr", alternative: "Vergleichbare Alternative", alternativeTime: "28 Min. vom Startpunkt" },
     problem: { title: "Beliebte Pläne konzentrieren den Besucherdruck.", body: "GemGo fordert nicht weniger Reisen, sondern bessere Entscheidungen.", cycle: ["Prognose", "Empfehlung", "Umlenkung", "Bestätigung", "Belohnung", "Messung"] },
     how: { eyebrow: "So funktioniert es", title: "Vom geplanten Hotspot zum besseren Alpenerlebnis", body: "GemGo konzentriert sich auf eine Entscheidung: eine passende Alternative, die Besucher wirklich schätzen.", steps: [
       { title: "Beschreibe deine Wünsche", body: "Standort, verfügbare Zeit, Interessen, Mobilität, Schwierigkeit, Wetter und Besucherpräferenz.", note: "Weniger als eine Minute" },
-      { title: "Wähle eine bessere Alternative", body: "Drei begründete Optionen mit Reisezeit, ehrlichen Kompromissen und Vergleich zum ursprünglichen Plan.", note: "Qualität vor Ruhe" },
+      { title: "Wähle eine bessere Alternative", body: "Drei begründete Optionen mit Reisezeit, ehrlichen Kompromissen und Vergleich zum ursprünglichen Plan.", note: "Ein besseres Erlebnis, nicht nur ein ruhigeres" },
       { title: "Besuchen, bestätigen und sammeln", body: "Erlebnis abschließen, Besuch bestätigen und GemPoints bei teilnehmenden lokalen Partnern sammeln.", note: "Eine klare Punktewährung" },
     ] },
     coverage: { eyebrow: "Alpenweit konzipiert", title: "Ein System für die Alpen. Lokale Empfehlungen, gemeinsame Standards.", body: "GemGo ist für mehrere Alpenregionen ausgelegt; Validierung, lokales Wissen und Partnerschaften wachsen Gebiet für Gebiet.", principles: [
@@ -83,14 +87,15 @@ export const marketingCopy: Record<Locale, MarketingCopy> = {
     footer: { body: "Alpenweite Empfehlungen, Bestätigung und Umverteilung von Besucherströmen.", method: "Methodik", privacy: "Datenschutz", institutions: "Für Alpenregionen", disclosure: "Demo-Inhalte und institutionelle Kennzahlen werden klar gekennzeichnet, wenn sie nicht aus dem realen Betrieb stammen." },
   },
   fr: {
-    navigation: { how: "Fonctionnement", coverage: "Dans les Alpes", why: "Pourquoi GemGo", team: "L’équipe", menu: "Ouvrir le menu de l’accueil", tryApp: "Essayer l’app", language: "Langue de l’interface" },
+    navigation: { how: "Fonctionnement", about: "À propos", team: "L’équipe", menu: "Ouvrir le menu de l’accueil", openApp: "Essayer GemGo", profile: "Profil", language: "Langue de l’interface" },
     tagline: "De meilleurs choix alpins",
+    quickLinks: "Explorer GemGo",
     hero: { eyebrow: "Agir contre le surtourisme dans les Alpes", title: "Trop de monde ? Trouvez une", emphasis: "meilleure alternative alpine.", body: "GemGo redirige les visiteurs des sites alpins surfréquentés vers des lieux personnalisés, moins fréquentés et de meilleurs horaires, en récompensant les choix qui répartissent les bénéfices du tourisme entre les communautés locales.", find: "Trouver une meilleure alternative", map: "Explorer la carte alpine", trust: ["Personnalisé pour vous", "De meilleurs horaires, moins de monde", "Soutenir les communautés locales"] },
-    map: { coverage: "Couverture panalpine", catalogue: "lieux au catalogue", pilotPlaces: "lieux pilotes", lower: "Estimation faible", moderate: "Estimation modérée", higher: "Estimation élevée", lowerWindow: "Créneau moins fréquenté", lowerPlace: "Valpelline · après 15 h", alternative: "Alternative comparable", alternativeTime: "À 28 min de votre départ" },
+    map: { coverage: "Couverture panalpine", catalogue: "lieux cartographiés dans le prototype", pilotPlaces: "lieux pilotes", lower: "Estimation faible", moderate: "Estimation modérée", higher: "Estimation élevée", lowerWindow: "Créneau moins fréquenté", lowerPlace: "Valpelline · après 15 h", alternative: "Alternative comparable", alternativeTime: "À 28 min de votre départ" },
     problem: { title: "Les projets populaires concentrent la pression.", body: "GemGo ne demande pas de moins voyager, mais aide à mieux choisir.", cycle: ["Prévoir", "Recommander", "Rediriger", "Vérifier", "Récompenser", "Mesurer"] },
     how: { eyebrow: "Fonctionnement", title: "D’un site très fréquenté à une meilleure expérience alpine", body: "GemGo se concentre sur une décision : trouver une alternative compatible que le visiteur appréciera vraiment.", steps: [
       { title: "Décrivez votre recherche", body: "Lieu, temps disponible, intérêts, mobilité, difficulté, météo et préférence d’affluence.", note: "Moins d’une minute" },
-      { title: "Choisissez une meilleure alternative", body: "Trois options motivées avec temps de trajet, compromis transparents et comparaison au projet initial.", note: "La qualité avant le calme" },
+      { title: "Choisissez une meilleure alternative", body: "Trois options motivées avec temps de trajet, compromis transparents et comparaison au projet initial.", note: "Une meilleure expérience, pas seulement plus calme" },
       { title: "Visitez, vérifiez et gagnez", body: "Vivez l’expérience, vérifiez la visite et gagnez des GemPoints auprès des partenaires locaux participants.", note: "Une monnaie de récompense claire" },
     ] },
     coverage: { eyebrow: "Conçu pour toutes les Alpes", title: "Un système alpin. Des recommandations locales, des normes communes.", body: "GemGo est structuré pour plusieurs régions alpines, tandis que validation, connaissance locale et partenariats progressent territoire par territoire.", principles: [
@@ -105,14 +110,15 @@ export const marketingCopy: Record<Locale, MarketingCopy> = {
     footer: { body: "Recommandation panalpine, vérification et redistribution des flux touristiques.", method: "Méthodologie", privacy: "Confidentialité", institutions: "Pour les destinations alpines", disclosure: "Les contenus de démonstration et les indicateurs institutionnels sont clairement signalés lorsqu’ils ne reposent pas sur des opérations réelles." },
   },
   sl: {
-    navigation: { how: "Kako deluje", coverage: "Po Alpah", why: "Zakaj GemGo", team: "Ekipa", menu: "Odpri meni domače strani", tryApp: "Preizkusi aplikacijo", language: "Jezik vmesnika" },
+    navigation: { how: "Kako deluje", about: "O nas", team: "Ekipa", menu: "Odpri meni domače strani", openApp: "Preizkusi GemGo", profile: "Profil", language: "Jezik vmesnika" },
     tagline: "Boljše izbire v Alpah",
+    quickLinks: "Razišči GemGo",
     hero: { eyebrow: "Proti čezmernemu turizmu v Alpah", title: "Preveč gneče? Poiščite boljšo", emphasis: "alpsko alternativo.", body: "GemGo preusmerja obiskovalce iz prenatrpanih alpskih točk k prilagojenim, manj obremenjenim krajem in primernejšim časom ter nagrajuje izbire, ki koristi turizma razporedijo med lokalne skupnosti.", find: "Poišči boljšo alternativo", map: "Razišči alpski zemljevid", trust: ["Prilagojeno vam", "Boljši čas, manj gneče", "Podpora lokalnim skupnostim"] },
-    map: { coverage: "Vsealpska pokritost", catalogue: "trenutnih vnosov", pilotPlaces: "pilotnih krajev", lower: "Nižja ocena", moderate: "Zmerna ocena", higher: "Višja ocena", lowerWindow: "Manj obremenjen čas", lowerPlace: "Valpelline · po 15. uri", alternative: "Primerljiva alternativa", alternativeTime: "28 min od izhodišča" },
+    map: { coverage: "Vsealpska pokritost", catalogue: "lokacij, kartiranih v prototipu", pilotPlaces: "pilotnih krajev", lower: "Nižja ocena", moderate: "Zmerna ocena", higher: "Višja ocena", lowerWindow: "Manj obremenjen čas", lowerPlace: "Valpelline · po 15. uri", alternative: "Primerljiva alternativa", alternativeTime: "28 min od izhodišča" },
     problem: { title: "Priljubljeni načrti povečujejo pritisk.", body: "GemGo ne zahteva manj potovanj, temveč pomaga izbrati bolje.", cycle: ["Predvidi", "Priporoči", "Preusmeri", "Potrdi", "Nagradi", "Izmeri"] },
     how: { eyebrow: "Kako deluje", title: "Od načrtovane turistične točke do boljšega alpskega doživetja", body: "GemGo se osredotoča na eno odločitev: poiskati ustrezno alternativo, ki jo bo obiskovalec resnično cenil.", steps: [
       { title: "Povejte, kaj iščete", body: "Lokacija, čas, interesi, mobilnost, zahtevnost, vreme in želena stopnja obiska.", note: "Manj kot minuta" },
-      { title: "Izberite boljšo alternativo", body: "Tri utemeljene možnosti s časom poti, jasnimi kompromisi in primerjavo z začetnim načrtom.", note: "Kakovost pred mirnostjo" },
+      { title: "Izberite boljšo alternativo", body: "Tri utemeljene možnosti s časom poti, jasnimi kompromisi in primerjavo z začetnim načrtom.", note: "Boljše doživetje, ne le mirnejše" },
       { title: "Obiščite, potrdite in zbirajte", body: "Doživite izkušnjo, potrdite obisk in pridobite GemPoints pri sodelujočih lokalnih partnerjih.", note: "Ena jasna valuta nagrad" },
     ] },
     coverage: { eyebrow: "Zasnovano za vse Alpe", title: "En sistem za Alpe. Lokalna priporočila, skupni standardi.", body: "GemGo je zasnovan za več alpskih regij; preverjanje, lokalno znanje in partnerstva rastejo po posameznih območjih.", principles: [

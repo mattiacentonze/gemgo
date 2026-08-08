@@ -3,9 +3,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Destination, Locale, TransportCode } from "../domain";
 import type { Accommodation } from "../content";
-import { msg } from "../i18n/catalogs.mjs";
+import { msg } from "../i18n/catalogs";
 import { commonsImageParams } from "../lib/commons-media";
-import { fetchRoadGeometry } from "../lib/geo.mjs";
+import { fetchRoadGeometry } from "../lib/geo";
 
 type Props = {
   destinations: Destination[];
@@ -339,7 +339,10 @@ export default function DestinationMap({
             fetch(`https://commons.wikimedia.org/w/api.php?${params}`)
               .then((response) => response.json())
               .then((payload) => {
-                const pages = Object.values(payload?.query?.pages ?? {}) as Array<{
+                const commonsPayload = payload as {
+                  query?: { pages?: Record<string, unknown> };
+                };
+                const pages = Object.values(commonsPayload.query?.pages ?? {}) as Array<{
                   imageinfo?: Array<{
                     thumburl?: string;
                     descriptionurl?: string;

@@ -5,7 +5,7 @@ import { useState } from "react";
 import ExperienceMap from "./ExperienceMap";
 import type { Locale } from "../domain";
 import { marketingCopy } from "../i18n/marketing";
-import { allExperiences, catalogueSummary, totalCatalogueEntries } from "../product/catalogue";
+import { catalogueExperiences, catalogueSummary, totalCatalogueEntries } from "../product/catalogue";
 
 type Props = {
   compact?: boolean;
@@ -33,7 +33,7 @@ export default function AlpineOverview({ compact = false, selectedRegion, onSele
       </div>
       <div className="alpine-real-map-wrap">
         <ExperienceMap
-          experiences={allExperiences}
+          experiences={catalogueExperiences}
           className={compact ? "homepage-map-compact" : "homepage-map"}
           locale={locale}
           showLegend={false}

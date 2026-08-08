@@ -1,5 +1,5 @@
 import type { Destination, RegionCode } from "../domain";
-import { normalizePrompt } from "./prompt-parser.mjs";
+import { normalizePrompt } from "./prompt-parser";
 
 export const inferDestinationRegion = (
   input: string,

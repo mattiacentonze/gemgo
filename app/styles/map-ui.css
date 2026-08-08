@@ -7,6 +7,73 @@
   width: 100%;
 }
 
+.experience-map-shell.is-relief .leaflet-tile-pane {
+  filter: saturate(0.72) brightness(1.08) contrast(0.88);
+}
+
+.experience-map-style {
+  position: absolute;
+  z-index: 430;
+  top: 12px;
+  right: 12px;
+  display: grid;
+  justify-items: end;
+  gap: 6px;
+}
+
+.experience-map-style button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 1px solid rgba(11, 44, 37, 0.14);
+  border-radius: 12px;
+  background: rgba(255, 253, 248, 0.95);
+  color: var(--forest-deep);
+  font: inherit;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(9, 42, 35, 0.14);
+  backdrop-filter: blur(12px);
+}
+
+.experience-map-style-options {
+  display: grid;
+  gap: 5px;
+  padding: 5px;
+  border: 1px solid rgba(11, 44, 37, 0.12);
+  border-radius: 14px;
+  background: rgba(255, 253, 248, 0.92);
+  box-shadow: 0 10px 26px rgba(9, 42, 35, 0.14);
+  backdrop-filter: blur(12px);
+}
+
+.experience-map-style-options button {
+  width: 36px;
+  height: 36px;
+  border: 0;
+  box-shadow: none;
+}
+
+.experience-map-style-options button.is-active {
+  background: var(--forest);
+  color: #fff;
+}
+
+.experience-map-placeholder {
+  min-height: 440px;
+  border-radius: 24px;
+  background: linear-gradient(120deg, #e6eee8, #f6f3e9, #e6eee8);
+  background-size: 200% 100%;
+  animation: map-placeholder-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes map-placeholder-pulse {
+  from { background-position: 100% 0; }
+  to { background-position: -100% 0; }
+}
+
 .experience-map-loading {
   position: absolute;
   z-index: 420;
@@ -85,6 +152,16 @@
 }
 
 @media (max-width: 720px) {
+  .experience-map-style {
+    top: 8px;
+    right: 8px;
+  }
+
+  .experience-map-style button {
+    width: 40px;
+    height: 40px;
+  }
+
   .experience-map-legend {
     right: 8px;
     bottom: 24px;
@@ -103,6 +180,10 @@
 
 @media (prefers-reduced-motion: reduce) {
   .experience-map-loading svg {
+    animation: none;
+  }
+
+  .experience-map-placeholder {
     animation: none;
   }
 }

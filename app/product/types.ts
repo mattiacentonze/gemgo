@@ -10,9 +10,12 @@ export type ExperienceKind =
   | "food"
   | "family"
   | "accessible"
-  | "winter";
+  | "winter"
+  | "castle"
+  | "museum";
 export type Difficulty = "easy" | "moderate" | "challenging";
 export type CrowdLevel = "low" | "moderate" | "high";
+export type Season = "spring" | "summer" | "autumn" | "winter";
 export type ValidationLevel = "Data-based suggestion" | "Locally reviewed" | "Verified Gem";
 
 export type Experience = {
@@ -22,6 +25,14 @@ export type Experience = {
   region: string;
   country: string;
   kind: ExperienceKind[];
+  destinationType?: string;
+  tags?: string[];
+  catalogueSource?: "official-team" | "alpify" | "team-expert";
+  seasons?: Season[];
+  peakSeasons?: Season[];
+  editorialSourceUrl?: string;
+  editorialSourceLabel?: string;
+  operationalNote?: string;
   difficulty: Difficulty;
   latitude: number;
   longitude: number;
@@ -53,19 +64,38 @@ export type Experience = {
 export type SearchPreferences = {
   prompt: string;
   origin: string;
+  region: "Bavaria" | "Valle d’Aosta" | null;
   maxTravelMinutes: number;
+  originMode?: "far" | "gps" | "place";
   transport: TransportMode;
   availableTime: "short" | "half" | "full" | "multi";
   availableFrom: string;
   availableTo: string;
+  startsAt?: string;
+  endsAt?: string;
   kinds: ExperienceKind[];
+  requiredKinds: ExperienceKind[];
+  avoidCrowds: boolean;
   difficulty: Difficulty;
   needs: string[];
 };
 
 export type TripState = {
   experienceId: string;
+  experienceIds?: string[];
   plannedDeparture: string;
+  maxLegMinutes?: number;
+  legTransport?: TransportMode;
   acceptedGemDrop: boolean;
   verified: boolean;
+  verifiedExperienceIds?: string[];
+  verificationRecords?: Array<{
+    experienceId: string;
+    verifiedAt: string;
+    status: "demo" | "verified";
+    source: "gps" | "qr" | "manual-demo" | "activity-demo";
+    provider?: "strava" | "garmin" | "apple-health" | "health-connect";
+    actualTransport?: TransportMode;
+    awardedPoints: number;
+  }>;
 };

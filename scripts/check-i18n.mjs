@@ -6,7 +6,7 @@ import {
   sharedMessageKeys,
   supportedLocales,
   translationOverrides,
-} from "../app/i18n/catalogs.mjs";
+} from "../app/i18n/catalogs.ts";
 
 const englishKeys = new Set(messageKeys);
 const shared = new Set(sharedMessageKeys);

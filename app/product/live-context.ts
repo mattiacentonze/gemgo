@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { fetchRoadGeometry, geocodePlace } from "../lib/geo.mjs";
+import { fetchRoadGeometry, geocodePlace } from "../lib/geo";
 import type { Experience, TransportMode } from "./types";
 import type { OriginPoint, WeatherContext } from "./recommendation-engine";
 
@@ -54,7 +54,7 @@ export const useOriginPoint = (query: string) => {
   return { origin, status };
 };
 
-export const useLiveWeather = (origin: OriginPoint | null) => {
+export const useLiveWeather = (origin: OriginPoint | null, startsAt?: string) => {
   const [weather, setWeather] = useState<WeatherContext>({ source: "unavailable" });
 
   useEffect(() => {
@@ -67,6 +67,8 @@ export const useLiveWeather = (origin: OriginPoint | null) => {
     url.searchParams.set("latitude", String(origin.lat));
     url.searchParams.set("longitude", String(origin.lng));
     url.searchParams.set("current", "temperature_2m,weather_code,precipitation_probability");
+    url.searchParams.set("hourly", "temperature_2m,weather_code,precipitation_probability");
+    url.searchParams.set("forecast_days", "16");
     url.searchParams.set("timezone", "auto");
     fetch(url, { signal: controller.signal })
       .then((response) => {
@@ -74,10 +76,38 @@ export const useLiveWeather = (origin: OriginPoint | null) => {
         return response.json();
       })
       .then((payload) => {
+        const weatherPayload = payload as {
+          current?: {
+            temperature_2m?: number;
+            precipitation_probability?: number;
+            weather_code?: number;
+          };
+          hourly?: {
+            time?: string[];
+            temperature_2m?: number[];
+            precipitation_probability?: number[];
+            weather_code?: number[];
+          };
+        };
+        const current = weatherPayload.current;
+        const hourly = weatherPayload.hourly;
+        const requested = startsAt ? Date.parse(startsAt) : Number.NaN;
+        const forecastIndex = Number.isFinite(requested)
+          ? (hourly?.time ?? []).findIndex((time) => Math.abs(Date.parse(time) - requested) <= 30 * 60 * 1000)
+          : -1;
+        if (forecastIndex >= 0 && hourly) {
+          setWeather({
+            temperature: Number(hourly.temperature_2m?.[forecastIndex]),
+            precipitationProbability: Number(hourly.precipitation_probability?.[forecastIndex]),
+            weatherCode: Number(hourly.weather_code?.[forecastIndex]),
+            source: "forecast",
+          });
+          return;
+        }
         setWeather({
-          temperature: Number(payload?.current?.temperature_2m),
-          precipitationProbability: Number(payload?.current?.precipitation_probability),
-          weatherCode: Number(payload?.current?.weather_code),
+          temperature: Number(current?.temperature_2m),
+          precipitationProbability: Number(current?.precipitation_probability),
+          weatherCode: Number(current?.weather_code),
           source: "live",
         });
       })
@@ -86,7 +116,7 @@ export const useLiveWeather = (origin: OriginPoint | null) => {
         setWeather({ source: "unavailable" });
       });
     return () => controller.abort();
-  }, [origin]);
+  }, [origin, startsAt]);
 
   return weather;
 };
@@ -100,13 +130,17 @@ export const useRoadTimes = (
 
   useEffect(() => {
     if (!origin || transport === "public" || experiences.length === 0) {
-      queueMicrotask(() => setRouteTimes({}));
+      queueMicrotask(() =>
+        setRouteTimes((current) =>
+          Object.keys(current).length === 0 ? current : {},
+        ),
+      );
       return;
     }
     const controller = new AbortController();
     const mode = routeMode(transport);
     Promise.all(
-      experiences.slice(0, 8).map(async (experience) => {
+      experiences.slice(0, 3).map(async (experience) => {
         try {
           const route = await fetchRoadGeometry(
             { lat: origin.lat, lng: origin.lng },
@@ -141,7 +175,9 @@ export const useSelectedRoute = (
 
   useEffect(() => {
     if (!origin || !experience || transport === "public") {
-      queueMicrotask(() => setCoordinates([]));
+      queueMicrotask(() =>
+        setCoordinates((current) => (current.length === 0 ? current : [])),
+      );
       return;
     }
     const controller = new AbortController();

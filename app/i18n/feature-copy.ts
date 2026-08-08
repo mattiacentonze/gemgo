@@ -1,9 +1,11 @@
+import type { Locale } from "../domain";
+
 const shared = {
   "deals.subcategory.bar": "Bars",
   "contribute.category.nature": "Nature",
 };
 
-export const featureCopy = {
+export const featureCopy: Record<Locale, Record<string, string>> = {
   en: {
     ...shared,
     "planner.body": "Tell GemGo what kind of trip you want. It steers visits away from overcrowded hotspots and towards quieter places and times, helping more Alpine communities benefit from tourism.",
@@ -127,13 +129,13 @@ export const featureCopy = {
   sl: {},
 };
 
-const localeAdditions = {
+const localeAdditions: Record<Exclude<Locale, "en" | "it">, [string, string]> = {
   de: ["Beschreibe GemGo deine Wunschreise. Die App lenkt Besuche von überfüllten Hotspots zu ruhigeren Orten und Zeiten, damit mehr Alpengemeinden vom Tourismus profitieren.", "GemGo verteilt Tourismus über überfüllte Hotspots hinaus und macht aus wenigen Wünschen eine ruhigere Alpenreise, die mehr lokale Gemeinden unterstützt."],
   fr: ["Décrivez à GemGo le voyage souhaité. L’app détourne les visites des sites saturés vers des lieux et horaires plus calmes, afin que davantage de communautés alpines profitent du tourisme.", "GemGo répartit le tourisme au-delà des sites saturés et transforme quelques préférences en un voyage alpin plus calme qui soutient davantage de communautés locales."],
   sl: ["Opiši GemGo želeno potovanje. Aplikacija obisk preusmeri s prenatrpanih točk k mirnejšim krajem in časom, da ima od turizma korist več alpskih skupnosti.", "GemGo razprši turizem stran od prenatrpanih točk ter nekaj želja spremeni v mirnejše alpsko potovanje, ki podpira več lokalnih skupnosti."],
 };
 
-for (const locale of ["de", "fr", "sl"]) {
+for (const locale of ["de", "fr", "sl"] as const) {
   featureCopy[locale] = { ...featureCopy.en, "planner.body": localeAdditions[locale][0], "welcome.body": localeAdditions[locale][1] };
 }
 

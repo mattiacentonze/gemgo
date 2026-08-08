@@ -19,14 +19,16 @@ const frequencies: Record<SoundTone, number[]> = {
 
 export default function UiSoundController() {
   const contextRef = useRef<AudioContext | null>(null);
-  const lastToastRef = useRef("");
   const enabledRef = useRef(false);
 
   useEffect(() => {
     const storedEnabled = window.localStorage.getItem(SOUND_KEY) === "on";
     enabledRef.current = storedEnabled;
     const onSetting = (event: Event) => {
-      enabledRef.current = Boolean((event as CustomEvent<boolean>).detail);
+      const detail = (event as CustomEvent<boolean>).detail;
+      enabledRef.current = typeof detail === "boolean"
+        ? detail
+        : window.localStorage.getItem(SOUND_KEY) === "on";
     };
     window.addEventListener("gemgo:sound-setting", onSetting);
     return () => {
@@ -83,17 +85,9 @@ export default function UiSoundController() {
   }, [play]);
 
   useEffect(() => {
-    const observer = new MutationObserver(() => {
-      const toast = document.querySelector(".integrated-app .action-toast");
-      const text = toast?.textContent?.trim() ?? "";
-      if (!text || text === lastToastRef.current) return;
-      lastToastRef.current = text;
-      if (/denied|unavailable|not available|invalid|could not|error/i.test(text)) play("error");
-      else if (/verified|saved|added|switched|unlocked|duplicated|feedback/i.test(text)) play("success");
-      else play("info");
-    });
-    observer.observe(document.body, { childList: true, subtree: true, characterData: true });
-    return () => observer.disconnect();
+    const onSound = (event: Event) => play((event as CustomEvent<SoundTone>).detail ?? "info");
+    window.addEventListener("gemgo:ui-sound", onSound);
+    return () => window.removeEventListener("gemgo:ui-sound", onSound);
   }, [play]);
 
   return null;

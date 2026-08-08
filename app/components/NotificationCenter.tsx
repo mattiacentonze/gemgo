@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import type { GemPointEvent, RewardUnlock, SavedTrip } from "../product/storage";
 import type { Locale } from "../domain";
-import { msg } from "../i18n/catalogs.mjs";
+import { msg } from "../i18n/catalogs";
 
 type NotificationItem = {
   id: string;

@@ -28,7 +28,7 @@
   .mobile-menu{position:absolute;top:62px;right:10px;left:10px;display:grid;padding:9px;border:1px solid var(--line);border-radius:15px;background:#fff;box-shadow:var(--shadow)}
   .mobile-menu button{display:flex;justify-content:space-between;padding:12px;border:0;background:transparent}
   .mobile-bottom-nav{position:fixed;z-index:100;right:9px;bottom:9px;left:9px;display:grid;grid-template-columns:repeat(4,1fr);padding:6px;border:1px solid var(--line);border-radius:19px;background:#fffffff2;box-shadow:var(--shadow)}
-  .mobile-bottom-nav button{display:grid;justify-items:center;gap:2px;padding:7px;border:0;border-radius:13px;background:transparent;font-size:9px}
+  .mobile-bottom-nav button,.mobile-bottom-nav a{display:grid;justify-items:center;gap:2px;padding:7px;border:0;border-radius:13px;background:transparent;color:inherit;font-size:9px;text-decoration:none}
   .mobile-bottom-nav button.is-active{background:var(--forest);color:#fff}
   .app-content{width:calc(100% - 22px);padding:30px 0 95px}
   .split-heading,.trip-heading,.rewards-heading,.results-header{display:grid;grid-template-columns:1fr}

@@ -14,12 +14,18 @@ test("mobile language, menu and profile overlays close one another", () => {
 });
 
 test("profile uses a full mobile viewport while notifications have a dedicated route", () => {
-  const notifications = read("app/notifications/page.tsx");
+  const notifications = read("app/app/notifications/page.tsx");
+  const profilePage = read("app/app/profile/page.tsx");
+  const routeLayout = read("app/components/AppRouteLayout.tsx");
   const profile = read("app/components/LocalProfilePanel.tsx");
   const css = read("app/styles/visual-fixes.css");
   assert.match(profile, /createPortal/);
   assert.match(notifications, /notification-history-page/);
   assert.doesNotMatch(notifications, /notification-popover-portal|createPortal/);
+  assert.doesNotMatch(notifications, /info-page-back|Go back|Torna indietro/);
+  assert.doesNotMatch(profilePage, /simple-page-header|Back to GemGo|Torna a GemGo/);
+  assert.match(routeLayout, /"\/app\/profile", "\/app\/notifications"/);
+  assert.match(routeLayout, /<AppUtilityHeader \/>/);
   assert.match(css, /\.profile-panel[\s\S]*height: 100dvh/);
 });
 

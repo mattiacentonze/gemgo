@@ -3,7 +3,7 @@
 import { FormEvent, useState } from "react";
 import { Camera, Gem, LoaderCircle, MapPinned, Sparkles } from "lucide-react";
 import { regionCodes, type Locale, type RegionCode } from "../domain";
-import { msg } from "../i18n/catalogs.mjs";
+import { msg } from "../i18n/catalogs";
 
 type AcceptedContribution = { id: string; name: string; reward: number };
 

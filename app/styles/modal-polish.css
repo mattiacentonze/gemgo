@@ -13,7 +13,8 @@ html.has-open-modal body {
 
 .gemdrop-panel,
 .verification-modal,
-.account-modal {
+.account-modal,
+.reward-qr-modal {
   animation: modal-panel-enter 260ms cubic-bezier(.2,.8,.2,1) both;
   box-shadow: 0 30px 90px rgba(3, 25, 21, 0.32);
 }
@@ -54,7 +55,8 @@ html.has-open-modal body {
 }
 
 .verification-modal,
-.account-modal {
+.account-modal,
+.reward-qr-modal {
   scrollbar-gutter: stable;
 }
 
@@ -82,7 +84,8 @@ html.has-open-modal body {
 
   .gemdrop-panel,
   .verification-modal,
-  .account-modal {
+  .account-modal,
+  .reward-qr-modal {
     width: 100%;
     max-height: calc(100svh - max(20px, env(safe-area-inset-top)) - max(10px, env(safe-area-inset-bottom)));
     padding: 24px 18px 18px;

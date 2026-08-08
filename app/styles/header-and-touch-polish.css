@@ -11,7 +11,8 @@ a.button:active,
   transform: scale(0.97);
 }
 
-.desktop-nav button.is-active {
+.desktop-nav button.is-active,
+.desktop-nav a.is-active {
   box-shadow: inset 0 0 0 1px rgba(38, 116, 95, 0.08);
 }
 

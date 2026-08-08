@@ -7,8 +7,11 @@ const source = async (path) => readFile(new URL(`../${path}`, import.meta.url), 
 test("the application route uses the integrated product shell", async () => {
   const route = await source("app/app/page.tsx");
   const layout = await source("app/app/layout.tsx");
-  assert.match(layout, /IntegratedAppShell/);
-  assert.match(layout, /UiSoundController/);
+  const routeLayout = await source("app/components/AppRouteLayout.tsx");
+  assert.match(layout, /AppRouteLayout/);
+  assert.match(routeLayout, /IntegratedAppShell/);
+  assert.match(routeLayout, /UiSoundController/);
+  assert.match(routeLayout, /AppUtilityHeader/);
   assert.match(route, /return null/);
   assert.doesNotMatch(route, /export \{ default \} from "\.\.\/page"/);
 });
@@ -51,17 +54,81 @@ test("the new map switches between standard and softened relief layers", async (
   assert.match(map, /tileLayerRef/);
   assert.match(map, /mapStyle === "standard"/);
   assert.match(map, /ALPINE_BOUNDS/);
+  assert.match(map, /ALPINE_PAN_BOUNDS/);
   assert.match(map, /maxBoundsViscosity/);
+  assert.doesNotMatch(map, /attribution:[^\n]+\n\s+bounds: ALPINE_BOUNDS/);
   assert.match(map, /experience-map-style-trigger/);
   assert.doesNotMatch(map, /<span><Layers3/);
   assert.match(map, /wheelPxPerZoomLevel: 140/);
   assert.doesNotMatch(map, /group\.items\.length > 2/);
+  assert.match(map, /group\.items\.length > 1/);
+  assert.match(map, /counts\[experience\.crowd\] \+= 1/);
+  assert.match(map, /gemgo-map-cluster is-\$\{majority\}/);
+  assert.match(map, /cluster\.on\("click"/);
+  assert.match(map, /map\.fitBounds\(bounds/);
   assert.match(map, /experienceMarkersRef/);
   assert.match(map, /experiences\.forEach\(\(experience\)/);
   assert.match(map, /mapReady/);
-  assert.match(await source("app/components/IntegratedAppShell.tsx"), /experiences=\{allExperiences\}/);
+  assert.match(await source("app/components/IntegratedAppShell.tsx"), /experiences=\{catalogueExperiences\}/);
   assert.match(overview, /ExperienceMap/);
   assert.doesNotMatch(overview, /alpine-ridge/);
+});
+
+test("results map mirrors visible recommendations and keeps active trip stops", async () => {
+  const shell = await source("app/components/IntegratedAppShell.tsx");
+  const map = await source("app/components/ExperienceMap.tsx");
+  const css = await source("app/styles/mvp-final.css");
+  assert.match(shell, /visibleResultExperiences/);
+  assert.match(shell, /resultMapExperiences/);
+  assert.match(shell, /experiences=\{resultMapExperiences\}/);
+  assert.match(shell, /tripExperienceIds=\{activeExperienceIds\}/);
+  assert.match(shell, /disableClustering/);
+  assert.match(map, /gemgo-trip-pin-badge/);
+  assert.match(shell, /createPortal\([\s\S]*floating-open-trip/);
+  assert.match(css, /\.floating-open-trip[\s\S]*position: fixed/);
+  assert.match(css, /left: 50%/);
+});
+
+test("device notifications use browser permission and the service worker", async () => {
+  const notificationStore = await source("app/product/notifications.ts");
+  const page = await source("app/app/notifications/page.tsx");
+  const worker = await source("public/sw.js");
+  assert.match(notificationStore, /Notification\.requestPermission/);
+  assert.match(notificationStore, /registration\.showNotification/);
+  assert.match(notificationStore, /showDeviceNotification\(notification\)/);
+  assert.match(page, /requestDeviceNotifications/);
+  assert.match(notificationStore, /\/app\/notifications/);
+  assert.match(worker, /\/app\/notifications/);
+  assert.match(worker, /notificationclick/);
+  assert.match(worker, /event\.notification\.data\?\.href/);
+  assert.match(worker, /addEventListener\("push"/);
+});
+
+test("the homepage uses real Alpine cartography with a geographic animated route", async () => {
+  const hero = await source("app/components/HeroAlpineMap.tsx");
+  const home = await source("app/page.tsx");
+  const css = await source("app/styles/landing-v2.css");
+  const strip = await source("app/components/LandingImpactStrip.tsx");
+  assert.match(hero, /import\("leaflet"\)/);
+  assert.match(hero, /tile\.opentopomap\.org/);
+  assert.match(hero, /quadraticRoute/);
+  assert.match(hero, /hero-route-line/);
+  assert.match(hero, /Illustrative crowd scenario · not live data/);
+  assert.doesNotMatch(hero, /alpine-redistribution-map\.png|<img|<svg|alpineMassPath/);
+  assert.match(css, /mask-image:/);
+  assert.match(css, /\.hero-route-line[\s\S]*stroke-dasharray:[\s\S]*animation: hero-route-flow/);
+  assert.match(home, /<HeroComparison locale=\{locale\} \/>/);
+  assert.match(home, /<HeroAlpineMap locale=\{locale\} \/>/);
+  assert.match(home, /<LandingImpactStrip locale=\{locale\} \/>/);
+  assert.match(strip, /landing-impact-strip/);
+});
+
+test("the About story connects the founding anecdote to overtourism and the response", async () => {
+  const about = await source("app/about/page.tsx");
+  assert.match(about, /Neuschwanstein/);
+  assert.match(about, /environmental and social pressure/);
+  assert.match(about, /Redirect a choice, without restricting a journey/);
+  assert.match(about, /EUSALP-Pilotregionen|EUSALP pilot regions/);
 });
 
 test("legacy product paths redirect to the integrated app instead of duplicating the landing page", async () => {
@@ -100,9 +167,10 @@ test("My Trip persists multiple plans and GemPoints use an event ledger", async 
   assert.match(storage, /gemgo-trips-v3/);
   assert.match(storage, /GemPointEvent/);
   assert.match(storage, /appendPointEvent/);
-  assert.match(shell, /Duplicate/);
-  assert.match(shell, /Rename/);
-  assert.match(shell, /Save essentials offline/);
+  assert.match(shell, /duplicateTrip/);
+  assert.match(shell, /renameTrip/);
+  assert.match(shell, /automaticOffline/);
+  assert.doesNotMatch(shell, /Save essentials offline/);
   assert.doesNotMatch(shell, /GemXP/);
   assert.doesNotMatch(shell, /GemCredits/);
   assert.match(shell, /header-points-link/);
@@ -140,6 +208,12 @@ test("homepage language, regional map controls and result-card hierarchy are int
   assert.match(home, /usePersistentLocale/);
   assert.match(header, /marketing-language-popover/);
   assert.match(header, /marketing-mobile-menu/);
+  assert.match(header, /\["\/#how", copy\.navigation\.how\]/);
+  assert.match(header, /\["\/about", copy\.navigation\.about\]/);
+  assert.match(header, /\["\/privacy", copy\.footer\.privacy\]/);
+  assert.match(header, /marketing-profile-link[\s\S]*marketing-try-button[\s\S]*marketing-menu-trigger/);
+  assert.match(header, /marketing-mobile-menu[\s\S]*copy\.navigation\.openApp/);
+  assert.doesNotMatch(header, /Try the app now/i);
   assert.match(overview, /aria-pressed/);
   assert.match(overview, /setLocalRegion/);
   assert.match(card, /recommendation-reasons/);

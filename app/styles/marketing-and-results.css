@@ -45,6 +45,11 @@
 .marketing-desktop-nav a:hover { color: var(--forest); }
 .marketing-header-actions { position: relative; }
 .marketing-language-menu { position: relative; }
+.marketing-try-button {
+  min-height: 44px;
+  padding-inline: 18px;
+  white-space: nowrap;
+}
 
 .marketing-language-popover {
   position: absolute;
@@ -120,6 +125,60 @@
 
 .integrated-result-card .validation-label svg { flex: 0 0 auto; }
 
+.season-tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 9px 0 12px;
+}
+
+.season-tag-list > span {
+  padding: 5px 9px;
+  border: 1px solid rgba(38, 116, 95, 0.17);
+  border-radius: 999px;
+  background: #f3f8f4;
+  color: var(--forest);
+  font-size: 0.67rem;
+  font-weight: 820;
+}
+
+.editorial-source-link {
+  display: inline-block;
+  width: fit-content;
+  margin-top: 9px;
+  color: var(--green);
+  font-size: 0.72rem;
+  font-weight: 780;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.verification-points-breakdown {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 7px;
+  margin: 10px 0 14px;
+}
+
+.verification-points-breakdown > span {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+}
+
+.verification-points-breakdown small { color: var(--muted); font-size: 0.63rem; line-height: 1.25; }
+.verification-points-breakdown strong { color: var(--forest); font-size: 0.82rem; }
+.verification-points-breakdown .is-total { grid-column: 1 / -1; grid-template-columns: 1fr auto; align-items: center; background: var(--mint); }
+
+@media (max-width: 560px) {
+  .verification-points-breakdown { grid-template-columns: 1fr; }
+  .verification-points-breakdown .is-total { grid-column: auto; }
+}
+
 .integrated-result-card .result-metrics {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -194,6 +253,7 @@
   .marketing-header { min-height: 70px; }
   .marketing-header-inner { grid-template-columns: minmax(0, 1fr) auto; width: 100%; min-height: 70px; padding: 0 14px; }
   .marketing-desktop-nav { display: none; }
+  .marketing-try-button { display: none; }
   .marketing-header-actions { gap: 7px; }
   .marketing-header-actions .marketing-language-trigger { display: inline-flex; }
   .marketing-menu-trigger { display: inline-grid; }

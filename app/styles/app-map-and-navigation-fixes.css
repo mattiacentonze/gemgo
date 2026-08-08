@@ -203,3 +203,125 @@
     transition: none;
   }
 }
+
+.route-loading {
+  display: grid;
+  min-height: 100dvh;
+  place-content: center;
+  justify-items: center;
+  gap: 9px;
+  padding: 24px;
+  background:
+    radial-gradient(circle at 50% 34%, #e7f4eb, transparent 30%),
+    #fffdfa;
+  color: var(--forest-deep);
+  text-align: center;
+}
+.route-loading-mark { position: relative; display: grid; width: 76px; height: 76px; place-items: center; color: var(--green); }
+.route-loading-spinner { position: absolute; inset: 7px; animation: location-spin 900ms linear infinite; color: rgba(21, 154, 100, .35); }
+.route-loading strong { font-size: 1.35rem; }
+.route-loading > span { color: var(--muted); font-size: .84rem; }
+.route-loading-track { width: min(260px, 70vw); height: 5px; margin-top: 10px; overflow: hidden; border-radius: 999px; background: #dfeae4; }
+.route-loading-track i { display: block; width: 38%; height: 100%; border-radius: inherit; background: var(--green); animation: route-loading-slide 1.2s ease-in-out infinite alternate; }
+@keyframes route-loading-slide { to { transform: translateX(165%); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .route-loading-spinner,
+  .route-loading-track i { animation: none; }
+}
+.gemgo-map-cluster {
+  --cluster-colour: #e5a72b;
+  display: grid;
+  width: 50px;
+  height: 50px;
+  place-items: center;
+  overflow: visible;
+  border: 5px solid var(--cluster-colour);
+  border-radius: 50%;
+  background: #fff;
+  color: var(--forest-deep);
+  box-shadow:
+    0 0 0 3px rgba(255, 255, 255, 0.86),
+    0 10px 26px rgba(10, 47, 39, 0.28);
+  transition: transform 160ms ease, box-shadow 160ms ease;
+}
+
+.gemgo-map-cluster.is-low { --cluster-colour: #159a64; }
+.gemgo-map-cluster.is-moderate { --cluster-colour: #e5a72b; }
+.gemgo-map-cluster.is-high { --cluster-colour: #e15247; }
+.gemgo-map-cluster:hover {
+  transform: scale(1.07);
+  box-shadow:
+    0 0 0 4px rgba(255, 255, 255, 0.9),
+    0 13px 30px rgba(10, 47, 39, 0.34);
+}
+.gemgo-map-cluster strong { font-size: 1rem; line-height: 1; }
+
+.experience-map-loading.is-transient {
+  inset: 12px auto auto 50%;
+  min-width: 200px;
+  padding: 11px 16px;
+  border: 1px solid rgba(18, 61, 53, 0.12);
+  border-radius: 999px;
+  transform: translateX(-50%);
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 10px 26px rgba(10, 47, 39, 0.16);
+}
+
+.experience-map-loading.is-transient span { font-size: .72rem; }
+
+.prompt-action-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin-top: 10px;
+}
+.prompt-action-row .button { min-height: 44px; }
+.interpretation-status {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin: 0;
+  color: var(--green);
+  font-size: .76rem;
+}
+.interpretation-status span { display: grid; gap: 2px; }
+.interpretation-status strong { color: var(--forest-deep); }
+.region-filter { display: grid; gap: 8px; margin: 14px 0; }
+.region-filter > span { font-size: 11px; font-weight: 850; }
+.region-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.quiet-toggle {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 12px;
+  padding: 10px 13px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--muted);
+  font: inherit;
+  font-size: .78rem;
+  font-weight: 760;
+  cursor: pointer;
+}
+.quiet-toggle.is-selected {
+  border-color: rgba(21, 154, 100, .45);
+  background: #eaf7ef;
+  color: var(--green);
+}
+.button-spinner { animation: location-spin 800ms linear infinite; }
+.results-empty-state { grid-column: 1 / -1; min-height: 300px; }
+.results-empty-state p { max-width: 560px; color: var(--muted); line-height: 1.55; }
+
+@media (max-width: 560px) {
+  .region-grid { grid-template-columns: 1fr; }
+  .prompt-action-row { display: grid; }
+  .interpretation-status { align-items: flex-start; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gemgo-map-cluster,
+  .button-spinner { transition: none; animation: none; }
+}

@@ -18,6 +18,19 @@ type Props = {
   region: string;
   className?: string;
   compact?: boolean;
+  layout?: "carousel" | "puzzle";
+};
+
+const localDestinationMedia: Record<string, Media[]> = {
+  "Falkenstein Ruin Pfronten": [
+    {
+      url: "/assets/falkenstein-pfronten-team.webp",
+      source: "GemGo team upload",
+      author: "GemGo team",
+      license: "User-provided presentation asset",
+      title: "Falkenstein Ruin Pfronten panorama",
+    },
+  ],
 };
 
 const allowedLicense = /^(CC0|CC BY|CC BY-SA|Public domain)/i;
@@ -77,7 +90,9 @@ export default function DestinationPhoto({
   region,
   className = "",
   compact = false,
+  layout = "carousel",
 }: Props) {
+  const localGallery = localDestinationMedia[name];
   const [gallery, setGallery] = useState<Media[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
   const [failed, setFailed] = useState(false);
@@ -116,6 +131,15 @@ export default function DestinationPhoto({
 
   useEffect(() => {
     if (!shouldLoad) return;
+    if (localGallery?.length) {
+      queueMicrotask(() => {
+        setGallery(localGallery);
+        setActiveIndex(0);
+        setFailed(false);
+        setImageFailed(false);
+      });
+      return;
+    }
     let active = true;
     const controller = new AbortController();
     const cacheKey = `gemgo-commons-landscape-v5-${name}-${region}-${compact ? "compact" : "full"}`;
@@ -218,7 +242,7 @@ export default function DestinationPhoto({
       active = false;
       controller.abort();
     };
-  }, [compact, name, region, shouldLoad]);
+  }, [compact, localGallery, name, region, shouldLoad]);
 
   useEffect(() => {
     if (gallery.length < 2) return;
@@ -245,6 +269,11 @@ export default function DestinationPhoto({
       return;
     }
     setGallery((current) => current.filter((_, index) => index !== activeIndex));
+    setActiveIndex(0);
+  };
+
+  const removeMedia = (url: string) => {
+    setGallery((current) => current.filter((media) => media.url !== url));
     setActiveIndex(0);
   };
 
@@ -282,6 +311,32 @@ export default function DestinationPhoto({
     );
   }
 
+  if (layout === "puzzle") {
+    return (
+      <figure
+        ref={(element) => { visibilityRef.current = element; }}
+        className={`destination-photo destination-photo-puzzle ${className}`}
+        aria-label={`${name} ${t.gallery}, ${gallery.length} ${t.photo}`}
+      >
+        <div className={`destination-photo-puzzle-grid count-${Math.min(gallery.length, 5)}`}>
+          {gallery.slice(0, 5).map((media, index) => (
+            <div className="destination-photo-puzzle-cell" key={media.url}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={media.url}
+                alt={`${name}, ${region} — ${t.photo} ${index + 1} / ${gallery.length}`}
+                loading={index === 0 ? "eager" : "lazy"}
+                decoding="async"
+                onError={() => removeMedia(media.url)}
+              />
+              <span className="destination-photo-label">{name}</span>
+            </div>
+          ))}
+        </div>
+      </figure>
+    );
+  }
+
   return (
     <figure
       ref={(element) => { visibilityRef.current = element; }}
@@ -312,6 +367,7 @@ export default function DestinationPhoto({
           decoding="async"
           onError={handleImageError}
         />
+        <span className="destination-photo-label">{name}</span>
         {gallery.length > 1 && (
           <>
             <button type="button" className="gallery-arrow gallery-arrow-previous" aria-label={`${t.previous} ${name}`} onClick={(event) => { event.preventDefault(); event.stopPropagation(); move(-1); }}>

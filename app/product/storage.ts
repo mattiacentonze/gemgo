@@ -10,19 +10,32 @@ export type SavedTrip = {
   offlineSaved?: boolean;
 };
 
+export type SavedCollection = {
+  id: string;
+  name: string;
+  region: string;
+  experienceIds: string[];
+  updatedAt: string;
+};
+
 export type GemPointEvent = {
   id: string;
   amount: number;
-  type: "visit" | "gemdrop" | "mobility" | "partner" | "contribution" | "redemption";
+  type: "visit" | "gemdrop" | "mobility" | "partner" | "contribution" | "redemption" | "demo";
   label: string;
   createdAt: string;
   balanceAfter: number;
   status: "demo" | "verified";
   metadata?: {
     transport?: SearchPreferences["transport"];
+    plannedTransport?: SearchPreferences["transport"];
+    activityProvider?: "strava" | "garmin" | "apple-health" | "health-connect";
     crowd?: "low" | "moderate" | "high";
     experienceId?: string;
     region?: string;
+    basePoints?: number;
+    transportBonus?: number;
+    offPeakBonus?: number;
   };
 };
 
@@ -38,6 +51,7 @@ const TRIPS_KEY = "gemgo-trips-v3";
 const ACTIVE_TRIP_KEY = "gemgo-active-trip-v3";
 const LEDGER_KEY = "gemgo-points-ledger-v3";
 const REWARDS_KEY = "gemgo-reward-unlocks-v1";
+const COLLECTIONS_KEY = "gemgo-collections-v1";
 const LEGACY_TRIP_KEYS = ["gemgo-demo-trip", "gemgo-saved-plans", "gemgo-saved-plans-v2"];
 
 const read = <T,>(key: string, fallback: T): T => {
@@ -109,11 +123,102 @@ export const createSavedTrip = (
     preferences,
     trip: {
       experienceId,
+      experienceIds: [experienceId],
       plannedDeparture,
+      maxLegMinutes: 90,
+      legTransport: preferences.transport,
       acceptedGemDrop: false,
       verified: false,
+      verifiedExperienceIds: [],
+      verificationRecords: [],
     },
   };
+};
+
+export const loadCollections = (): SavedCollection[] =>
+  read<SavedCollection[]>(COLLECTIONS_KEY, []);
+export const saveCollections = (collections: SavedCollection[]) =>
+  write(COLLECTIONS_KEY, collections);
+
+export const toggleExperienceInCollection = (
+  collections: SavedCollection[],
+  experienceId: string,
+  region: string,
+) => {
+  const id = `region-${region.toLocaleLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
+  const existing = collections.find((collection) => collection.id === id);
+  if (existing) {
+    const contains = existing.experienceIds.includes(experienceId);
+    const experienceIds = contains
+      ? existing.experienceIds.filter((id) => id !== experienceId)
+      : [...existing.experienceIds, experienceId];
+    if (experienceIds.length === 0) return collections.filter((collection) => collection.id !== id);
+    return collections.map((collection) => collection.id === id
+      ? { ...collection, experienceIds, updatedAt: new Date().toISOString() }
+      : collection);
+  }
+  return [
+    ...collections,
+    {
+      id,
+      name: region,
+      region,
+      experienceIds: [experienceId],
+      updatedAt: new Date().toISOString(),
+    },
+  ];
+};
+
+export const tripExperienceIds = (trip: SavedTrip | null) => {
+  if (!trip) return [];
+  return trip.trip.experienceIds?.length
+    ? trip.trip.experienceIds
+    : [trip.trip.experienceId];
+};
+
+export const encodeSharedTrip = (trip: SavedTrip) => {
+  const payload = JSON.stringify({
+    version: 1,
+    name: trip.name,
+    preferences: trip.preferences,
+    trip: trip.trip,
+  });
+  const bytes = new TextEncoder().encode(payload);
+  let binary = "";
+  bytes.forEach((byte) => { binary += String.fromCharCode(byte); });
+  return btoa(binary).replaceAll("+", "-").replaceAll("/", "_").replaceAll("=", "");
+};
+
+export const decodeSharedTrip = (value: string): SavedTrip | null => {
+  try {
+    const normalized = value.replaceAll("-", "+").replaceAll("_", "/");
+    const padding = "=".repeat((4 - (normalized.length % 4)) % 4);
+    const binary = atob(normalized + padding);
+    const bytes = Uint8Array.from(binary, (character) => character.charCodeAt(0));
+    const parsed = JSON.parse(new TextDecoder().decode(bytes)) as {
+      version?: number;
+      name?: string;
+      preferences?: SearchPreferences;
+      trip?: TripState;
+    };
+    if (parsed.version !== 1 || !parsed.preferences || !parsed.trip?.experienceId) return null;
+    const now = new Date().toISOString();
+    return {
+      id: `shared-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      name: parsed.name ? `${parsed.name} · shared copy` : "Shared GemGo trip",
+      createdAt: now,
+      updatedAt: now,
+      preferences: parsed.preferences,
+      trip: {
+        ...parsed.trip,
+        verified: false,
+        verifiedExperienceIds: [],
+        verificationRecords: [],
+      },
+    };
+  } catch {
+    return null;
+  }
 };
 
 export const migrateLegacyTrip = (

@@ -1,16 +1,37 @@
-const locales = ["en", "it", "de", "fr", "sl"];
+import type {
+  DifficultyCode,
+  InterestCode,
+  RegionCode,
+  TransportCode,
+} from "../domain";
+
+export type PromptParseResult = {
+  days?: number;
+  startDate?: string;
+  region?: Exclude<RegionCode, "all">;
+  transport?: TransportCode;
+  excludedTransports: TransportCode[];
+  interests: InterestCode[];
+  excludedInterests: InterestCode[];
+  difficulty?: DifficultyCode;
+  avoidCrowds?: boolean;
+  confidence: number;
+  ambiguous: string[];
+};
+
+const locales = ["en", "it", "de", "fr", "sl"] as const;
 const transports = [
   "walking",
   "cycling",
   "e_bike",
   "driving",
   "public_transport",
-];
-const interests = ["lakes", "quiet", "culture", "views", "nature"];
-const difficulties = ["easy", "moderate"];
-const regions = ["all", "fussen_allgau", "bavaria", "aosta"];
+ ] as const satisfies readonly TransportCode[];
+const interests = ["lakes", "quiet", "culture", "views", "nature"] as const satisfies readonly InterestCode[];
+const difficulties = ["easy", "moderate"] as const satisfies readonly DifficultyCode[];
+const regions = ["all", "fussen_allgau", "bavaria", "aosta"] as const satisfies readonly RegionCode[];
 
-const normalize = (value) =>
+const normalize = (value: string) =>
   value
     .toLocaleLowerCase()
     .normalize("NFD")
@@ -46,13 +67,11 @@ const numberWords = {
   funf: 5,
   sechs: 6,
   sieben: 7,
-  un: 1,
   une: 1,
   deux: 2,
   trois: 3,
   quatre: 4,
   cinq: 5,
-  six: 6,
   sept: 7,
   en: 1,
   ena: 1,
@@ -306,17 +325,17 @@ const negationPrefixes = [
   "nobene",
 ];
 
-const escapeRegex = (value) =>
+const escapeRegex = (value: string) =>
   value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
-const hasPhrase = (text, phrase) => {
+const hasPhrase = (text: string, phrase: string) => {
   const normalizedPhrase = normalize(phrase);
   return new RegExp(`(?:^|\\s)${escapeRegex(normalizedPhrase)}(?:$|\\s)`, "u").test(
     text,
   );
 };
 
-const phraseIsNegated = (text, phrase) => {
+const phraseIsNegated = (text: string, phrase: string) => {
   const normalizedPhrase = normalize(phrase);
   return negationPrefixes.some((prefix) => {
     const normalizedPrefix = normalize(prefix);
@@ -329,7 +348,7 @@ const phraseIsNegated = (text, phrase) => {
   });
 };
 
-const levenshtein = (a, b) => {
+const levenshtein = (a: string, b: string) => {
   const row = Array.from({ length: b.length + 1 }, (_, index) => index);
   for (let i = 1; i <= a.length; i += 1) {
     let previous = row[0];
@@ -347,7 +366,7 @@ const levenshtein = (a, b) => {
   return row[b.length];
 };
 
-const fuzzyHasSingleWord = (tokens, phrase) => {
+const fuzzyHasSingleWord = (tokens: string[], phrase: string) => {
   const candidate = normalize(phrase);
   if (candidate.includes(" ") || candidate.length < 5) return false;
   return tokens.some(
@@ -358,11 +377,14 @@ const fuzzyHasSingleWord = (tokens, phrase) => {
   );
 };
 
-const matchLexicon = (text, entries) => {
+const matchLexicon = <Code extends string>(
+  text: string,
+  entries: Record<Code, readonly string[]>,
+) => {
   const tokens = text.split(" ");
-  const positive = [];
-  const negative = [];
-  Object.entries(entries).forEach(([code, phrases]) => {
+  const positive: Code[] = [];
+  const negative: Code[] = [];
+  (Object.entries(entries) as [Code, readonly string[]][]).forEach(([code, phrases]) => {
     const matches = phrases.filter(
       (phrase) => hasPhrase(text, phrase) || fuzzyHasSingleWord(tokens, phrase),
     );
@@ -378,20 +400,20 @@ const matchLexicon = (text, entries) => {
   return { positive, negative };
 };
 
-const localDate = (date) => {
+const localDate = (date: Date) => {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, "0");
   const day = String(date.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
 };
 
-const addDays = (date, count) => {
+const addDays = (date: Date, count: number) => {
   const next = new Date(date);
   next.setDate(next.getDate() + count);
   return localDate(next);
 };
 
-const weekdayNames = {
+const weekdayNames: Record<number, string[]> = {
   1: ["monday", "lunedi", "lunedi", "montag", "lundi", "ponedeljek"],
   2: ["tuesday", "martedi", "dienstag", "mardi", "torek"],
   3: ["wednesday", "mercoledi", "mittwoch", "mercredi", "sreda"],
@@ -401,7 +423,7 @@ const weekdayNames = {
   0: ["sunday", "domenica", "sonntag", "dimanche", "nedelja"],
 };
 
-const parseStartDate = (text, now, rawText) => {
+const parseStartDate = (text: string, now: Date, rawText: string) => {
   const iso = rawText.match(
     /\b(20\d{2})-(0[1-9]|1[0-2])-([0-2]\d|3[01])\b/,
   );
@@ -433,7 +455,7 @@ const parseStartDate = (text, now, rawText) => {
   return undefined;
 };
 
-const parseDays = (text) => {
+const parseDays = (text: string) => {
   const unitPattern = durationUnits.map(escapeRegex).join("|");
   const digit = text.match(
     new RegExp(
@@ -459,7 +481,10 @@ const parseDays = (text) => {
   return undefined;
 };
 
-export function parsePrompt(input, options = {}) {
+export function parsePrompt(
+  input: string,
+  options: { now?: Date } = {},
+): PromptParseResult {
   const rawText = String(input ?? "").toLocaleLowerCase();
   const text = normalize(rawText);
   const now = options.now instanceof Date ? options.now : new Date();
@@ -468,7 +493,7 @@ export function parsePrompt(input, options = {}) {
   const difficultyMatches = matchLexicon(text, lexicon.difficulty);
   const region = Object.entries(regionLexicon).find(([, phrases]) =>
     phrases.some((phrase) => hasPhrase(text, phrase)),
-  )?.[0];
+  )?.[0] as Exclude<RegionCode, "all"> | undefined;
 
   const crowdTerms = [
     "crowd",
@@ -484,12 +509,12 @@ export function parsePrompt(input, options = {}) {
     "mnozica",
   ];
   const crowdMention = crowdTerms.find((term) => hasPhrase(text, term));
-  let avoidCrowds;
+  let avoidCrowds: boolean | undefined;
   if (crowdMention) avoidCrowds = phraseIsNegated(text, crowdMention);
   if (interestMatches.positive.includes("quiet")) avoidCrowds = true;
   if (interestMatches.negative.includes("quiet")) avoidCrowds = false;
 
-  const result = {
+  const result: PromptParseResult = {
     days: parseDays(text),
     startDate: parseStartDate(text, now, rawText),
     region,
@@ -518,21 +543,26 @@ export function parsePrompt(input, options = {}) {
   return result;
 }
 
-export function isValidParseResult(result) {
+export function isValidParseResult(result: unknown) {
+  if (!result || typeof result !== "object") return false;
+  const candidate = result as Partial<PromptParseResult>;
   return Boolean(
-    result &&
-      (result.days === undefined ||
-        (Number.isInteger(result.days) && result.days >= 1 && result.days <= 7)) &&
-      (result.transport === undefined || transports.includes(result.transport)) &&
-      (result.region === undefined || regions.includes(result.region)) &&
-      (result.difficulty === undefined ||
-        difficulties.includes(result.difficulty)) &&
-      Array.isArray(result.interests) &&
-      result.interests.every((value) => interests.includes(value)) &&
-      Array.isArray(result.excludedInterests) &&
-      result.excludedInterests.every((value) => interests.includes(value)) &&
-      Array.isArray(result.excludedTransports) &&
-      result.excludedTransports.every((value) => transports.includes(value)) &&
+      (candidate.days === undefined ||
+        (Number.isInteger(candidate.days) && candidate.days >= 1 && candidate.days <= 7)) &&
+      (candidate.transport === undefined || transports.includes(candidate.transport)) &&
+      (candidate.region === undefined || regions.includes(candidate.region)) &&
+      (candidate.difficulty === undefined ||
+        difficulties.includes(candidate.difficulty)) &&
+      Array.isArray(candidate.interests) &&
+      candidate.interests.every((value) =>
+        (interests as readonly InterestCode[]).includes(value),
+      ) &&
+      Array.isArray(candidate.excludedInterests) &&
+      candidate.excludedInterests.every((value) =>
+        (interests as readonly InterestCode[]).includes(value),
+      ) &&
+      Array.isArray(candidate.excludedTransports) &&
+      candidate.excludedTransports.every((value) => transports.includes(value)) &&
       locales.every((value) => typeof value === "string"),
   );
 }

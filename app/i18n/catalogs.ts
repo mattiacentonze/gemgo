@@ -1,8 +1,11 @@
-import { featureCopy } from "./feature-copy.mjs";
+import type { Locale } from "../domain";
+import { featureCopy } from "./feature-copy.ts";
 
-export const supportedLocales = ["en", "it", "de", "fr", "sl"];
+type MessageCatalogue = Record<string, string>;
 
-const en = {
+export const supportedLocales = ["en", "it", "de", "fr", "sl"] as const satisfies readonly Locale[];
+
+const en: MessageCatalogue = {
   "nav.explore": "Explore",
   "nav.saved": "Saved",
   "nav.gemdrop": "GemDrop",
@@ -308,7 +311,7 @@ const en = {
   "event.visitPhoto": "Visit photo linked to {place}.",
 };
 
-const translations = {
+const translations: Record<Exclude<Locale, "en">, MessageCatalogue> = {
   it: {
     "nav.explore": "Esplora", "nav.saved": "Salvati", "nav.points": "Punti", "nav.deals": "Offerte", "nav.main": "Navigazione principale", "nav.sections": "Sezioni GemGo",
     "global.close": "Chiudi", "global.apply": "Applica e continua", "global.undo": "Annulla", "global.change": "Cambia", "global.all": "Tutti", "global.openSettings": "Apri le impostazioni", "global.notificationsLabel": "Apri le notifiche. {count} non lette.", "global.pointsLabel": "{count} GemXP. Apri i punti.", "global.entry": "voce", "global.entries": "voci", "global.day": "giorno", "global.days": "giorni", "global.place": "luogo", "global.places": "luoghi", "global.minutes": "{count} min", "global.kmAway": "a {distance} km", "global.publicMvp": "MVP pubblico · Baviera · Füssen / Allgäu · Valle d’Aosta.",
@@ -530,7 +533,7 @@ Object.assign(translations.sl, {
 });
 
 Object.assign(en, featureCopy.en);
-for (const locale of ["it", "de", "fr", "sl"]) {
+for (const locale of ["it", "de", "fr", "sl"] as const) {
   Object.assign(translations[locale], featureCopy[locale]);
 }
 
@@ -563,15 +566,22 @@ Object.assign(translations.sl, {
 
 export const translationOverrides = translations;
 
-export const messages = { en };
-for (const locale of ["it", "de", "fr", "sl"]) {
-  messages[locale] = { ...en, ...translations[locale] };
-}
+export const messages: Record<Locale, MessageCatalogue> = {
+  en,
+  it: { ...en, ...translations.it },
+  de: { ...en, ...translations.de },
+  fr: { ...en, ...translations.fr },
+  sl: { ...en, ...translations.sl },
+};
 
 export const messageKeys = Object.keys(en);
 export const sharedMessageKeys = [...intentionallyShared];
 
-export function msg(locale, key, variables = {}) {
+export function msg(
+  locale: Locale,
+  key: string,
+  variables: Record<string, string | number> = {},
+) {
   const template = messages[locale]?.[key] ?? messages.en[key];
   if (typeof template !== "string") return `⟦${key}⟧`;
   return template.replace(/\{(\w+)\}/g, (_, name) =>
@@ -579,11 +589,16 @@ export function msg(locale, key, variables = {}) {
   );
 }
 
-export function plural(locale, count, singularKey, pluralKey) {
+export function plural(
+  locale: Locale,
+  count: number,
+  singularKey: string,
+  pluralKey: string,
+) {
   return msg(locale, new Intl.PluralRules(locale).select(count) === "one" ? singularKey : pluralKey);
 }
 
-export const promptSuggestions = {
+export const promptSuggestions: Record<Locale, string[]> = {
   en: ["Tomorrow, two days in Bavaria by train with castles", "Three days in Valle d’Aosta by e-bike, no quiet places", "One easy day around Füssen with lakes and views"],
   it: ["Domani, due giorni in Baviera in treno con castelli", "Tre giorni in Valle d’Aosta in e-bike, senza luoghi tranquilli", "Un giorno facile vicino a Füssen tra laghi e panorami"],
   de: ["Morgen zwei Tage in Bayern mit dem Zug und Schlössern", "Drei Tage im Aostatal mit dem E-Bike, keine ruhigen Orte", "Ein leichter Tag bei Füssen mit Seen und Aussichten"],
@@ -591,7 +606,7 @@ export const promptSuggestions = {
   sl: ["Jutri dva dni na Bavarskem z vlakom in gradovi", "Tri dni v Dolini Aoste z električnim kolesom, brez mirnih krajev", "En lahek dan pri Füssnu z jezeri in razgledi"],
 };
 
-export const languageOptions = [
+export const languageOptions: readonly (readonly [Locale, string])[] = [
   ["en", "English · EN"],
   ["it", "Italiano · IT"],
   ["de", "Deutsch · DE"],

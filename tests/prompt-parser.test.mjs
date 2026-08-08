@@ -3,8 +3,8 @@ import test from "node:test";
 import {
   isValidParseResult,
   parsePrompt,
-} from "../app/lib/prompt-parser.mjs";
-import { formatDuration, validStartDate } from "../app/lib/travel.mjs";
+} from "../app/lib/prompt-parser.ts";
+import { formatDuration, validStartDate } from "../app/lib/travel.ts";
 
 const now = new Date("2026-07-29T12:00:00");
 

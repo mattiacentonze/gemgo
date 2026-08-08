@@ -1,10 +1,10 @@
 "use client";
 
-import Link from "next/link";
-import { Database, Download, MapPin, ShieldCheck, Trash2, UserRound } from "lucide-react";
+import { Clock3, Database, Download, Globe2, MapPin, ShieldCheck, Trash2, UserRound } from "lucide-react";
 import MarketingHeader from "../components/MarketingHeader";
 import { usePersistentLocale } from "../hooks/usePersistentLocale";
 import { marketingCopy } from "../i18n/marketing";
+import { msg } from "../i18n/catalogs";
 
 const privacy = {
   en: { title: "Privacy Policy", intro: "GemGo is designed for European data-protection requirements, including the GDPR principles of lawfulness, transparency, purpose limitation, data minimisation, accuracy, storage limitation and security.", cards: [["Local-first demo","Plans, profile, GemPoints and badge progress are stored in this browser for the current prototype."],["Location on request","Precise location is requested only for routing or visit verification. The prototype does not keep a continuous movement history."],["No production account yet","The current email profile is device-local. It is not transmitted to a GemGo server or synchronised across devices."],["Future services","Before analytics, cloud accounts, photo moderation or real rewards launch, GemGo will publish purposes, legal bases, retention periods and processor details."]], rights: "Your controls", rightsBody: "You can export the current device-local GemGo data or delete it from this browser. Deletion cannot be undone.", export: "Export local data", remove: "Delete local data", removed: "Local GemGo data deleted.", back: "Back to GemGo" },
@@ -16,8 +16,9 @@ const privacy = {
 
 export default function PrivacyPage() {
   const { locale,setLocale } = usePersistentLocale(); const t = privacy[locale]; const copy = marketingCopy[locale];
+  const cards = [...t.cards, [msg(locale, "privacy.servicesTitle"), msg(locale, "privacy.servicesBody")], [msg(locale, "privacy.retentionTitle"), msg(locale, "privacy.retentionBody")]] as const;
   const exportData = () => { const data: Record<string,string|null> = {}; for(let i=0;i<localStorage.length;i+=1){ const key=localStorage.key(i); if(key?.startsWith("gemgo")) data[key]=localStorage.getItem(key); } const url=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:"application/json"})); const a=document.createElement("a"); a.href=url; a.download="gemgo-local-data.json"; a.click(); URL.revokeObjectURL(url); };
   const remove = () => { if(!confirm(t.remove+"?")) return; Object.keys(localStorage).filter((key)=>key.startsWith("gemgo")).forEach((key)=>localStorage.removeItem(key)); alert(t.removed); };
-  const icons=[Database,MapPin,UserRound,ShieldCheck];
-  return <main className="marketing-page standalone-info-page"><MarketingHeader locale={locale} onLocaleChange={setLocale} copy={copy}/><section className="info-page-hero privacy-title"><span className="eyebrow"><ShieldCheck size={15}/>GDPR</span><h1>{t.title}</h1><p>{t.intro}</p></section><section className="privacy-policy-grid">{t.cards.map(([title,body],index)=>{const Icon=icons[index];return <article key={title}><Icon/><h2>{title}</h2><p>{body}</p></article>;})}</section><section className="privacy-control-card"><div><h2>{t.rights}</h2><p>{t.rightsBody}</p></div><div><button className="button button-secondary" onClick={exportData}><Download/>{t.export}</button><button className="button privacy-delete-button" onClick={remove}><Trash2/>{t.remove}</button></div></section><footer className="simple-info-footer"><Link href="/">{t.back}</Link><span>GemGo · Better Alpine Choices</span></footer></main>;
+  const icons=[Database,MapPin,UserRound,ShieldCheck,Globe2,Clock3];
+  return <main className="marketing-page standalone-info-page"><MarketingHeader locale={locale} onLocaleChange={setLocale} copy={copy}/><section className="info-page-hero privacy-title"><span className="eyebrow"><ShieldCheck size={15}/>GDPR</span><h1>{t.title}</h1><p>{t.intro}</p></section><section className="privacy-policy-grid">{cards.map(([title,body],index)=>{const Icon=icons[index];return <article key={title}><Icon/><h2>{title}</h2><p>{body}</p></article>;})}</section><section className="privacy-control-card"><div><h2>{t.rights}</h2><p>{t.rightsBody}</p></div><div><button className="button button-secondary" onClick={exportData}><Download/>{t.export}</button><button className="button privacy-delete-button" onClick={remove}><Trash2/>{t.remove}</button></div></section></main>;
 }

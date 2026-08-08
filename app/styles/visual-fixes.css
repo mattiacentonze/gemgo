@@ -74,6 +74,38 @@ img { max-width: 100%; }
 
 .gemgo-map-marker.is-selected img { width: 34px; height: 34px; }
 
+.gemgo-map-marker.is-trip-stop {
+  border-color: #fff;
+  box-shadow:
+    0 0 0 3px rgba(11, 154, 100, 0.88),
+    0 12px 28px rgba(10, 47, 39, 0.32);
+}
+
+.gemgo-trip-pin-badge {
+  position: absolute;
+  z-index: 3;
+  top: -7px;
+  right: -7px;
+  display: grid;
+  width: 20px;
+  height: 20px;
+  place-items: center;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background: #087d55;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 1;
+  box-shadow: 0 4px 10px rgba(5, 51, 40, 0.25);
+}
+
+.gemgo-map-cluster.has-trip-stop {
+  box-shadow:
+    0 0 0 4px rgba(11, 154, 100, 0.42),
+    0 8px 22px rgba(10, 47, 39, 0.3);
+}
+
 .experience-map-legend {
   right: 10px;
   bottom: 24px;
@@ -268,6 +300,8 @@ html.has-open-profile body { overflow: hidden; overscroll-behavior: none; }
   .achievement-badge,
   .about-team-grid article { grid-template-columns: auto minmax(0, 1fr); padding: 14px; }
   .earning-card p { display: grid; grid-template-columns: minmax(0, 1fr) auto; }
-  .unlocked-list p { grid-template-columns: auto minmax(0, 1fr); }
-  .unlocked-list span { grid-column: 1 / -1; justify-self: start; }
+  .unlocked-list p,
+  .unlocked-code-row { grid-template-columns: auto minmax(0, 1fr); }
+  .unlocked-list span,
+  .unlocked-code-row span { grid-column: 1 / -1; justify-self: start; }
 }

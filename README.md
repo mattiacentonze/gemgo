@@ -2,9 +2,9 @@
 
 GemGo is a mobile-first pan-Alpine recommendation and visitor-flow redistribution product. It helps a traveller turn an intended crowded plan into a comparable, personalised and locally useful alternative, then makes the trip executable, verifies the visit, awards one clear reward currency and exposes privacy-preserving impact for Alpine territories.
 
-Production MVP currently published from `main`: [gemgo-mvp.aloneeagle.chatgpt.site](https://gemgo-mvp.aloneeagle.chatgpt.site)
+Current contest MVP Site: [gemgo-pan-alpine.aloneeagle.chatgpt.site](https://gemgo-pan-alpine.aloneeagle.chatgpt.site)
 
-The integrated redesign is developed separately on `agent/pan-alpine-product-redesign` and must be reviewed through a private Sites preview before the production Site is updated.
+The integrated redesign is developed separately on `agent/pan-alpine-product-redesign`. The external GitHub `main` branch must remain unchanged until the redesign is explicitly reviewed.
 
 ## Product model
 
@@ -25,7 +25,7 @@ GemDrop is not a standalone menu page. It is a contextual intervention shown whe
 
 - real OpenStreetMap/Leaflet maps on the homepage, results, experience detail and My Trip;
 - gentler mouse-wheel zoom and clustering when more than two nearby markers overlap;
-- the existing 50-place public pilot catalogue retained and adapted to the new product model;
+- the existing 50-place public pilot catalogue plus 17 unique Alpify entries, with source-aware deduplication;
 - six deeper pan-Alpine demonstration experiences for jury storytelling;
 - natural-language parsing in English, Italian, German, French and Slovenian;
 - editable structured controls after parsing;
@@ -76,6 +76,7 @@ Open `/` for the public product story and `/app` for the integrated application.
 ## Quality checks
 
 ```bash
+npm run typecheck
 npm run lint
 npm test
 ```
@@ -94,7 +95,8 @@ app/
   components/ExperienceMap.tsx          Leaflet maps, clusters, origin and route geometry
   components/AlpineOverview.tsx         real pan-Alpine catalogue map
   components/DestinationPhoto.tsx       licensed Wikimedia destination media
-  product/integrated-data.ts            existing catalogue adapter plus curated experiences
+  product/catalogue.ts                  official + Alpify catalogue and deduplication
+  product/transit.ts                    lazy Bavarian GTFS boundary
   product/recommendation-engine.ts      parsing, compatibility gates and distinct ranking roles
   product/live-context.ts               geocoding, weather and route context
   product/storage.ts                    trips, GemPoints ledger and reward codes
@@ -109,4 +111,6 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for state boundaries and the pr
 
 ## Deployment
 
-OpenAI Sites publishing and access visibility are controlled from the Work/Sites preview and publishing flow. GitHub commits do not make the existing Site public by themselves. The branch must pass CI, be reviewed in a private Sites preview, and then be published with public access from the Site controls. `main` remains unchanged until that review is complete.
+OpenAI Sites publishing and access visibility are controlled from the Work/Sites publishing flow. GitHub commits do not make the existing Site public by themselves. `main` remains unchanged until the redesign is reviewed.
+
+The current runtime is Vinext + Cloudflare D1 and is not directly portable to Vercel/Supabase without an adapter change. Follow [docs/VERCEL_SUPABASE_DEPLOYMENT.md](docs/VERCEL_SUPABASE_DEPLOYMENT.md) for the staged migration path.
