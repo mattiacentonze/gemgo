@@ -1,2 +1,3 @@
-export { default } from "../page";
-
+export default function GemGoApplicationPage() {
+  return null;
+}

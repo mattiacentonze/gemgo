@@ -1,0 +1,18 @@
+.dashboard-metrics .feedback-impact-metric {
+  position: relative;
+  overflow: hidden;
+  border-color: rgba(38, 116, 95, 0.22);
+  background: linear-gradient(145deg, #fffefa, #edf5ef);
+}
+
+.feedback-impact-metric > svg {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  color: var(--green);
+  opacity: 0.75;
+}
+
+.feedback-impact-metric strong {
+  color: var(--green);
+}

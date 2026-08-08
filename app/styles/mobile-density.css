@@ -1,0 +1,41 @@
+@media (max-width: 560px) {
+  .impact-grid,
+  .dashboard-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 9px;
+  }
+
+  .impact-grid > div,
+  .dashboard-metrics > article {
+    min-width: 0;
+    min-height: 116px;
+    padding: 15px;
+    border-radius: 17px;
+  }
+
+  .impact-grid strong,
+  .dashboard-metrics strong {
+    font-size: clamp(28px, 9vw, 36px);
+  }
+
+  .impact-grid span,
+  .dashboard-metrics span,
+  .dashboard-metrics small {
+    overflow-wrap: anywhere;
+    font-size: 0.68rem;
+    line-height: 1.35;
+  }
+
+  .methodology-grid,
+  .privacy-grid,
+  .validation-levels {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 350px) {
+  .impact-grid,
+  .dashboard-metrics {
+    grid-template-columns: 1fr;
+  }
+}

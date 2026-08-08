@@ -1,0 +1,111 @@
+.alpine-overview-real {
+  display: grid;
+  gap: 14px;
+}
+
+.alpine-real-map-wrap {
+  position: relative;
+}
+
+.alpine-overview-real .experience-map {
+  min-height: 510px;
+}
+
+.alpine-overview-real .homepage-map-compact {
+  min-height: 390px;
+}
+
+.alpine-overview-real .alpine-map-origin {
+  position: absolute;
+  z-index: 500;
+  top: 16px;
+  left: 16px;
+  display: flex;
+  gap: 7px;
+  align-items: center;
+  padding: 9px 12px;
+  border: 1px solid rgba(18, 61, 53, 0.14);
+  border-radius: 999px;
+  background: rgba(255, 254, 250, 0.92);
+  color: var(--forest);
+  font-size: 0.76rem;
+  font-weight: 800;
+  box-shadow: 0 7px 22px rgba(18, 61, 53, 0.14);
+  backdrop-filter: blur(12px);
+}
+
+.alpine-overview-real .pressure-legend {
+  position: absolute;
+  z-index: 500;
+  right: 15px;
+  bottom: 15px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  padding: 9px 12px;
+  border: 1px solid rgba(18, 61, 53, 0.14);
+  border-radius: 13px;
+  background: rgba(255, 254, 250, 0.93);
+  color: var(--slate);
+  font-size: 0.7rem;
+  font-weight: 700;
+  box-shadow: 0 7px 22px rgba(18, 61, 53, 0.12);
+  backdrop-filter: blur(12px);
+}
+
+.region-count-row {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scrollbar-width: thin;
+}
+
+.region-count-row button {
+  display: grid;
+  flex: 0 0 auto;
+  gap: 2px;
+  min-width: 145px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  background: var(--paper);
+  color: var(--forest-deep);
+  text-align: left;
+}
+
+.region-count-row button.is-selected {
+  border-color: var(--forest);
+  background: var(--mint);
+}
+
+.region-count-row span {
+  color: var(--slate);
+  font-size: 0.72rem;
+}
+
+.hero-map-wrap .alpine-overview-real .experience-map {
+  min-height: 580px;
+}
+
+@media (max-width: 720px) {
+  .alpine-overview-real .experience-map,
+  .hero-map-wrap .alpine-overview-real .experience-map,
+  .alpine-overview-real .homepage-map-compact {
+    min-height: 380px;
+  }
+
+  .alpine-overview-real .alpine-map-origin {
+    top: 10px;
+    left: 10px;
+    max-width: calc(100% - 20px);
+    font-size: 0.67rem;
+  }
+
+  .alpine-overview-real .pressure-legend {
+    right: 10px;
+    bottom: 10px;
+    left: 10px;
+    justify-content: center;
+  }
+}

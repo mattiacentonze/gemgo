@@ -1,0 +1,135 @@
+import type { Locale } from "../domain";
+
+export type MarketingCopy = {
+  navigation: { how: string; about: string; team: string; menu: string; openApp: string; profile: string; language: string };
+  tagline: string;
+  quickLinks: string;
+  hero: { eyebrow: string; title: string; emphasis: string; body: string; find: string; map: string; trust: string[] };
+  map: { coverage: string; catalogue: string; pilotPlaces: string; lower: string; moderate: string; higher: string; lowerWindow: string; lowerPlace: string; alternative: string; alternativeTime: string };
+  problem: { title: string; body: string; cycle: string[] };
+  how: { eyebrow: string; title: string; body: string; steps: Array<{ title: string; body: string; note: string }> };
+  coverage: { eyebrow: string; title: string; body: string; principles: Array<{ title: string; body: string }> };
+  proof: { eyebrow: string; title: string; body: string; original: string; popular: string; expected: string; parking: string; rigid: string; alternative: string; quieter: string; away: string; crowd: string; reward: string; view: string };
+  institutions: { demo: string; metrics: string[]; eyebrow: string; title: string; body: string; dashboard: string };
+  team: { eyebrow: string; title: string; body: string; roles: string[]; achievement: string; achievementBody: string };
+  final: { eyebrow: string; title: string; body: string; cta: string };
+  footer: { body: string; method: string; privacy: string; institutions: string; disclosure: string };
+};
+
+export const marketingCopy: Record<Locale, MarketingCopy> = {
+  en: {
+    navigation: { how: "How it works", about: "About us", team: "Meet the team", menu: "Open homepage menu", openApp: "Try GemGo", profile: "Profile", language: "Interface language" },
+    tagline: "Better Alpine choices",
+    quickLinks: "Explore GemGo",
+    hero: { eyebrow: "Fighting overtourism across the Alps", title: "Too crowded? Find a better", emphasis: "Alpine alternative.", body: "GemGo redirects visitors from overcrowded Alpine hotspots towards personalised, less crowded places and better visiting times — rewarding choices that spread tourism benefits across local communities.", find: "Find a better alternative", map: "Explore the Alpine map", trust: ["Personalised for you", "Better times, less crowd", "Supporting local communities"] },
+    map: { coverage: "Pan-Alpine coverage", catalogue: "mapped prototype locations", pilotPlaces: "pilot places", lower: "Lower estimate", moderate: "Moderate estimate", higher: "Higher estimate", lowerWindow: "Lower-pressure window", lowerPlace: "Valpelline · after 15:00", alternative: "Comparable alternative", alternativeTime: "28 min from your starting point" },
+    problem: { title: "Popular plans concentrate pressure.", body: "GemGo does not ask visitors to travel less. It helps them choose better.", cycle: ["Predict", "Recommend", "Redirect", "Verify", "Reward", "Measure"] },
+    how: { eyebrow: "How it works", title: "From an intended hotspot to a better Alpine experience", body: "GemGo stays focused on one decision: finding a compatible alternative that the visitor will genuinely value.", steps: [
+      { title: "Tell us what you are looking for", body: "Location, available time, interests, mobility, difficulty, weather and crowd preference.", note: "Less than one minute" },
+      { title: "Choose a better alternative", body: "Three motivated options, including travel time, honest trade-offs and comparison with the original plan.", note: "A better experience, not just a quieter one" },
+      { title: "Visit, verify and earn", body: "Complete the experience, verify the visit and earn GemPoints with participating local partners.", note: "One clear reward currency" },
+    ] },
+    coverage: { eyebrow: "Pan-Alpine by design", title: "One system, across the Alps. Local recommendations, shared Alpine standards.", body: "GemGo is structured for multiple Alpine regions, while validation, local knowledge and partnerships grow territory by territory.", principles: [
+      { title: "Common framework", body: "Recommendation, verification and measurement standards" },
+      { title: "Local depth", body: "Territorial review, constraints and partner knowledge" },
+      { title: "Visible confidence", body: "Data-based, locally reviewed or verified" },
+    ] },
+    proof: { eyebrow: "A concrete decision", title: "Not another generic list of destinations", body: "The recommendation becomes credible when the visitor can see what changes, what improves and what the trade-offs are.", original: "Original plan", popular: "Popular destination", expected: "High expected crowd", parking: "Difficult parking", rigid: "Rigid arrival window", alternative: "GemGo alternative", quieter: "Quiet river villages and an easy walk", away: "24 minutes away", crowd: "Lower predicted crowd", reward: "Local reward available", view: "View the full experience" },
+    institutions: { demo: "Demonstration data", metrics: ["diversion rate", "off-peak shift", "recommendation satisfaction"], eyebrow: "For Alpine destinations", title: "A visitor product with an institutional outcome", body: "Regions, municipalities, tourism offices and protected areas need more than awareness campaigns. GemGo can measure accepted alternatives, off-peak shifts, satisfaction and verified local interactions using aggregated, anonymous data.", dashboard: "Open the territory dashboard" },
+    team: { eyebrow: "Meet the team", title: "Built at the intersection of product, tourism and Alpine cooperation", body: "GemGo began at the EUSALP AI Hackathon and is being developed as a practical system for visitors and territories.", roles: ["Product Development Lead · platform, infrastructure and recommendation system", "Business Strategy Lead · development, strategy and financial planning", "Partnerships & Growth Lead · merchants, institutions and go-to-market"], achievement: "EUSALP AI Hackathon winner", achievementBody: "Prototype developed for pan-Alpine tourism-flow redistribution." },
+    final: { eyebrow: "Welcome to GemGo", title: "Turn a crowded plan into a better Alpine experience.", body: "Start with a real request and see how GemGo explains every recommendation.", cta: "Try the app now" },
+    footer: { body: "Pan-Alpine recommendation, verification and visitor-flow redistribution.", method: "Methodology", privacy: "Privacy", institutions: "For Alpine destinations", disclosure: "Demo content and institutional metrics are clearly identified where not based on live operations." },
+  },
+  it: {
+    navigation: { how: "Come funziona", about: "Chi siamo", team: "Conosci il team", menu: "Apri menu homepage", openApp: "Prova GemGo", profile: "Profilo", language: "Lingua dell’interfaccia" },
+    tagline: "Scelte alpine migliori",
+    quickLinks: "Esplora GemGo",
+    hero: { eyebrow: "Contro l’overtourism in tutte le Alpi", title: "Troppo affollato? Trova una", emphasis: "migliore alternativa alpina.", body: "GemGo reindirizza i visitatori dagli hotspot alpini sovraffollati verso luoghi personalizzati e meno affollati, in orari migliori, premiando le scelte che distribuiscono i benefici del turismo tra le comunità locali.", find: "Trova un’alternativa migliore", map: "Esplora la mappa alpina", trust: ["Personalizzato per te", "Orari migliori, meno folla", "Sostegno alle comunità locali"] },
+    map: { coverage: "Copertura pan-alpina", catalogue: "luoghi mappati nel prototipo", pilotPlaces: "luoghi pilota", lower: "Stima bassa", moderate: "Stima moderata", higher: "Stima alta", lowerWindow: "Fascia meno affollata", lowerPlace: "Valpelline · dopo le 15:00", alternative: "Alternativa comparabile", alternativeTime: "28 min dal punto di partenza" },
+    problem: { title: "I programmi più popolari concentrano la pressione.", body: "GemGo non chiede di viaggiare meno, ma aiuta a scegliere meglio.", cycle: ["Prevedi", "Consiglia", "Reindirizza", "Verifica", "Premia", "Misura"] },
+    how: { eyebrow: "Come funziona", title: "Da una meta affollata a un’esperienza alpina migliore", body: "GemGo si concentra su una decisione: trovare un’alternativa compatibile che il visitatore apprezzi davvero.", steps: [
+      { title: "Raccontaci cosa cerchi", body: "Posizione, tempo disponibile, interessi, mobilità, difficoltà, meteo e preferenza sull’affollamento.", note: "Meno di un minuto" },
+      { title: "Scegli un’alternativa migliore", body: "Tre opzioni motivate, con tempi di viaggio, compromessi chiari e confronto con il piano originale.", note: "Un’esperienza migliore, non solo più tranquilla" },
+      { title: "Visita, verifica e guadagna", body: "Completa l’esperienza, verifica la visita e ottieni GemPoints con i partner locali aderenti.", note: "Una sola valuta premio" },
+    ] },
+    coverage: { eyebrow: "Pan-alpino per progettazione", title: "Un sistema per tutte le Alpi. Consigli locali, standard condivisi.", body: "GemGo è strutturato per più regioni alpine, mentre validazione, conoscenza locale e partnership crescono territorio per territorio.", principles: [
+      { title: "Struttura comune", body: "Standard per consiglio, verifica e misurazione" },
+      { title: "Profondità locale", body: "Revisione territoriale, vincoli e conoscenza dei partner" },
+      { title: "Affidabilità visibile", body: "Basato su dati, revisionato localmente o verificato" },
+    ] },
+    proof: { eyebrow: "Una decisione concreta", title: "Non un altro elenco generico di destinazioni", body: "Il consiglio è credibile quando il visitatore vede cosa cambia, cosa migliora e quali sono i compromessi.", original: "Piano originale", popular: "Meta popolare", expected: "Affollamento elevato previsto", parking: "Parcheggio difficile", rigid: "Orario di arrivo rigido", alternative: "Alternativa GemGo", quieter: "Borghi sul fiume e passeggiata facile", away: "A 24 minuti", crowd: "Affollamento previsto inferiore", reward: "Premio locale disponibile", view: "Guarda l’esperienza completa" },
+    institutions: { demo: "Dati dimostrativi", metrics: ["tasso di deviazione", "spostamento fuori picco", "soddisfazione dei consigli"], eyebrow: "Per le destinazioni alpine", title: "Un prodotto per i visitatori con un risultato per i territori", body: "Regioni, comuni, enti turistici e aree protette hanno bisogno di più delle campagne informative. GemGo può misurare alternative accettate, spostamenti fuori picco, soddisfazione e interazioni locali verificate con dati aggregati e anonimi.", dashboard: "Apri la dashboard territoriale" },
+    team: { eyebrow: "Conosci il team", title: "Tra prodotto, turismo e cooperazione alpina", body: "GemGo è nato all’EUSALP AI Hackathon e si sta evolvendo in un sistema pratico per visitatori e territori.", roles: ["Responsabile sviluppo prodotto · piattaforma, infrastruttura e sistema di raccomandazione", "Responsabile strategia aziendale · sviluppo, strategia e pianificazione finanziaria", "Responsabile partnership e crescita · esercenti, istituzioni e go-to-market"], achievement: "Vincitore EUSALP AI Hackathon", achievementBody: "Prototipo sviluppato per ridistribuire i flussi turistici nelle Alpi." },
+    final: { eyebrow: "Benvenuto in GemGo", title: "Trasforma un piano affollato in un’esperienza alpina migliore.", body: "Parti da una richiesta reale e scopri come GemGo spiega ogni consiglio.", cta: "Prova l’app" },
+    footer: { body: "Consigli pan-alpini, verifica e ridistribuzione dei flussi turistici.", method: "Metodologia", privacy: "Privacy", institutions: "Per le destinazioni alpine", disclosure: "I contenuti demo e le metriche istituzionali sono indicati chiaramente quando non derivano da operazioni reali." },
+  },
+  de: {
+    navigation: { how: "So funktioniert es", about: "Über uns", team: "Das Team", menu: "Homepage-Menü öffnen", openApp: "GemGo testen", profile: "Profil", language: "Oberflächensprache" },
+    tagline: "Bessere Entscheidungen in den Alpen",
+    quickLinks: "GemGo entdecken",
+    hero: { eyebrow: "Gemeinsam gegen Overtourism im Alpenraum", title: "Zu voll? Finde eine bessere", emphasis: "Alternative in den Alpen.", body: "GemGo leitet Besucher von überfüllten Hotspots zu persönlichen, weniger belasteten Orten und besseren Besuchszeiten um – und belohnt Entscheidungen, die den Tourismusnutzen auf lokale Gemeinschaften verteilen.", find: "Bessere Alternative finden", map: "Alpenkarte erkunden", trust: ["Auf dich zugeschnitten", "Bessere Zeiten, weniger Andrang", "Lokale Gemeinschaften stärken"] },
+    map: { coverage: "Alpenweite Abdeckung", catalogue: "im Prototyp kartierte Orte", pilotPlaces: "Pilotorte", lower: "Niedrige Schätzung", moderate: "Mittlere Schätzung", higher: "Hohe Schätzung", lowerWindow: "Ruhigeres Zeitfenster", lowerPlace: "Valpelline · nach 15:00 Uhr", alternative: "Vergleichbare Alternative", alternativeTime: "28 Min. vom Startpunkt" },
+    problem: { title: "Beliebte Pläne konzentrieren den Besucherdruck.", body: "GemGo fordert nicht weniger Reisen, sondern bessere Entscheidungen.", cycle: ["Prognose", "Empfehlung", "Umlenkung", "Bestätigung", "Belohnung", "Messung"] },
+    how: { eyebrow: "So funktioniert es", title: "Vom geplanten Hotspot zum besseren Alpenerlebnis", body: "GemGo konzentriert sich auf eine Entscheidung: eine passende Alternative, die Besucher wirklich schätzen.", steps: [
+      { title: "Beschreibe deine Wünsche", body: "Standort, verfügbare Zeit, Interessen, Mobilität, Schwierigkeit, Wetter und Besucherpräferenz.", note: "Weniger als eine Minute" },
+      { title: "Wähle eine bessere Alternative", body: "Drei begründete Optionen mit Reisezeit, ehrlichen Kompromissen und Vergleich zum ursprünglichen Plan.", note: "Ein besseres Erlebnis, nicht nur ein ruhigeres" },
+      { title: "Besuchen, bestätigen und sammeln", body: "Erlebnis abschließen, Besuch bestätigen und GemPoints bei teilnehmenden lokalen Partnern sammeln.", note: "Eine klare Punktewährung" },
+    ] },
+    coverage: { eyebrow: "Alpenweit konzipiert", title: "Ein System für die Alpen. Lokale Empfehlungen, gemeinsame Standards.", body: "GemGo ist für mehrere Alpenregionen ausgelegt; Validierung, lokales Wissen und Partnerschaften wachsen Gebiet für Gebiet.", principles: [
+      { title: "Gemeinsamer Rahmen", body: "Standards für Empfehlung, Bestätigung und Messung" },
+      { title: "Lokale Tiefe", body: "Regionale Prüfung, Einschränkungen und Partnerwissen" },
+      { title: "Sichtbare Verlässlichkeit", body: "Datenbasiert, lokal geprüft oder bestätigt" },
+    ] },
+    proof: { eyebrow: "Eine konkrete Entscheidung", title: "Keine weitere allgemeine Zielliste", body: "Eine Empfehlung wird glaubwürdig, wenn Besucher Veränderungen, Verbesserungen und Kompromisse erkennen.", original: "Ursprünglicher Plan", popular: "Beliebtes Ziel", expected: "Hoher Andrang erwartet", parking: "Schwierige Parkplatzlage", rigid: "Starres Ankunftsfenster", alternative: "GemGo-Alternative", quieter: "Ruhige Flussdörfer und leichter Spaziergang", away: "24 Minuten entfernt", crowd: "Weniger Andrang erwartet", reward: "Lokale Prämie verfügbar", view: "Ganzes Erlebnis ansehen" },
+    institutions: { demo: "Demonstrationsdaten", metrics: ["Umlenkungsrate", "Verlagerung in Nebenzeiten", "Empfehlungszufriedenheit"], eyebrow: "Für Alpenregionen", title: "Ein Besucherprodukt mit Wirkung für Regionen", body: "Regionen, Gemeinden, Tourismusbüros und Schutzgebiete brauchen mehr als Informationskampagnen. GemGo kann akzeptierte Alternativen, Nebenzeitverlagerungen, Zufriedenheit und bestätigte lokale Interaktionen mit aggregierten anonymen Daten messen.", dashboard: "Gebiets-Dashboard öffnen" },
+    team: { eyebrow: "Das Team", title: "An der Schnittstelle von Produkt, Tourismus und Alpenkooperation", body: "GemGo entstand beim EUSALP AI Hackathon und wird zu einem praktischen System für Besucher und Regionen weiterentwickelt.", roles: ["Leitung Produktentwicklung · Plattform, Infrastruktur und Empfehlungssystem", "Leitung Geschäftsstrategie · Entwicklung, Strategie und Finanzplanung", "Leitung Partnerschaften & Wachstum · Betriebe, Institutionen und Markteinführung"], achievement: "Gewinner des EUSALP AI Hackathon", achievementBody: "Prototyp zur alpenweiten Umverteilung von Besucherströmen." },
+    final: { eyebrow: "Willkommen bei GemGo", title: "Mach aus einem überfüllten Plan ein besseres Alpenerlebnis.", body: "Starte mit einer echten Anfrage und sieh, wie GemGo jede Empfehlung erklärt.", cta: "App testen" },
+    footer: { body: "Alpenweite Empfehlungen, Bestätigung und Umverteilung von Besucherströmen.", method: "Methodik", privacy: "Datenschutz", institutions: "Für Alpenregionen", disclosure: "Demo-Inhalte und institutionelle Kennzahlen werden klar gekennzeichnet, wenn sie nicht aus dem realen Betrieb stammen." },
+  },
+  fr: {
+    navigation: { how: "Fonctionnement", about: "À propos", team: "L’équipe", menu: "Ouvrir le menu de l’accueil", openApp: "Essayer GemGo", profile: "Profil", language: "Langue de l’interface" },
+    tagline: "De meilleurs choix alpins",
+    quickLinks: "Explorer GemGo",
+    hero: { eyebrow: "Agir contre le surtourisme dans les Alpes", title: "Trop de monde ? Trouvez une", emphasis: "meilleure alternative alpine.", body: "GemGo redirige les visiteurs des sites alpins surfréquentés vers des lieux personnalisés, moins fréquentés et de meilleurs horaires, en récompensant les choix qui répartissent les bénéfices du tourisme entre les communautés locales.", find: "Trouver une meilleure alternative", map: "Explorer la carte alpine", trust: ["Personnalisé pour vous", "De meilleurs horaires, moins de monde", "Soutenir les communautés locales"] },
+    map: { coverage: "Couverture panalpine", catalogue: "lieux cartographiés dans le prototype", pilotPlaces: "lieux pilotes", lower: "Estimation faible", moderate: "Estimation modérée", higher: "Estimation élevée", lowerWindow: "Créneau moins fréquenté", lowerPlace: "Valpelline · après 15 h", alternative: "Alternative comparable", alternativeTime: "À 28 min de votre départ" },
+    problem: { title: "Les projets populaires concentrent la pression.", body: "GemGo ne demande pas de moins voyager, mais aide à mieux choisir.", cycle: ["Prévoir", "Recommander", "Rediriger", "Vérifier", "Récompenser", "Mesurer"] },
+    how: { eyebrow: "Fonctionnement", title: "D’un site très fréquenté à une meilleure expérience alpine", body: "GemGo se concentre sur une décision : trouver une alternative compatible que le visiteur appréciera vraiment.", steps: [
+      { title: "Décrivez votre recherche", body: "Lieu, temps disponible, intérêts, mobilité, difficulté, météo et préférence d’affluence.", note: "Moins d’une minute" },
+      { title: "Choisissez une meilleure alternative", body: "Trois options motivées avec temps de trajet, compromis transparents et comparaison au projet initial.", note: "Une meilleure expérience, pas seulement plus calme" },
+      { title: "Visitez, vérifiez et gagnez", body: "Vivez l’expérience, vérifiez la visite et gagnez des GemPoints auprès des partenaires locaux participants.", note: "Une monnaie de récompense claire" },
+    ] },
+    coverage: { eyebrow: "Conçu pour toutes les Alpes", title: "Un système alpin. Des recommandations locales, des normes communes.", body: "GemGo est structuré pour plusieurs régions alpines, tandis que validation, connaissance locale et partenariats progressent territoire par territoire.", principles: [
+      { title: "Cadre commun", body: "Normes de recommandation, vérification et mesure" },
+      { title: "Profondeur locale", body: "Relecture territoriale, contraintes et connaissance des partenaires" },
+      { title: "Confiance visible", body: "Fondé sur les données, relu localement ou vérifié" },
+    ] },
+    proof: { eyebrow: "Une décision concrète", title: "Pas une nouvelle liste générique de destinations", body: "La recommandation devient crédible lorsque le visiteur voit les changements, les bénéfices et les compromis.", original: "Projet initial", popular: "Destination populaire", expected: "Forte affluence prévue", parking: "Stationnement difficile", rigid: "Horaire d’arrivée rigide", alternative: "Alternative GemGo", quieter: "Villages paisibles au bord de l’eau et promenade facile", away: "À 24 minutes", crowd: "Affluence prévue plus faible", reward: "Récompense locale disponible", view: "Voir l’expérience complète" },
+    institutions: { demo: "Données de démonstration", metrics: ["taux de redirection", "report hors pointe", "satisfaction des recommandations"], eyebrow: "Pour les destinations alpines", title: "Un produit visiteur au service des territoires", body: "Régions, communes, offices de tourisme et espaces protégés ont besoin de plus que des campagnes d’information. GemGo peut mesurer les alternatives acceptées, les reports hors pointe, la satisfaction et les interactions locales vérifiées à partir de données agrégées et anonymes.", dashboard: "Ouvrir le tableau de bord territorial" },
+    team: { eyebrow: "L’équipe", title: "Au croisement du produit, du tourisme et de la coopération alpine", body: "GemGo est né lors du EUSALP AI Hackathon et devient un système pratique pour les visiteurs et les territoires.", roles: ["Responsable développement produit · plateforme, infrastructure et recommandation", "Responsable stratégie · développement, stratégie et planification financière", "Responsable partenariats et croissance · commerces, institutions et mise sur le marché"], achievement: "Lauréat du EUSALP AI Hackathon", achievementBody: "Prototype conçu pour redistribuer les flux touristiques dans les Alpes." },
+    final: { eyebrow: "Bienvenue sur GemGo", title: "Transformez un projet fréquenté en meilleure expérience alpine.", body: "Commencez par une demande réelle et découvrez comment GemGo explique chaque recommandation.", cta: "Essayer l’app" },
+    footer: { body: "Recommandation panalpine, vérification et redistribution des flux touristiques.", method: "Méthodologie", privacy: "Confidentialité", institutions: "Pour les destinations alpines", disclosure: "Les contenus de démonstration et les indicateurs institutionnels sont clairement signalés lorsqu’ils ne reposent pas sur des opérations réelles." },
+  },
+  sl: {
+    navigation: { how: "Kako deluje", about: "O nas", team: "Ekipa", menu: "Odpri meni domače strani", openApp: "Preizkusi GemGo", profile: "Profil", language: "Jezik vmesnika" },
+    tagline: "Boljše izbire v Alpah",
+    quickLinks: "Razišči GemGo",
+    hero: { eyebrow: "Proti čezmernemu turizmu v Alpah", title: "Preveč gneče? Poiščite boljšo", emphasis: "alpsko alternativo.", body: "GemGo preusmerja obiskovalce iz prenatrpanih alpskih točk k prilagojenim, manj obremenjenim krajem in primernejšim časom ter nagrajuje izbire, ki koristi turizma razporedijo med lokalne skupnosti.", find: "Poišči boljšo alternativo", map: "Razišči alpski zemljevid", trust: ["Prilagojeno vam", "Boljši čas, manj gneče", "Podpora lokalnim skupnostim"] },
+    map: { coverage: "Vsealpska pokritost", catalogue: "lokacij, kartiranih v prototipu", pilotPlaces: "pilotnih krajev", lower: "Nižja ocena", moderate: "Zmerna ocena", higher: "Višja ocena", lowerWindow: "Manj obremenjen čas", lowerPlace: "Valpelline · po 15. uri", alternative: "Primerljiva alternativa", alternativeTime: "28 min od izhodišča" },
+    problem: { title: "Priljubljeni načrti povečujejo pritisk.", body: "GemGo ne zahteva manj potovanj, temveč pomaga izbrati bolje.", cycle: ["Predvidi", "Priporoči", "Preusmeri", "Potrdi", "Nagradi", "Izmeri"] },
+    how: { eyebrow: "Kako deluje", title: "Od načrtovane turistične točke do boljšega alpskega doživetja", body: "GemGo se osredotoča na eno odločitev: poiskati ustrezno alternativo, ki jo bo obiskovalec resnično cenil.", steps: [
+      { title: "Povejte, kaj iščete", body: "Lokacija, čas, interesi, mobilnost, zahtevnost, vreme in želena stopnja obiska.", note: "Manj kot minuta" },
+      { title: "Izberite boljšo alternativo", body: "Tri utemeljene možnosti s časom poti, jasnimi kompromisi in primerjavo z začetnim načrtom.", note: "Boljše doživetje, ne le mirnejše" },
+      { title: "Obiščite, potrdite in zbirajte", body: "Doživite izkušnjo, potrdite obisk in pridobite GemPoints pri sodelujočih lokalnih partnerjih.", note: "Ena jasna valuta nagrad" },
+    ] },
+    coverage: { eyebrow: "Zasnovano za vse Alpe", title: "En sistem za Alpe. Lokalna priporočila, skupni standardi.", body: "GemGo je zasnovan za več alpskih regij; preverjanje, lokalno znanje in partnerstva rastejo po posameznih območjih.", principles: [
+      { title: "Skupni okvir", body: "Standardi za priporočanje, potrjevanje in merjenje" },
+      { title: "Lokalna globina", body: "Območni pregled, omejitve in znanje partnerjev" },
+      { title: "Vidna zanesljivost", body: "Na podlagi podatkov, lokalno pregledano ali potrjeno" },
+    ] },
+    proof: { eyebrow: "Konkretna odločitev", title: "Ne še en splošen seznam destinacij", body: "Priporočilo je verodostojno, ko obiskovalec vidi spremembe, izboljšave in kompromise.", original: "Prvotni načrt", popular: "Priljubljena destinacija", expected: "Pričakovana velika gneča", parking: "Težavno parkiranje", rigid: "Omejen čas prihoda", alternative: "Alternativa GemGo", quieter: "Mirne rečne vasi in lahek sprehod", away: "24 minut stran", crowd: "Predvidoma manj gneče", reward: "Na voljo lokalna nagrada", view: "Oglej si celotno doživetje" },
+    institutions: { demo: "Predstavitveni podatki", metrics: ["stopnja preusmeritve", "premik izven konice", "zadovoljstvo s priporočili"], eyebrow: "Za alpske destinacije", title: "Izdelek za obiskovalce z učinkom za regije", body: "Regije, občine, turistični zavodi in zavarovana območja potrebujejo več kot informativne kampanje. GemGo lahko z združenimi anonimnimi podatki meri sprejete alternative, premike izven konice, zadovoljstvo in potrjene lokalne interakcije.", dashboard: "Odpri območno nadzorno ploščo" },
+    team: { eyebrow: "Ekipa", title: "Na stičišču izdelka, turizma in alpskega sodelovanja", body: "GemGo je nastal na EUSALP AI Hackathonu in se razvija v praktičen sistem za obiskovalce in območja.", roles: ["Vodja razvoja izdelka · platforma, infrastruktura in priporočilni sistem", "Vodja poslovne strategije · razvoj, strategija in finančno načrtovanje", "Vodja partnerstev in rasti · ponudniki, ustanove in vstop na trg"], achievement: "Zmagovalec EUSALP AI Hackathona", achievementBody: "Prototip za preusmerjanje turističnih tokov po Alpah." },
+    final: { eyebrow: "Dobrodošli v GemGo", title: "Spremenite obremenjen načrt v boljše alpsko doživetje.", body: "Začnite z resnično željo in poglejte, kako GemGo razloži vsako priporočilo.", cta: "Preizkusi aplikacijo" },
+    footer: { body: "Vsealpska priporočila, potrjevanje in preusmerjanje turističnih tokov.", method: "Metodologija", privacy: "Zasebnost", institutions: "Za alpske destinacije", disclosure: "Predstavitvena vsebina in institucionalne metrike so jasno označene, kadar ne temeljijo na dejanskem delovanju." },
+  },
+};

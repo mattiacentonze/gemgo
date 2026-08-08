@@ -1,43 +1,63 @@
 # GemGo
 
-GemGo is a mobile-first Progressive Web App for planning quieter, lower-impact
-trips in the Alps. The current MVP combines a natural-language trip planner,
-an interactive destination map, live weather, community crowd reports,
-location-aware check-ins, GemPoints and concept partner deals.
+GemGo is a mobile-first pan-Alpine recommendation and visitor-flow redistribution product. It helps a traveller turn an intended crowded plan into a comparable, personalised and locally useful alternative, then makes the trip executable, verifies the visit, awards one clear reward currency and exposes privacy-preserving impact for Alpine territories.
 
-Live MVP: [gemgo-mvp.aloneeagle.chatgpt.site](https://gemgo-mvp.aloneeagle.chatgpt.site)
+Current contest MVP Site: [gemgo-pan-alpine.aloneeagle.chatgpt.site](https://gemgo-pan-alpine.aloneeagle.chatgpt.site)
 
-## Current scope
+The integrated redesign is developed separately on `agent/pan-alpine-product-redesign`. The external GitHub `main` branch must remain unchanged until the redesign is explicitly reviewed.
 
-- 58 pilot destinations across Füssen / Allgäu, Bavaria and Valle d’Aosta
-- natural-language preference parsing with filter reset and negation support
-- one-to-seven-day trip plans
-- strict exclusion of automatically predicted `Busy` stops
-- explainable recommendations, Explore-to-plan additions and contextual undo
-- multi-plan local Saved Plans with legacy-plan migration, rename, open,
-  duplicate and delete actions
-- planned-place state in Explore plus an explicit `Hide planned` filter
-- live Open-Meteo forecasts
-- interactive OpenStreetMap map with zoom-aware marker clustering only when
-  more than five markers are too close
-- proportional cluster circles colored by their dominant crowd category
-- compact white map pins with centered, self-contained green, orange and red
-  GemGo logo assets and first-tap horizontal popups
-- optional map-anchored crowd veil with blended, compact influence areas
-- deduplicated destination tags
-- smooth plan handoff, two-second action toasts, contextual undo and optional
-  subtle action sounds
-- SPA navigation for Explore, Saved, GemDrop, GemPoints, GemDeals and
-  notifications, with one shared animated active indicator
-- persisted `EN`, `IT`, `DE` and `FR` interface language selection using a
-  language icon rather than country flags, plus locale-aware dates
-- real or explicitly simulated location checks for MVP presentations
-- device-local GemXP ledger, notification history, check-ins and photo previews
-- a separate GemCredits concept for future account-linked, redeemable rewards
-- a contextual, dismissible account-benefit prompt after a saved plan or GemXP
-  milestone; it is shown at most twice and can be snoozed for seven days
-- installable PWA with opt-in device notifications
-- interface icons from `lucide-react`
+## Product model
+
+GemGo follows one measurable cycle:
+
+**Predict → Recommend → Redirect → Verify → Reward → Measure**
+
+The tourist interface is focused on four destinations:
+
+- **Explore** — multilingual natural-language briefing plus explicit location, mobility, time, interests, difficulty and accessibility controls;
+- **My Trip** — active and saved trips, an executable timeline, routed map, offline essentials and contextual GemDrop changes;
+- **Rewards** — one GemPoints event ledger, local reward codes and measurable personal impact;
+- **About** — mission, methodology, privacy and the institutional dashboard.
+
+GemDrop is not a standalone menu page. It is a contextual intervention shown when changed crowd, weather or access conditions make a comparable alternative useful.
+
+## Integrated branch capabilities
+
+- real OpenStreetMap/Leaflet maps on the homepage, results, experience detail and My Trip;
+- gentler mouse-wheel zoom and clustering when more than two nearby markers overlap;
+- the existing 50-place public pilot catalogue plus 17 unique Alpify entries, with source-aware deduplication;
+- six deeper pan-Alpine demonstration experiences for jury storytelling;
+- natural-language parsing in English, Italian, German, French and Slovenian;
+- editable structured controls after parsing;
+- geocoding through local pilot aliases and OpenStreetMap Nominatim;
+- live Open-Meteo context with conservative fallback behaviour;
+- OSRM road routing and routed journey geometry where supported;
+- three genuinely distinct recommendation roles: Best match, Quietest choice and Most local impact;
+- freely licensed Wikimedia Commons destination photography;
+- multiple saved trips, rename, duplicate, delete and legacy-trip migration;
+- device-local offline essentials;
+- contextual GemDrop switching;
+- GPS-radius verification, partner-code verification and an explicitly labelled demo path;
+- one GemPoints ledger with idempotent event IDs and reward deductions;
+- temporary reward codes and device-local impact metrics;
+- responsive desktop and mobile layouts;
+- source and regression tests for the integrated product boundaries.
+
+## Data honesty
+
+The branch deliberately separates operational data from estimates and demonstration content:
+
+- names and coordinates in the 50-place catalogue are retained from the existing public dataset;
+- recommendation ranking is deterministic and explainable;
+- weather is requested live from Open-Meteo when available;
+- road routes are requested from the public OSRM service where supported;
+- public-transport times, crowd values, parking, partner offers and institutional metrics remain estimates or demonstration data unless an operational source is connected;
+- the interface never presents demonstration values as observed field results;
+- personal impact reports only recorded actions and does not invent CO₂ savings or an exact number of visitors removed from a hotspot;
+- the three validation levels are `Data-based suggestion`, `Locally reviewed` and `Verified Gem`;
+- fragile places may be excluded, seasonally limited or shown without exact coordinates.
+
+See [docs/DATA_SOURCES.md](docs/DATA_SOURCES.md).
 
 ## Run locally
 
@@ -51,69 +71,46 @@ npm ci
 npm run dev
 ```
 
-Then open the URL shown by Vite.
+Open `/` for the public product story and `/app` for the integrated application.
 
 ## Quality checks
 
 ```bash
+npm run typecheck
 npm run lint
 npm test
 ```
 
-`npm test` builds and validates the Cloudflare-compatible artifact before
-checking the rendered HTML.
+`npm test` builds and validates the Cloudflare/OpenAI Sites artifact before running rendered-output and source regression tests.
 
-## Project structure
+CI runs for pull requests, `main`, and the redesign branch while it is under active development.
+
+## Architecture
 
 ```text
 app/
-  components/DestinationMap.tsx  Leaflet clusters, logo pins, veil and popups
-  data/destinations.json         public-safe place names and coordinates
-  page.tsx                       client-side application and feature flows
-  globals.css                    responsive visual system
+  page.tsx                              public pan-Alpine homepage
+  app/page.tsx                          integrated application route
+  components/IntegratedAppShell.tsx     tourist and institutional product journey
+  components/ExperienceMap.tsx          Leaflet maps, clusters, origin and route geometry
+  components/AlpineOverview.tsx         real pan-Alpine catalogue map
+  components/DestinationPhoto.tsx       licensed Wikimedia destination media
+  product/catalogue.ts                  official + Alpify catalogue and deduplication
+  product/transit.ts                    lazy Bavarian GTFS boundary
+  product/recommendation-engine.ts      parsing, compatibility gates and distinct ranking roles
+  product/live-context.ts               geocoding, weather and route context
+  product/storage.ts                    trips, GemPoints ledger and reward codes
+  styles/                               modular desktop/mobile design system
 public/
-  assets/gemgo-logo.png          GemGo brand asset
-  assets/gemgo-logo-*.svg        self-contained crowd-level marker logos
-  manifest.webmanifest           PWA manifest
-  sw.js                          service worker and notification click handling
-docs/
-  ARCHITECTURE.md                application boundaries and state model
-  DATA_SOURCES.md                real, estimated and mocked data
-  TODO_WORKFLOW.md               product-TODO decision process
-tests/
-  rendered-html.test.mjs         deployed artifact smoke test
+  manifest.webmanifest                  PWA manifest
+  sw.js                                 service worker and network fallback
+.openai/hosting.json                    OpenAI Sites hosting identity
 ```
 
-## Data honesty
-
-GemGo deliberately distinguishes live, estimated and mocked information:
-
-- weather is requested live from Open-Meteo;
-- map tiles and geographic context come from OpenStreetMap;
-- crowd levels are currently estimates based on popularity, weekday, weather
-  and time, not live visitor counts;
-- GemDeals name real businesses, but offers are concept proposals until a
-  partnership is signed;
-- GemXP, notifications, all saved plans, language preference and simulated GPS
-  state are local to the device;
-- GemCredits are intentionally not issued in the MVP.
-
-See [docs/DATA_SOURCES.md](docs/DATA_SOURCES.md) for the complete inventory.
-
-## Product TODOs
-
-Product suggestions are reviewed in a private backlog before implementation.
-Private links and source text are never copied into this public repository.
-See [docs/TODO_WORKFLOW.md](docs/TODO_WORKFLOW.md).
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for state boundaries and the production migration path.
 
 ## Deployment
 
-The public MVP is deployed through OpenAI Sites. The hosting identity lives in
-`.openai/hosting.json`; the production build must keep the Vinext/Sites
-configuration and output contract intact.
+OpenAI Sites publishing and access visibility are controlled from the Work/Sites publishing flow. GitHub commits do not make the existing Site public by themselves. `main` remains unchanged until the redesign is reviewed.
 
-## Contributing
-
-Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a change. Keep the app
-mobile-first, use Lucide React for interface icons, and document every new data
-source as real, estimated or mocked.
+The current runtime is Vinext + Cloudflare D1 and is not directly portable to Vercel/Supabase without an adapter change. Follow [docs/VERCEL_SUPABASE_DEPLOYMENT.md](docs/VERCEL_SUPABASE_DEPLOYMENT.md) for the staged migration path.

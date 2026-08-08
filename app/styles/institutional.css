@@ -1,0 +1,35 @@
+.reward-card p{color:var(--muted);font-size:10px}
+.reward-card button{min-height:38px;border:0;border-radius:999px;background:var(--coral);color:#fff;font-weight:850}
+.reward-card button:disabled{background:#e3e4df;color:var(--muted)}
+.earning-card{padding:22px;border-radius:21px}
+.earning-card p{display:flex;gap:7px;color:#ffffffc0;font-size:11px}
+.personal-impact-section{margin-top:40px}
+.about-tabs{display:flex;gap:6px;width:max-content;max-width:100%;overflow:auto;padding:6px;border:1px solid var(--line);border-radius:999px;background:#ffffffaa}
+.about-tabs button{padding:0 14px;border:0;border-radius:999px;background:transparent;white-space:nowrap}
+.about-tabs button.is-active{background:var(--forest);color:#fff}
+.about-content,.methodology-page,.privacy-page,.territory-dashboard{display:grid;gap:22px}
+.mission-card{max-width:900px;padding:31px;border-radius:26px}
+.mission-card h2{font-size:40px}
+.cycle-row{display:grid;grid-template-columns:repeat(6,1fr);gap:7px}
+.cycle-row>div{position:relative;display:grid;gap:6px;padding:15px;border:1px solid var(--line);border-radius:14px;background:var(--paper)}
+.cycle-row span{display:grid;width:24px;height:24px;place-items:center;border-radius:50%;background:var(--green);color:#fff}
+.cycle-row svg{position:absolute;right:-13px;top:25px;color:var(--coral)}
+.team-section{padding:28px;border:1px solid var(--line);border-radius:23px;background:var(--paper)}
+.methodology-grid,.privacy-grid,.validation-levels{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.methodology-grid article,.privacy-grid article{padding:20px;border:1px solid var(--line);border-radius:17px;background:var(--paper)}
+.methodology-grid p,.privacy-grid p{color:var(--muted);font-size:11px;line-height:1.5}
+.validation-levels{grid-template-columns:repeat(3,1fr)}
+.validation-levels article{display:flex;gap:11px;padding:18px;border-radius:16px;background:var(--mint)}
+.validation-levels article>span{display:grid;width:31px;height:31px;place-items:center;border-radius:50%;background:var(--green);color:#fff}
+.fragile-places-card,.privacy-hero,.dashboard-banner{display:flex;gap:16px;padding:25px;border-radius:21px;color:#fff;background:var(--ink)}
+.dashboard-banner{justify-content:space-between;background:var(--forest)}
+.dashboard-banner h2{font-size:34px}
+.dashboard-banner p{color:#ffffffb0}
+.dashboard-metrics strong{font-size:36px}
+.dashboard-lower{display:grid;grid-template-columns:1fr 340px;gap:16px}
+.flow-chart-card,.dashboard-privacy-card{padding:22px;border:1px solid var(--line);border-radius:19px;background:var(--paper)}
+.dashboard-privacy-card{background:var(--ink)}
+.horizontal-bars{display:grid;gap:13px}
+.horizontal-bars>div{display:grid;grid-template-columns:160px 1fr 35px;align-items:center;gap:9px}
+.horizontal-bars>div>div{height:8px;border-radius:999px;background:#e5e7e2}
+.horizontal-bars i{display:block;height:100%;border-radius:999px;background:var(--green)}

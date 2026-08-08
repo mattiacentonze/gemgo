@@ -1,0 +1,371 @@
+html {
+  scroll-padding-top: 88px;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+::selection {
+  background: rgba(38, 116, 95, 0.18);
+  color: var(--forest-deep);
+}
+
+.motion-item {
+  opacity: 0;
+  filter: blur(2px);
+  transform: translateY(18px) scale(0.992);
+  transition:
+    opacity 520ms cubic-bezier(.2,.8,.2,1) var(--motion-delay, 0ms),
+    transform 520ms cubic-bezier(.2,.8,.2,1) var(--motion-delay, 0ms),
+    filter 520ms ease var(--motion-delay, 0ms);
+  will-change: opacity, transform;
+}
+
+.motion-item.is-revealed {
+  opacity: 1;
+  filter: none;
+  transform: none;
+}
+
+.app-content,
+.experience-detail {
+  animation: app-view-enter 360ms cubic-bezier(.2,.8,.2,1) both;
+}
+
+.desktop-nav button,
+.desktop-nav a,
+.mobile-bottom-nav button,
+.choice-grid button,
+.chip-grid button,
+.saved-trip-actions button,
+.compact-result,
+.show-more-button {
+  transition:
+    color 160ms ease,
+    background 160ms ease,
+    border-color 160ms ease,
+    transform 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.desktop-nav button:hover,
+.desktop-nav a:hover,
+.choice-grid button:hover,
+.chip-grid button:hover,
+.saved-trip-actions button:hover,
+.compact-result:hover,
+.show-more-button:hover {
+  transform: translateY(-1px);
+}
+
+.compact-result:hover,
+.saved-trip-actions button:hover,
+.show-more-button:hover {
+  border-color: rgba(38, 116, 95, 0.3);
+  box-shadow: 0 10px 24px rgba(10, 45, 37, 0.08);
+}
+
+.app-content {
+  padding-top: 38px;
+}
+
+.page-heading,
+.results-header {
+  margin-bottom: 26px;
+}
+
+.marketing-section {
+  padding-block: 96px;
+}
+
+.final-cta-section {
+  margin-block: 36px 82px;
+}
+
+.planner-panel,
+.content-card,
+.operational-card,
+.offline-card,
+.reward-card,
+.verification-card {
+  box-shadow: 0 12px 36px rgba(10, 45, 37, 0.055);
+}
+
+.form-section {
+  margin-top: 21px;
+  padding-top: 19px;
+}
+
+.experience-card-body {
+  padding: 20px;
+}
+
+.detail-main,
+.detail-side,
+.trip-side,
+.result-cards {
+  gap: 15px;
+}
+
+@keyframes app-view-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (max-width: 820px) {
+  html {
+    scroll-padding-top: 72px;
+  }
+
+  .app-content {
+    padding: 22px 0 calc(90px + env(safe-area-inset-bottom));
+  }
+
+  .page-heading,
+  .results-header {
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+
+  .page-heading h1,
+  .results-header h1,
+  .verification-card h1,
+  .completion-view h1 {
+    font-size: clamp(34px, 10vw, 46px);
+    line-height: 1.02;
+  }
+
+  .page-heading p,
+  .results-header p,
+  .hero-copy > p,
+  .section-intro p,
+  .coverage-copy > p,
+  .institutional-copy > p {
+    font-size: 15px;
+    line-height: 1.55;
+  }
+
+  .marketing-section {
+    padding-block: 68px;
+  }
+
+  .section-intro {
+    margin-bottom: 30px;
+  }
+
+  .how-grid,
+  .team-role-grid,
+  .team-grid {
+    gap: 12px;
+  }
+
+  .how-grid article,
+  .team-role-grid article,
+  .team-grid > div {
+    padding: 22px;
+    border-radius: 20px;
+  }
+
+  .problem-strip {
+    gap: 18px;
+    padding: 20px;
+  }
+
+  .planner-panel,
+  .content-card,
+  .operational-card,
+  .offline-card,
+  .reward-card,
+  .verification-card {
+    padding: 18px;
+    border-radius: 20px;
+  }
+
+  .form-section {
+    margin-top: 18px;
+    padding-top: 17px;
+  }
+
+  .choice-grid button,
+  .chip-grid button {
+    min-height: 44px;
+  }
+
+  .result-cards {
+    gap: 13px;
+  }
+
+  .experience-card {
+    border-radius: 20px;
+  }
+
+  .experience-card-body {
+    padding: 17px;
+  }
+
+  .experience-promise {
+    font-size: 15px;
+  }
+
+  .experience-card-actions {
+    display: grid;
+    grid-template-columns: 1fr auto;
+  }
+
+  .integrated-detail-hero,
+  .detail-hero-copy {
+    min-height: 380px;
+  }
+
+  .detail-hero-copy {
+    padding: 22px;
+  }
+
+  .detail-hero-copy h1 {
+    font-size: clamp(34px, 10vw, 46px);
+  }
+
+  .detail-metric-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .detail-metric-strip span {
+    min-height: 82px;
+    padding: 12px;
+  }
+
+  .content-card h2 {
+    font-size: 25px;
+  }
+
+  .trip-real-photo,
+  .trip-real-photo img,
+  .trip-real-photo .destination-gallery-stage,
+  .trip-real-photo .destination-gallery-image {
+    height: 260px;
+    min-height: 260px;
+  }
+
+  .trip-title-block {
+    padding: 20px 20px 4px;
+  }
+
+  .trip-timeline {
+    padding: 18px;
+  }
+
+  .timeline-item {
+    grid-template-columns: 30px 54px 1fr;
+    gap: 8px;
+    min-height: 52px;
+  }
+
+  .trip-action-row {
+    padding: 0 18px 18px;
+  }
+
+  .saved-trip-card {
+    gap: 16px;
+    padding: 18px;
+    border-radius: 18px;
+  }
+
+  .reward-progress-card,
+  .dashboard-banner,
+  .privacy-hero {
+    border-radius: 20px;
+  }
+
+  .marketing-footer {
+    gap: 18px;
+    padding-block: 28px;
+  }
+}
+
+@media (max-width: 560px) {
+  .hero-section {
+    padding: 34px 0 52px;
+  }
+
+  .hero-copy h1 {
+    margin-block: 16px;
+    font-size: clamp(42px, 12vw, 52px);
+  }
+
+  .hero-actions,
+  .hero-trust-row {
+    margin-top: 22px;
+  }
+
+  .marketing-section {
+    padding-block: 58px;
+  }
+
+  .section-intro h2,
+  .coverage-copy h2,
+  .institutional-copy h2,
+  .final-cta-section h2 {
+    font-size: 34px;
+  }
+
+  .transport-grid,
+  .duration-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .detail-metric-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .detail-metric-strip span {
+    min-height: 76px;
+  }
+
+  .integrated-detail-hero,
+  .detail-hero-copy {
+    min-height: 350px;
+  }
+
+  .detail-hero-copy h1 {
+    font-size: 34px;
+  }
+
+  .comparison-columns div,
+  .comparison-proof {
+    padding: 15px;
+  }
+
+  .timeline-item {
+    grid-template-columns: 28px 48px 1fr;
+    font-size: 0.86rem;
+  }
+
+  .mobile-bottom-nav {
+    right: 7px;
+    bottom: 7px;
+    left: 7px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .motion-item,
+  .app-content,
+  .experience-detail {
+    opacity: 1;
+    filter: none;
+    transform: none;
+    animation: none;
+    transition: none;
+  }
+}

@@ -1,0 +1,28 @@
+.action-toast {
+  flex-wrap: wrap;
+}
+
+.toast-undo-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  margin-left: 6px;
+  padding: 0 10px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+.toast-undo-button:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+@media (max-width: 520px) {
+  .toast-undo-button {
+    margin-left: auto;
+  }
+}
