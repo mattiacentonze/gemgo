@@ -2,7 +2,7 @@
 
 ## Source and release scope
 
-- Product changes belong on `agent/pan-alpine-product-redesign`; never merge or push directly to the GitHub `main` branch.
+- `main` is the canonical development and production branch. Keep GitHub, OpenAI Sites and Vercel aligned to the same reviewed `main` revision.
 - The existing Sites project is the deployment target. Use its lifecycle checkout and checkpoint flow; do not create a second site.
 - Preserve the Pan-Alpine positioning: comparable lower-pressure alternatives, explainable ranking, visit verification, GemPoints and aggregated territorial outcomes.
 

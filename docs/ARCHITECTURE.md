@@ -2,7 +2,7 @@
 
 ## Runtime
 
-GemGo is a React 19 application served through Next.js-compatible Vinext and deployed as a Cloudflare Worker by OpenAI Sites. The hosting identity and deployment contract remain unchanged by the product redesign.
+GemGo is a React 19 application with two production build targets from the same `main` source state: Next.js on Vercel and Next.js-compatible Vinext as a Cloudflare Worker on OpenAI Sites. Sites currently owns the D1-backed contribution store; Vercel uses a server-side compatibility bridge until the planned Supabase migration.
 
 ## Product boundary
 

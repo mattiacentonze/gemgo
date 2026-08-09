@@ -24,6 +24,9 @@ export default function HomePage() {
   useHashScroll();
   const { locale, setLocale } = usePersistentLocale();
   const text = marketingCopy[locale];
+  const questionEnd = text.hero.title.indexOf("?");
+  const heroQuestion = questionEnd >= 0 ? text.hero.title.slice(0, questionEnd + 1) : "";
+  const heroTitleRest = questionEnd >= 0 ? text.hero.title.slice(questionEnd + 1) : text.hero.title;
 
   return (
     <main className="marketing-page landing-v2">
@@ -33,7 +36,12 @@ export default function HomePage() {
         <div className="landing-hero-grid">
           <div className="landing-hero-copy">
             <span className="landing-eyebrow">{text.hero.eyebrow}</span>
-            <h1>{text.hero.title}<br /><em>{text.hero.emphasis}</em></h1>
+            <h1>
+              {heroQuestion && <span className="landing-hero-question">{heroQuestion}</span>}
+              {heroTitleRest}
+              <br />
+              <em>{text.hero.emphasis}</em>
+            </h1>
             <p>{text.hero.body}</p>
             <div className="landing-hero-actions">
               <Link href="/app/explore" className="button button-primary button-large"><Search size={21} />{text.hero.find}</Link>

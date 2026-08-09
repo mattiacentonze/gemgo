@@ -251,9 +251,12 @@ export default function HeroAlpineMap({ locale }: Props) {
           animate: false,
           padding: width <= 820 ? [2, 2] : [10, 12],
         });
-        // Keep the geographic route above the comparison cards instead of
-        // letting the cards obscure the story line and its moving arrow.
-        map.panBy([0, width <= 820 ? 46 : 86], { animate: false });
+        // Crop the top 5% of the fitted scene and reframe the geography upward.
+        // The existing mask remains fixed to the viewport, so its soft fade is
+        // reapplied after the crop while the route and both endpoints move up.
+        const topCropOffset = (mapContainerRef.current?.clientHeight ?? 0) * 0.05;
+        const cardClearance = width <= 820 ? 46 : 86;
+        map.panBy([0, cardClearance + topCropOffset], { animate: false });
         positionArrow();
       };
 

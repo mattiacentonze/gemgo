@@ -1,19 +1,19 @@
-# GemGo MVP: avvio su Vercel e Supabase
+# GemGo: stato Vercel e migrazione Supabase
 
-Aggiornato al 7 agosto 2026.
+Aggiornato al 9 agosto 2026.
 
 ## Stato reale del repository
 
-Il frontend è Next.js/React/TypeScript, ma la build di hosting attuale usa Vinext, il plugin Cloudflare e un database D1 (`drizzle-orm/d1`). Per questo motivo non è corretto importare oggi il repository in Vercel e considerarlo pronto: prima va separato l'adapter database e va aggiunta una build Next.js nativa verificata.
+Il frontend Next.js/React/TypeScript è ora pubblicato su Vercel da `main` con una build Next.js nativa. La stessa base sorgente continua a essere pubblicata su OpenAI Sites tramite Vinext/Cloudflare. Il database D1 resta di proprietà del runtime Sites: su Vercel, `/api/gems` inoltra temporaneamente le scritture al Site, lato server.
 
-Il percorso a rischio minimo per il contest è:
+Stato attuale:
 
-1. pubblicare e validare l'MVP corrente sul Site esistente;
-2. creare il progetto Supabase senza spostare subito il catalogo statico di 66 location;
-3. portare per prima soltanto la scrittura di `/api/gems` da D1 a Supabase;
-4. aggiungere e verificare una build Vercel nativa;
-5. collegare Vercel esclusivamente al branch `agent/pan-alpine-product-redesign`;
-6. promuovere il deployment di contest solo dopo smoke test e controllo RLS.
+1. `main` è il branch canonico di sviluppo e produzione;
+2. `https://gemgo.vercel.app` usa `npm run build:vercel`;
+3. `https://gemgo-pan-alpine.aloneeagle.chatgpt.site` usa la build Vinext/Sites;
+4. il catalogo statico contiene 66 location e non richiede migrazione database;
+5. Supabase non è ancora collegato: resta il prossimo passo per sostituire il bridge D1;
+6. ogni release va verificata su entrambi i domini per evitare divergenze tra build.
 
 ## 1. Preparare Supabase
 
@@ -70,24 +70,24 @@ La prima modifica backend deve essere piccola e reversibile:
 
 Il changelog Supabase 2026 segnala che lo schema OpenAPI non viene più restituito alle richieste con anon key: [Supabase changelog](https://supabase.com/changelog).
 
-## 4. Rendere la build compatibile con Vercel
+## 4. Mantenere compatibili le due build
 
 In un commit separato:
 
-1. aggiungi uno script `build:vercel` basato su `next build`;
-2. rimuovi dal percorso Vercel ogni import runtime di `cloudflare:workers` e `drizzle-orm/d1`;
-3. mantieni la build Sites/Cloudflare finché il passaggio non è validato;
-4. esegui `npm ci`, `npm run typecheck`, `npm run lint`, `npm test` e infine la build Vercel;
-5. prova almeno `/`, `/app`, `/about`, `/privacy`, `/profile`, `/notifications`, `/api/gems` e tutti i redirect legacy.
+1. conserva `build` per l'artifact Vinext/Sites e `build:vercel` per `next build`;
+2. non importare `cloudflare:workers` o `drizzle-orm/d1` nel percorso runtime Vercel;
+3. mantieni il bridge `/api/gems` server-side finché Supabase non è operativo;
+4. esegui `npm ci`, `npm run typecheck`, `npm run lint`, `npm test` e `npm run build:vercel`;
+5. prova almeno `/`, `/app`, `/about`, `/privacy`, `/app/profile`, `/app/notifications`, `/api/gems` e tutti i redirect legacy.
 
 Non impostare `npm run build` come build Vercel finché quel comando produce intenzionalmente l'artifact Cloudflare/Vinext.
 
-## 5. Collegare Vercel al branch corretto
+## 5. Configurazione Vercel corrente
 
-1. In Vercel, importa `mattiacentonze/gemgo` da GitHub.
-2. Seleziona il branch `agent/pan-alpine-product-redesign`; non cambiare `main`.
-3. Imposta il comando di build su `npm run build:vercel` soltanto quando esiste e passa localmente/CI.
-4. Aggiungi per Preview e Production:
+1. Il progetto Vercel `gemgo` è collegato a `mattiacentonze/gemgo`.
+2. Il Production Branch è `main`.
+3. Il comando di build è `npm run build:vercel`.
+4. Quando Supabase sarà collegato, aggiungi per Preview e Production:
    - `NEXT_PUBLIC_SUPABASE_URL`;
    - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`.
 5. Aggiungi `DATABASE_URL` solo se una funzione server usa davvero un client Postgres; non esporla al client.
@@ -97,7 +97,7 @@ Riferimenti ufficiali: [Next.js su Vercel](https://vercel.com/docs/frameworks/fu
 
 ## 6. Checklist prima della demo
 
-- branch di produzione verificato e `main` intatto;
+- branch di produzione `main` verificato e allineato con Sites;
 - nessun segreto nel bundle o nei log;
 - RLS abilitata e testata;
 - nessuna lettura anonima delle proposte;

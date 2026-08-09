@@ -113,10 +113,14 @@ test("the homepage uses real Alpine cartography with a geographic animated route
   assert.match(hero, /tile\.opentopomap\.org/);
   assert.match(hero, /quadraticRoute/);
   assert.match(hero, /hero-route-line/);
+  assert.match(hero, /clientHeight \?\? 0\) \* 0\.05/);
+  assert.match(hero, /cardClearance \+ topCropOffset/);
   assert.match(hero, /Illustrative crowd scenario · not live data/);
   assert.doesNotMatch(hero, /alpine-redistribution-map\.png|<img|<svg|alpineMassPath/);
   assert.match(css, /mask-image:/);
+  assert.match(css, /\.landing-hero-question \{ white-space: nowrap; \}/);
   assert.match(css, /\.hero-route-line[\s\S]*stroke-dasharray:[\s\S]*animation: hero-route-flow/);
+  assert.match(home, /className="landing-hero-question"/);
   assert.match(home, /<HeroComparison locale=\{locale\} \/>/);
   assert.match(home, /<HeroAlpineMap locale=\{locale\} \/>/);
   assert.match(home, /<LandingImpactStrip locale=\{locale\} \/>/);

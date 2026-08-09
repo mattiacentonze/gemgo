@@ -58,6 +58,7 @@
 .landing-hero-copy { position: relative; z-index: 5; align-self: center; max-width: 650px; padding-block: 12px; }
 .landing-eyebrow { display: block; margin-bottom: 15px; color: var(--landing-green); font-size: .84rem; font-weight: 880; letter-spacing: .055em; text-transform: uppercase; }
 .landing-hero-copy h1 { max-width: 680px; margin: 0; color: var(--landing-ink); font-size: clamp(3rem,4.75vw,5.25rem); font-weight: 920; line-height: .96; letter-spacing: -.064em; }
+.landing-hero-question { white-space: nowrap; }
 .landing-hero-copy h1 em { color: var(--landing-green); font-style: normal; }
 .landing-hero-copy > p { max-width: 610px; margin: 20px 0; color: #183e43; font-size: clamp(1rem,1.28vw,1.2rem); line-height: 1.48; }
 .landing-hero-actions { display: flex; flex-wrap: wrap; gap: 14px; }

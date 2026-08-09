@@ -2,9 +2,12 @@
 
 GemGo is a mobile-first pan-Alpine recommendation and visitor-flow redistribution product. It helps a traveller turn an intended crowded plan into a comparable, personalised and locally useful alternative, then makes the trip executable, verifies the visit, awards one clear reward currency and exposes privacy-preserving impact for Alpine territories.
 
-Current contest MVP Site: [gemgo-pan-alpine.aloneeagle.chatgpt.site](https://gemgo-pan-alpine.aloneeagle.chatgpt.site)
+Production deployments:
 
-The integrated redesign is developed separately on `agent/pan-alpine-product-redesign`. The external GitHub `main` branch must remain unchanged until the redesign is explicitly reviewed.
+- [gemgo.vercel.app](https://gemgo.vercel.app) — native Next.js build from GitHub;
+- [gemgo-pan-alpine.aloneeagle.chatgpt.site](https://gemgo-pan-alpine.aloneeagle.chatgpt.site) — OpenAI Sites/Vinext build.
+
+`main` is the canonical source branch for development and production. Both deployments must be released from the same reviewed `main` source state.
 
 ## Product model
 
@@ -16,16 +19,16 @@ The tourist interface is focused on four destinations:
 
 - **Explore** — multilingual natural-language briefing plus explicit location, mobility, time, interests, difficulty and accessibility controls;
 - **My Trip** — active and saved trips, an executable timeline, routed map, offline essentials and contextual GemDrop changes;
-- **Rewards** — one GemPoints event ledger, local reward codes and measurable personal impact;
+- **GemPoints** — one event ledger, local reward codes and measurable personal impact;
 - **About** — mission, methodology, privacy and the institutional dashboard.
 
 GemDrop is not a standalone menu page. It is a contextual intervention shown when changed crowd, weather or access conditions make a comparable alternative useful.
 
-## Integrated branch capabilities
+## Current capabilities
 
 - real OpenStreetMap/Leaflet maps on the homepage, results, experience detail and My Trip;
 - gentler mouse-wheel zoom and clustering when more than two nearby markers overlap;
-- the existing 50-place public pilot catalogue plus 17 unique Alpify entries, with source-aware deduplication;
+- the existing 50-place public pilot catalogue plus 16 deduplicated Bavarian Alpify entries, for 66 mapped places with source provenance;
 - six deeper pan-Alpine demonstration experiences for jury storytelling;
 - natural-language parsing in English, Italian, German, French and Slovenian;
 - editable structured controls after parsing;
@@ -45,7 +48,7 @@ GemDrop is not a standalone menu page. It is a contextual intervention shown whe
 
 ## Data honesty
 
-The branch deliberately separates operational data from estimates and demonstration content:
+The product deliberately separates operational data from estimates and demonstration content:
 
 - names and coordinates in the 50-place catalogue are retained from the existing public dataset;
 - recommendation ranking is deterministic and explainable;
@@ -83,7 +86,7 @@ npm test
 
 `npm test` builds and validates the Cloudflare/OpenAI Sites artifact before running rendered-output and source regression tests.
 
-CI runs for pull requests, `main`, and the redesign branch while it is under active development.
+CI runs for pull requests and every push to `main`.
 
 ## Architecture
 
@@ -91,6 +94,8 @@ CI runs for pull requests, `main`, and the redesign branch while it is under act
 app/
   page.tsx                              public pan-Alpine homepage
   app/page.tsx                          integrated application route
+  app/profile/page.tsx                  device-local profile
+  app/notifications/page.tsx            notification centre
   components/IntegratedAppShell.tsx     tourist and institutional product journey
   components/ExperienceMap.tsx          Leaflet maps, clusters, origin and route geometry
   components/AlpineOverview.tsx         real pan-Alpine catalogue map
@@ -111,6 +116,6 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for state boundaries and the pr
 
 ## Deployment
 
-OpenAI Sites publishing and access visibility are controlled from the Work/Sites publishing flow. GitHub commits do not make the existing Site public by themselves. `main` remains unchanged until the redesign is reviewed.
+Vercel is connected to GitHub and builds the native Next.js application from `main` using `npm run build:vercel`. OpenAI Sites is published separately from the same source state through the Work/Sites checkpoint flow.
 
-The current runtime is Vinext + Cloudflare D1 and is not directly portable to Vercel/Supabase without an adapter change. Follow [docs/VERCEL_SUPABASE_DEPLOYMENT.md](docs/VERCEL_SUPABASE_DEPLOYMENT.md) for the staged migration path.
+OpenAI Sites owns the current D1-backed contribution endpoint. The Vercel route proxies that endpoint server-side as a temporary compatibility bridge; the planned production migration is Supabase with Row Level Security. See [docs/VERCEL_SUPABASE_DEPLOYMENT.md](docs/VERCEL_SUPABASE_DEPLOYMENT.md).
