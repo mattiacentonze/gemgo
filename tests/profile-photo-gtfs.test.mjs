@@ -47,14 +47,19 @@ test("GemPoints and About include localized badges, proposal boundaries and the 
   assert.match(about, /futureBody/);
 });
 
-test("the demo profile hashes passwords and exposes earned progress and locked badges", () => {
+test("profile uses real Supabase auth with passwordless methods and no local password hashing", () => {
   const profile = read("app/components/LocalProfilePanel.tsx");
-  assert.match(profile, /crypto\.subtle\.digest\("SHA-256"/);
-  assert.doesNotMatch(profile, /password:\s*password/);
-  assert.match(profile, /`badge-card is-\$\{state\}`/);
-  assert.match(profile, /value >= goal \? "earned" : value > 0 \? "progress" : "locked"/);
-  assert.match(profile, /Bike Trail Hero/);
-  assert.match(profile, /Hidden Gem Hunter/);
+  const page = read("app/app/profile/page.tsx");
+  const supabase = read("app/product/supabase.ts");
+  assert.match(profile, /getCurrentUser/);
+  assert.match(profile, /window\.location\.assign\("\/app\/profile"\)/);
+  assert.doesNotMatch(profile, /crypto\.subtle\.digest\("SHA-256"/);
+  assert.match(page, /signInWithPasskey/);
+  assert.match(page, /signInWithGoogle/);
+  assert.match(page, /requestEmailOtp/);
+  assert.match(page, /signInWithPassword/);
+  assert.match(supabase, /sb_publishable_/);
+  assert.doesNotMatch(supabase, /service[_-]?role|sb_secret_/i);
 });
 
 test("destination media rejects vertical and non-place results", () => {
