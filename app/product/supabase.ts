@@ -1,3 +1,15 @@
+import {
+  loadCollections,
+  loadLedger,
+  loadSavedTrips,
+  saveCollections,
+  saveLedger,
+  saveTrips,
+  type GemPointEvent,
+  type SavedCollection,
+  type SavedTrip,
+} from "./storage";
+
 const SUPABASE_URL = "https://lhowrxqddjfvzmlwnuoj.supabase.co";
 const SUPABASE_KEY = "sb_publishable_9NOhtVr9S-dWmvAdkHtSSQ_EaCI5TLp";
 const SESSION_KEY = "gemgo-supabase-session-v1";
@@ -97,7 +109,12 @@ export const getValidSession = async () => {
   if (!session) return null;
   const expiresAt = session.expires_at ?? 0;
   if (expiresAt && expiresAt - Math.floor(Date.now() / 1000) < 90) {
-    try { return await refreshSession(session); } catch { saveSession(null); return null; }
+    try {
+      return await refreshSession(session);
+    } catch {
+      saveSession(null);
+      return null;
+    }
   }
   return session;
 };
@@ -172,6 +189,18 @@ const toBase64Url = (buffer: ArrayBuffer) => {
   return btoa(binary).replaceAll("+", "-").replaceAll("/", "_").replaceAll("=", "");
 };
 
+type PublicKeyCredentialDescriptorJSON = Omit<PublicKeyCredentialDescriptor, "id"> & { id: string };
+type PublicKeyCredentialCreationOptionsJSON = Omit<PublicKeyCredentialCreationOptions, "challenge" | "user" | "excludeCredentials"> & {
+  challenge: string;
+  user: Omit<PublicKeyCredentialUserEntity, "id"> & { id: string };
+  excludeCredentials?: PublicKeyCredentialDescriptorJSON[];
+};
+type PublicKeyCredentialRequestOptionsJSON = Omit<PublicKeyCredentialRequestOptions, "challenge" | "allowCredentials"> & {
+  challenge: string;
+  allowCredentials?: PublicKeyCredentialDescriptorJSON[];
+};
+type PasskeyOptions<T> = { challenge_id: string; options: T };
+
 const prepareCreationOptions = (options: PublicKeyCredentialCreationOptionsJSON) => ({
   ...options,
   challenge: fromBase64Url(options.challenge),
@@ -215,19 +244,6 @@ const serializeCredential = (credential: PublicKeyCredential) => {
   };
 };
 
-type PublicKeyCredentialDescriptorJSON = Omit<PublicKeyCredentialDescriptor, "id"> & { id: string };
-type PublicKeyCredentialCreationOptionsJSON = Omit<PublicKeyCredentialCreationOptions, "challenge" | "user" | "excludeCredentials"> & {
-  challenge: string;
-  user: Omit<PublicKeyCredentialUserEntity, "id"> & { id: string };
-  excludeCredentials?: PublicKeyCredentialDescriptorJSON[];
-};
-type PublicKeyCredentialRequestOptionsJSON = Omit<PublicKeyCredentialRequestOptions, "challenge" | "allowCredentials"> & {
-  challenge: string;
-  allowCredentials?: PublicKeyCredentialDescriptorJSON[];
-};
-
-type PasskeyOptions<T> = { challenge_id: string; options: T };
-
 export const passkeysSupported = () => typeof window !== "undefined" && "PublicKeyCredential" in window && Boolean(navigator.credentials);
 
 export const registerPasskey = async () => {
@@ -254,18 +270,54 @@ export const signInWithPasskey = async () => {
   return session;
 };
 
-const restHeaders = (token: string, prefer?: string) => ({
+const restHeaders = (token: string) => ({
   apikey: SUPABASE_KEY,
   Authorization: `Bearer ${token}`,
   "Content-Type": "application/json",
-  ...(prefer ? { Prefer: prefer } : {}),
 });
 
 const restRequest = async <T,>(path: string, init: RequestInit, token: string): Promise<T> => {
-  const response = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, { ...init, headers: { ...restHeaders(token), ...(init.headers ?? {}) } });
+  const response = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+    ...init,
+    headers: { ...restHeaders(token), ...(init.headers ?? {}) },
+  });
   if (!response.ok) throw new Error(await parseError(response));
   if (response.status === 204 || response.headers.get("content-length") === "0") return undefined as T;
   return response.json() as Promise<T>;
+};
+
+type RemoteTrip = { trip_id: string; payload: SavedTrip; updated_at: string };
+type RemoteCollection = { collection_id: string; name: string; region: string; experience_ids: string[]; updated_at: string };
+type RemoteEvent = {
+  event_id: string;
+  amount: number;
+  event_type: GemPointEvent["type"];
+  label: string;
+  created_at: string;
+  balance_after: number;
+  status: GemPointEvent["status"];
+  metadata?: GemPointEvent["metadata"];
+  trust_level: "client" | "server";
+};
+
+const newestById = <T extends { id: string },>(local: T[], remote: T[], updatedAt: (item: T) => string) => {
+  const merged = new Map<string, T>();
+  for (const item of remote) merged.set(item.id, item);
+  for (const item of local) {
+    const current = merged.get(item.id);
+    if (!current || Date.parse(updatedAt(item)) >= Date.parse(updatedAt(current))) merged.set(item.id, item);
+  }
+  return [...merged.values()];
+};
+
+const recomputeLedger = (events: GemPointEvent[]) => {
+  let balance = 0;
+  return [...events]
+    .sort((a, b) => Date.parse(a.createdAt) - Date.parse(b.createdAt))
+    .map((event) => {
+      balance = Math.max(0, balance + event.amount);
+      return { ...event, balanceAfter: balance };
+    });
 };
 
 export const syncAccountData = async (input: {
@@ -279,11 +331,105 @@ export const syncAccountData = async (input: {
   const session = await getValidSession();
   if (!session?.access_token) throw new Error("No active session.");
   const token = session.access_token;
-  const profile = [{ id: input.user.id, display_name: input.displayName || "GemGo traveller", email: input.user.email ?? null, avatar_url: input.avatarUrl ?? null, updated_at: new Date().toISOString() }];
-  await restRequest("profiles?on_conflict=id", { method: "POST", headers: { Prefer: "resolution=merge-duplicates" }, body: JSON.stringify(profile) }, token);
-  if (input.savedTrips.length) await restRequest("saved_trips?on_conflict=user_id,trip_id", { method: "POST", headers: { Prefer: "resolution=merge-duplicates" }, body: JSON.stringify(input.savedTrips.map((trip) => ({ user_id: input.user.id, trip_id: trip.id, name: trip.name, payload: trip, created_at: trip.createdAt, updated_at: trip.updatedAt }))) }, token);
-  if (input.collections.length) await restRequest("saved_collections?on_conflict=user_id,collection_id", { method: "POST", headers: { Prefer: "resolution=merge-duplicates" }, body: JSON.stringify(input.collections.map((collection) => ({ user_id: input.user.id, collection_id: collection.id, name: collection.name, region: collection.region, experience_ids: collection.experienceIds, updated_at: collection.updatedAt }))) }, token);
-  if (input.ledger.length) await restRequest("gempoint_events?on_conflict=user_id,event_id", { method: "POST", headers: { Prefer: "resolution=merge-duplicates" }, body: JSON.stringify(input.ledger.map((event) => ({ user_id: input.user.id, event_id: event.id, amount: event.amount, event_type: event.type, label: event.label, created_at: event.createdAt, balance_after: event.balanceAfter, status: event.status, metadata: event.metadata ?? null, trust_level: "client" }))) }, token);
+
+  const [remoteTripRows, remoteCollectionRows, remoteEventRows] = await Promise.all([
+    restRequest<RemoteTrip[]>("saved_trips?select=trip_id,payload,updated_at&order=updated_at.asc", { method: "GET" }, token),
+    restRequest<RemoteCollection[]>("saved_collections?select=collection_id,name,region,experience_ids,updated_at&order=updated_at.asc", { method: "GET" }, token),
+    restRequest<RemoteEvent[]>("gempoint_events?select=event_id,amount,event_type,label,created_at,balance_after,status,metadata,trust_level&order=created_at.asc", { method: "GET" }, token),
+  ]);
+
+  const localTrips = loadSavedTrips();
+  const remoteTrips = remoteTripRows.map((row) => ({ ...row.payload, id: row.trip_id, updatedAt: row.updated_at })) as SavedTrip[];
+  const mergedTrips = newestById(localTrips, remoteTrips, (trip) => trip.updatedAt);
+
+  const localCollections = loadCollections();
+  const remoteCollections: SavedCollection[] = remoteCollectionRows.map((row) => ({
+    id: row.collection_id,
+    name: row.name,
+    region: row.region,
+    experienceIds: row.experience_ids,
+    updatedAt: row.updated_at,
+  }));
+  const mergedCollections = newestById(localCollections, remoteCollections, (collection) => collection.updatedAt);
+
+  const remoteEvents: GemPointEvent[] = remoteEventRows.map((row) => ({
+    id: row.event_id,
+    amount: row.amount,
+    type: row.event_type,
+    label: row.label,
+    createdAt: row.created_at,
+    balanceAfter: row.balance_after,
+    status: row.status,
+    metadata: row.metadata,
+  }));
+  const eventMap = new Map(remoteEvents.map((event) => [event.id, event]));
+  for (const event of loadLedger()) if (!eventMap.has(event.id)) eventMap.set(event.id, event);
+  const mergedLedger = recomputeLedger([...eventMap.values()]);
+
+  saveTrips(mergedTrips);
+  saveCollections(mergedCollections);
+  saveLedger(mergedLedger);
+
+  const profile = [{
+    id: input.user.id,
+    display_name: input.displayName || "GemGo traveller",
+    email: input.user.email ?? null,
+    avatar_url: input.avatarUrl ?? null,
+    updated_at: new Date().toISOString(),
+  }];
+  await restRequest("profiles?on_conflict=id", {
+    method: "POST",
+    headers: { Prefer: "resolution=merge-duplicates" },
+    body: JSON.stringify(profile),
+  }, token);
+
+  if (mergedTrips.length) await restRequest("saved_trips?on_conflict=user_id,trip_id", {
+    method: "POST",
+    headers: { Prefer: "resolution=merge-duplicates" },
+    body: JSON.stringify(mergedTrips.map((trip) => ({
+      user_id: input.user.id,
+      trip_id: trip.id,
+      name: trip.name,
+      payload: trip,
+      created_at: trip.createdAt,
+      updated_at: trip.updatedAt,
+    }))),
+  }, token);
+
+  if (mergedCollections.length) await restRequest("saved_collections?on_conflict=user_id,collection_id", {
+    method: "POST",
+    headers: { Prefer: "resolution=merge-duplicates" },
+    body: JSON.stringify(mergedCollections.map((collection) => ({
+      user_id: input.user.id,
+      collection_id: collection.id,
+      name: collection.name,
+      region: collection.region,
+      experience_ids: collection.experienceIds,
+      updated_at: collection.updatedAt,
+    }))),
+  }, token);
+
+  const serverEventIds = new Set(remoteEventRows.filter((event) => event.trust_level === "server").map((event) => event.event_id));
+  const clientEvents = mergedLedger.filter((event) => !serverEventIds.has(event.id));
+  if (clientEvents.length) await restRequest("gempoint_events?on_conflict=user_id,event_id", {
+    method: "POST",
+    headers: { Prefer: "resolution=merge-duplicates" },
+    body: JSON.stringify(clientEvents.map((event) => ({
+      user_id: input.user.id,
+      event_id: event.id,
+      amount: event.amount,
+      event_type: event.type,
+      label: event.label,
+      created_at: event.createdAt,
+      balance_after: event.balanceAfter,
+      status: "demo",
+      metadata: event.metadata ?? null,
+      trust_level: "client",
+    }))),
+  }, token);
+
+  window.dispatchEvent(new Event("gemgo:data-synced"));
+  return { savedTrips: mergedTrips, collections: mergedCollections, ledger: mergedLedger };
 };
 
 export const deleteRemoteAccountData = async (userId: string) => {
