@@ -20,8 +20,8 @@ test("photo galleries support arrows keyboard and touch swipe", () => {
   const gallery = read("app/components/DestinationPhoto.tsx");
   const css = read("app/styles/gallery-accessibility.css");
   assert.match(gallery, /touchStartRef/);
-  assert.match(gallery, /onTouchStart=\{handleTouchStart\}/);
-  assert.match(gallery, /onTouchEnd=\{handleTouchEnd\}/);
+  assert.match(gallery, /onTouchStart=\{interactive \? handleTouchStart : undefined\}/);
+  assert.match(gallery, /onTouchEnd=\{interactive \? handleTouchEnd : undefined\}/);
   assert.match(gallery, /event\.key === "ArrowLeft"/);
   assert.match(gallery, /event\.key === "ArrowRight"/);
   assert.match(gallery, /Math\.abs\(start - end\) < 44/);

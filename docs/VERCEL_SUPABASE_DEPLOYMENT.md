@@ -4,13 +4,13 @@ Aggiornato al 9 agosto 2026.
 
 ## Stato reale del repository
 
-Il frontend Next.js/React/TypeScript è ora pubblicato su Vercel da `main` con una build Next.js nativa. La stessa base sorgente continua a essere pubblicata su OpenAI Sites tramite Vinext/Cloudflare. Il database D1 resta di proprietà del runtime Sites: su Vercel, `/api/gems` inoltra temporaneamente le scritture al Site, lato server.
+Il frontend Next.js/React/TypeScript è pubblicato esclusivamente su Vercel da `main` con una build Next.js nativa. OpenAI Sites non è più un target di release. Il database D1 resta temporaneamente di proprietà del runtime legacy: su Vercel, `/api/gems` inoltra ancora le scritture a quell'endpoint lato server finché Supabase non lo sostituisce.
 
 Stato attuale:
 
 1. `main` è il branch canonico di sviluppo e produzione;
 2. `https://gemgo.vercel.app` usa `npm run build:vercel`;
-3. `https://gemgo-pan-alpine.aloneeagle.chatgpt.site` usa la build Vinext/Sites;
+3. il vecchio dominio `chatgpt.site` non è più un target di pubblicazione o QA;
 4. il catalogo statico contiene 66 location e non richiede migrazione database;
 5. Supabase non è ancora collegato: resta il prossimo passo per sostituire il bridge D1;
 6. ogni release va verificata su entrambi i domini per evitare divergenze tra build.
@@ -97,7 +97,7 @@ Riferimenti ufficiali: [Next.js su Vercel](https://vercel.com/docs/frameworks/fu
 
 ## 6. Checklist prima della demo
 
-- branch di produzione `main` verificato e allineato con Sites;
+- branch di produzione `main` verificato sul deployment Vercel;
 - nessun segreto nel bundle o nei log;
 - RLS abilitata e testata;
 - nessuna lettura anonima delle proposte;

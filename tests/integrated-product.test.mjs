@@ -113,7 +113,7 @@ test("the homepage uses real Alpine cartography with a geographic animated route
   assert.match(hero, /tile\.opentopomap\.org/);
   assert.match(hero, /quadraticRoute/);
   assert.match(hero, /hero-route-line/);
-  assert.match(hero, /clientHeight \?\? 0\) \* 0\.05/);
+  assert.match(hero, /clientHeight \?\? 0\) \* 0\.1/);
   assert.match(hero, /cardClearance \+ topCropOffset/);
   assert.match(hero, /Illustrative crowd scenario · not live data/);
   assert.doesNotMatch(hero, /alpine-redistribution-map\.png|<img|<svg|alpineMassPath/);
@@ -125,6 +125,21 @@ test("the homepage uses real Alpine cartography with a geographic animated route
   assert.match(home, /<HeroAlpineMap locale=\{locale\} \/>/);
   assert.match(home, /<LandingImpactStrip locale=\{locale\} \/>/);
   assert.match(strip, /landing-impact-strip/);
+});
+
+test("landing comparison cards use curated automatic galleries without manual controls", async () => {
+  const comparison = await source("app/components/HeroComparison.tsx");
+  const gallery = await source("app/components/DestinationPhoto.tsx");
+  const css = await source("app/styles/photo-polish.css");
+  assert.doesNotMatch(comparison, /<h2>/);
+  assert.equal((comparison.match(/autoPlay/g) ?? []).length, 4);
+  assert.equal((comparison.match(/interactive=\{false\}/g) ?? []).length, 2);
+  assert.match(gallery, /"Neuschwanstein Castle": \[/);
+  assert.match(gallery, /"Falkenstein Ruin Pfronten": \[/);
+  assert.match(gallery, /window\.setInterval/);
+  assert.match(gallery, /prefers-reduced-motion: reduce/);
+  assert.match(gallery, /interactive && gallery\.length > 1/);
+  assert.match(css, /\.destination-gallery\.is-autoplay \.destination-gallery-image/);
 });
 
 test("the About story connects the founding anecdote to overtourism and the response", async () => {

@@ -2,7 +2,7 @@
 
 ## Runtime
 
-GemGo is a React 19 application with two production build targets from the same `main` source state: Next.js on Vercel and Next.js-compatible Vinext as a Cloudflare Worker on OpenAI Sites. Sites currently owns the D1-backed contribution store; Vercel uses a server-side compatibility bridge until the planned Supabase migration.
+GemGo is a React 19 application with one public production target: native Next.js on Vercel from `main`. A legacy Next.js-compatible Vinext/Cloudflare artifact remains buildable because it currently owns the D1-backed contribution store; Vercel uses a server-side compatibility bridge until the planned Supabase migration. That compatibility path is not a second public release target.
 
 ## Product boundary
 
@@ -21,7 +21,7 @@ The visible application has four primary sections: Explore, My Trip, Rewards and
 - `app/product/types.ts`: product-domain types independent from presentation.
 - `app/product/data.ts`: curated demonstration experiences and their explicit confidence, trade-offs, mobility, safety and local-benefit fields.
 - `app/styles/`: foundation, product, institutional and responsive style layers.
-- `.openai/hosting.json`: existing OpenAI Sites hosting identity.
+- `.openai/hosting.json`: legacy Cloudflare/Vinext build identity retained for compatibility.
 
 Legacy destination, map, parser and moderation modules remain in the repository while the redesigned path is evaluated. They can be migrated into the new feature boundaries incrementally instead of being deleted before parity is proven.
 

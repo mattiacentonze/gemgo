@@ -2,12 +2,9 @@
 
 GemGo is a mobile-first pan-Alpine recommendation and visitor-flow redistribution product. It helps a traveller turn an intended crowded plan into a comparable, personalised and locally useful alternative, then makes the trip executable, verifies the visit, awards one clear reward currency and exposes privacy-preserving impact for Alpine territories.
 
-Production deployments:
+Production: [gemgo.vercel.app](https://gemgo.vercel.app), built automatically from the GitHub `main` branch with native Next.js.
 
-- [gemgo.vercel.app](https://gemgo.vercel.app) — native Next.js build from GitHub;
-- [gemgo-pan-alpine.aloneeagle.chatgpt.site](https://gemgo-pan-alpine.aloneeagle.chatgpt.site) — OpenAI Sites/Vinext build.
-
-`main` is the canonical source branch for development and production. Both deployments must be released from the same reviewed `main` source state.
+`main` is the canonical source branch for development and production. OpenAI Sites is no longer a release target.
 
 ## Product model
 
@@ -84,7 +81,7 @@ npm run lint
 npm test
 ```
 
-`npm test` builds and validates the Cloudflare/OpenAI Sites artifact before running rendered-output and source regression tests.
+`npm test` still builds and validates the legacy Cloudflare/Vinext compatibility artifact before running rendered-output and source regression tests.
 
 CI runs for pull requests and every push to `main`.
 
@@ -109,13 +106,13 @@ app/
 public/
   manifest.webmanifest                  PWA manifest
   sw.js                                 service worker and network fallback
-.openai/hosting.json                    OpenAI Sites hosting identity
+.openai/hosting.json                    legacy Cloudflare/Vinext build identity
 ```
 
 See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for state boundaries and the production migration path.
 
 ## Deployment
 
-Vercel is connected to GitHub and builds the native Next.js application from `main` using `npm run build:vercel`. OpenAI Sites is published separately from the same source state through the Work/Sites checkpoint flow.
+Vercel is the only public release target. It is connected to GitHub and builds the native Next.js application from `main` using `npm run build:vercel`.
 
-OpenAI Sites owns the current D1-backed contribution endpoint. The Vercel route proxies that endpoint server-side as a temporary compatibility bridge; the planned production migration is Supabase with Row Level Security. See [docs/VERCEL_SUPABASE_DEPLOYMENT.md](docs/VERCEL_SUPABASE_DEPLOYMENT.md).
+A legacy D1-backed endpoint still receives Gem contribution writes through a server-side Vercel compatibility bridge. This is an internal temporary dependency, not a second public release. The planned production migration is Supabase with Row Level Security. See [docs/VERCEL_SUPABASE_DEPLOYMENT.md](docs/VERCEL_SUPABASE_DEPLOYMENT.md).

@@ -19,9 +19,35 @@ type Props = {
   className?: string;
   compact?: boolean;
   layout?: "carousel" | "puzzle";
+  autoPlay?: boolean;
+  autoPlayIntervalMs?: number;
+  interactive?: boolean;
 };
 
 const localDestinationMedia: Record<string, Media[]> = {
+  "Neuschwanstein Castle": [
+    {
+      url: "/assets/neuschwanstein-aerial.webp",
+      source: "https://commons.wikimedia.org/wiki/File:Aerial_image_of_Neuschwanstein_Castle_(view_from_the_northwest).jpg",
+      author: "Carsten Steger",
+      license: "CC BY-SA 4.0 · resized and converted to WebP",
+      title: "Aerial view of Neuschwanstein Castle from the northwest",
+    },
+    {
+      url: "/assets/neuschwanstein-marienbruecke.webp",
+      source: "https://commons.wikimedia.org/wiki/File:Castle_Neuschwanstein_on_a_sunny_summer_day_as_seen_from_Marienbruecke_(south).jpg",
+      author: "Jürgen Matern",
+      license: "CC BY-SA 3.0 · resized and converted to WebP",
+      title: "Neuschwanstein Castle from Marienbrücke in summer",
+    },
+    {
+      url: "/assets/neuschwanstein-winter.webp",
+      source: "https://commons.wikimedia.org/wiki/File:Neuschwanstein_Castle_Snow_(93462571).jpeg",
+      author: "Alessio Mercuri",
+      license: "CC BY 3.0 · resized and converted to WebP",
+      title: "Neuschwanstein Castle in winter",
+    },
+  ],
   "Falkenstein Ruin Pfronten": [
     {
       url: "/assets/falkenstein-pfronten-team.webp",
@@ -29,6 +55,20 @@ const localDestinationMedia: Record<string, Media[]> = {
       author: "GemGo team",
       license: "User-provided presentation asset",
       title: "Falkenstein Ruin Pfronten panorama",
+    },
+    {
+      url: "/assets/falkenstein-pfronten-ridge.webp",
+      source: "https://commons.wikimedia.org/wiki/File:Falkenstein-Pfronten-JR-E-5485-2021-07-02.jpg",
+      author: "Johannes Robalotoff",
+      license: "CC BY-SA 3.0 DE · resized and converted to WebP",
+      title: "Falkenstein ruin on its limestone ridge",
+    },
+    {
+      url: "/assets/falkenstein-pfronten-ruin.webp",
+      source: "https://commons.wikimedia.org/wiki/File:Burg_Falkenstein_(Pfronten)_11.jpg",
+      author: "Thomas Hummel",
+      license: "CC BY-SA 4.0 · resized and converted to WebP",
+      title: "Close view of Falkenstein Ruin Pfronten",
     },
   ],
 };
@@ -91,6 +131,9 @@ export default function DestinationPhoto({
   className = "",
   compact = false,
   layout = "carousel",
+  autoPlay = false,
+  autoPlayIntervalMs = 5200,
+  interactive = true,
 }: Props) {
   const localGallery = localDestinationMedia[name];
   const [gallery, setGallery] = useState<Media[]>([]);
@@ -251,6 +294,19 @@ export default function DestinationPhoto({
     image.src = next.url;
   }, [activeIndex, gallery]);
 
+  useEffect(() => {
+    if (!autoPlay || gallery.length < 2) return;
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    if (reducedMotion.matches) return;
+
+    const timer = window.setInterval(() => {
+      setImageFailed(false);
+      setActiveIndex((current) => (current + 1) % gallery.length);
+    }, autoPlayIntervalMs);
+
+    return () => window.clearInterval(timer);
+  }, [autoPlay, autoPlayIntervalMs, gallery.length]);
+
   const activeMedia = gallery[activeIndex];
   const visibleMedia = useMemo(
     () => gallery.filter((_, index) => index !== activeIndex).slice(0, 2),
@@ -340,10 +396,10 @@ export default function DestinationPhoto({
   return (
     <figure
       ref={(element) => { visibilityRef.current = element; }}
-      className={`destination-photo destination-gallery ${compact ? "is-compact" : ""} ${className}`}
-      tabIndex={gallery.length > 1 ? 0 : undefined}
+      className={`destination-photo destination-gallery ${compact ? "is-compact" : ""} ${autoPlay ? "is-autoplay" : ""} ${className}`}
+      tabIndex={interactive && gallery.length > 1 ? 0 : undefined}
       aria-label={`${name} ${t.gallery}, ${t.photo} ${activeIndex + 1} / ${gallery.length}`}
-      onKeyDown={(event) => {
+      onKeyDown={interactive ? (event) => {
         if (event.key === "ArrowLeft") {
           event.preventDefault();
           move(-1);
@@ -352,9 +408,9 @@ export default function DestinationPhoto({
           event.preventDefault();
           move(1);
         }
-      }}
-      onTouchStart={handleTouchStart}
-      onTouchEnd={handleTouchEnd}
+      } : undefined}
+      onTouchStart={interactive ? handleTouchStart : undefined}
+      onTouchEnd={interactive ? handleTouchEnd : undefined}
     >
       <div className="destination-gallery-stage">
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -363,12 +419,12 @@ export default function DestinationPhoto({
           className="destination-gallery-image"
           src={activeMedia.url}
           alt={`${name}, ${region} — ${t.photo} ${activeIndex + 1} / ${gallery.length}`}
-          loading="lazy"
+          loading={autoPlay ? "eager" : "lazy"}
           decoding="async"
           onError={handleImageError}
         />
         <span className="destination-photo-label">{name}</span>
-        {gallery.length > 1 && (
+        {interactive && gallery.length > 1 && (
           <>
             <button type="button" className="gallery-arrow gallery-arrow-previous" aria-label={`${t.previous} ${name}`} onClick={(event) => { event.preventDefault(); event.stopPropagation(); move(-1); }}>
               <ChevronLeft size={compact ? 18 : 21} />

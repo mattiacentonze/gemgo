@@ -2,8 +2,8 @@
 
 ## Source and release scope
 
-- `main` is the canonical development and production branch. Keep GitHub, OpenAI Sites and Vercel aligned to the same reviewed `main` revision.
-- The existing Sites project is the deployment target. Use its lifecycle checkout and checkpoint flow; do not create a second site.
+- `main` is the canonical development and production branch. Keep GitHub and Vercel aligned to the same reviewed `main` revision.
+- Vercel is the sole public deployment target. Do not publish or maintain an OpenAI Sites release unless the user explicitly restores that target.
 - Preserve the Pan-Alpine positioning: comparable lower-pressure alternatives, explainable ranking, visit verification, GemPoints and aggregated territorial outcomes.
 
 ## Product truth
