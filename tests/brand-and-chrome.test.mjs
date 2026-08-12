@@ -49,15 +49,20 @@ test("mobile results provide an explicit list and map switch", () => {
   assert.match(css, /\.integrated-app\.mobile-results-map-mode \.result-cards/);
 });
 
-test("privacy controls export and delete only GemGo device data", () => {
+test("privacy controls export account and GemGo device data without clearing the origin", () => {
   const page = read("app/privacy/page.tsx");
   assert.match(page, /key\?\.startsWith\("gemgo"\)/);
   assert.match(page, /new Blob/);
-  assert.match(page, /gemgo-local-data\.json/);
+  assert.match(page, /gemgo-data-export\.json/);
+  assert.match(page, /supabase\.auth\.getUser/);
+  assert.match(page, /saved_trips/);
+  assert.match(page, /gempoint_events/);
+  assert.match(page, /gem_suggestions/);
   assert.match(page, /localStorage\.removeItem\(key\)/);
+  assert.match(page, /sessionStorage\.removeItem\(key\)/);
   assert.doesNotMatch(page, /localStorage\.clear\(/);
-  assert.match(page, /privacy\.servicesTitle/);
-  assert.match(page, /privacy\.retentionTitle/);
+  assert.match(page, /Supabase \(EU West\)/);
+  assert.match(page, /controller identity and privacy contact still have to be confirmed/);
 });
 
 test("destination photos are relevant licensed multi-image galleries", () => {
@@ -94,7 +99,7 @@ test("GemDrop shows galleries for the original and proposed alternative", () => 
 test("optional sounds are opt-in and controlled from the local profile", () => {
   const page = read("app/components/AppRouteLayout.tsx");
   const sound = read("app/components/UiSoundController.tsx");
-  const profile = read("app/components/LocalProfilePanel.tsx");
+  const profile = read("app/app/profile/page.tsx");
   assert.match(page, /<UiSoundController \/>/);
   assert.match(sound, /const SOUND_KEY = "gemgo-sound"/);
   assert.match(sound, /window\.localStorage\.getItem\(SOUND_KEY\) === "on"/);

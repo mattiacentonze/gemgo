@@ -4,11 +4,9 @@ import test from "node:test";
 
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 
-test("mobile language, menu and profile overlays close one another", () => {
+test("mobile language and menu overlays close one another", () => {
   const shell = read("app/components/IntegratedAppShell.tsx");
-  const profile = read("app/components/LocalProfilePanel.tsx");
   assert.match(shell, /gemgo:close-overlays/);
-  assert.match(profile, /addEventListener\("gemgo:close-overlays"/);
   assert.match(shell, /setLanguageOpen\(false\)/);
   assert.match(shell, /setMobileMenuOpen\(false\)/);
 });
@@ -17,16 +15,13 @@ test("profile uses a full mobile viewport while notifications have a dedicated r
   const notifications = read("app/app/notifications/page.tsx");
   const profilePage = read("app/app/profile/page.tsx");
   const routeLayout = read("app/components/AppRouteLayout.tsx");
-  const profile = read("app/components/LocalProfilePanel.tsx");
-  const css = read("app/styles/visual-fixes.css");
-  assert.match(profile, /createPortal/);
   assert.match(notifications, /notification-history-page/);
   assert.doesNotMatch(notifications, /notification-popover-portal|createPortal/);
   assert.doesNotMatch(notifications, /info-page-back|Go back|Torna indietro/);
   assert.doesNotMatch(profilePage, /simple-page-header|Back to GemGo|Torna a GemGo/);
-  assert.match(routeLayout, /"\/app\/profile", "\/app\/notifications"/);
+  assert.match(routeLayout, /"\/app\/profile", "\/app\/notifications", "\/app\/admin"/);
   assert.match(routeLayout, /<AppUtilityHeader \/>/);
-  assert.match(css, /\.profile-panel[\s\S]*height: 100dvh/);
+  assert.match(profilePage, /profile-page-v2/);
 });
 
 test("GemPoints and About include localized badges, proposal boundaries and the team", () => {
@@ -47,12 +42,15 @@ test("GemPoints and About include localized badges, proposal boundaries and the 
   assert.match(about, /futureBody/);
 });
 
-test("the demo profile hashes passwords and exposes earned progress and locked badges", () => {
-  const profile = read("app/components/LocalProfilePanel.tsx");
-  assert.match(profile, /crypto\.subtle\.digest\("SHA-256"/);
-  assert.doesNotMatch(profile, /password:\s*password/);
-  assert.match(profile, /`badge-card is-\$\{state\}`/);
-  assert.match(profile, /value >= goal \? "earned" : value > 0 \? "progress" : "locked"/);
+test("the profile uses Supabase Auth and keeps demo progress separate", () => {
+  const profile = read("app/app/profile/page.tsx");
+  assert.match(profile, /signInWithOAuth/);
+  assert.match(profile, /provider: "google"/);
+  assert.match(profile, /signInWithPassword/);
+  assert.match(profile, /supabase\.auth\.signUp/);
+  assert.match(profile, /auth\.verifiedBalance/);
+  assert.match(profile, /pointBalance\(ledger\)/);
+  assert.doesNotMatch(profile, /crypto\.subtle\.digest|passwordHash|salt/);
   assert.match(profile, /Bike Trail Hero/);
   assert.match(profile, /Hidden Gem Hunter/);
 });

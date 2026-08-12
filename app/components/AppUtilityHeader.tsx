@@ -7,14 +7,15 @@ import { useEffect, useRef, useState } from "react";
 import { locales } from "../domain";
 import { localeNames, usePersistentLocale } from "../hooks/usePersistentLocale";
 import { panUi } from "../i18n/pan-ui";
+import { useAuth } from "./AuthProvider";
 import { loadLedger, pointBalance } from "../product/storage";
 
 const copy = {
-  en: { explore: "Explore", trip: "My Trip", points: "GemPoints", about: "About", account: "Profile", notifications: "Notifications" },
-  it: { explore: "Esplora", trip: "Il mio viaggio", points: "GemPoints", about: "Informazioni", account: "Profilo", notifications: "Notifiche" },
-  de: { explore: "Entdecken", trip: "Meine Reise", points: "GemPoints", about: "Über uns", account: "Profil", notifications: "Benachrichtigungen" },
-  fr: { explore: "Explorer", trip: "Mon voyage", points: "GemPoints", about: "À propos", account: "Profil", notifications: "Notifications" },
-  sl: { explore: "Razišči", trip: "Moje potovanje", points: "GemPoints", about: "O nas", account: "Profil", notifications: "Obvestila" },
+  en: { explore: "Explore", trip: "My Trip", points: "GemPoints", about: "About", account: "Profile", notifications: "Notifications", home: "GemGo home" },
+  it: { explore: "Esplora", trip: "Il mio viaggio", points: "GemPoints", about: "Informazioni", account: "Profilo", notifications: "Notifiche", home: "Home GemGo" },
+  de: { explore: "Entdecken", trip: "Meine Reise", points: "GemPoints", about: "Über uns", account: "Profil", notifications: "Benachrichtigungen", home: "GemGo-Startseite" },
+  fr: { explore: "Explorer", trip: "Mon voyage", points: "GemPoints", about: "À propos", account: "Profil", notifications: "Notifications", home: "Accueil GemGo" },
+  sl: { explore: "Razišči", trip: "Moje potovanje", points: "GemPoints", about: "O nas", account: "Profil", notifications: "Obvestila", home: "Domov GemGo" },
 } as const;
 
 export default function AppUtilityHeader() {
@@ -22,6 +23,7 @@ export default function AppUtilityHeader() {
   const { locale, setLocale } = usePersistentLocale();
   const text = copy[locale];
   const ui = panUi[locale];
+  const auth = useAuth();
   const [balance, setBalance] = useState(0);
   const [languageOpen, setLanguageOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -43,6 +45,7 @@ export default function AppUtilityHeader() {
     return () => document.removeEventListener("mousedown", close);
   }, []);
 
+  const displayedBalance = auth.user ? auth.verifiedBalance : balance;
   const links = [
     { href: "/app/explore", label: text.explore },
     { href: "/app/my-trip", label: text.trip },
@@ -58,7 +61,7 @@ export default function AppUtilityHeader() {
   return (
     <div className="product-app integrated-app utility-app-chrome">
       <header className="app-header" ref={headerRef}>
-        <Link className="brand brand-compact" href="/" aria-label="GemGo homepage" onClick={closeMenus}>
+        <Link className="brand brand-compact" href="/" aria-label={text.home} onClick={closeMenus}>
           <span className="brand-mark"><img src="/assets/gemgo-logo-green.svg?v=2" alt="" /></span>
           <span><strong>GemGo</strong><small>{ui.tagline}</small></span>
         </Link>
@@ -89,8 +92,8 @@ export default function AppUtilityHeader() {
               </div>
             )}
           </div>
-          <Link href="/app/gempoints" className="header-points-link" aria-label={`${balance.toLocaleString(locale)} GemPoints`}>
-            <Coins size={18} /><span><strong>{balance.toLocaleString(locale)}</strong><small>GemPoints</small></span>
+          <Link href="/app/gempoints" className="header-points-link" aria-label={`${displayedBalance.toLocaleString(locale)} GemPoints`}>
+            <Coins size={18} /><span><strong>{displayedBalance.toLocaleString(locale)}</strong><small>GemPoints</small></span>
           </Link>
           <Link href="/app/notifications" className={`icon-button notification-page-link${pathname === "/app/notifications" ? " is-active" : ""}`} aria-label={text.notifications}>
             <Bell size={19} /><span className="header-notification-dot" aria-hidden="true" />

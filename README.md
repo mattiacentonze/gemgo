@@ -35,10 +35,14 @@ GemDrop is not a standalone menu page. It is a contextual intervention shown whe
 - three genuinely distinct recommendation roles: Best match, Quietest choice and Most local impact;
 - freely licensed Wikimedia Commons destination photography;
 - multiple saved trips, rename, duplicate, delete and legacy-trip migration;
+- optional Supabase accounts with Google OAuth when configured and email/password fallback;
+- guest-to-account import and cross-device sync for trips and collections, with conflict tombstones;
 - device-local offline essentials;
 - contextual GemDrop switching;
 - GPS-radius verification, partner-code verification and an explicitly labelled demo path;
-- one GemPoints ledger with idempotent event IDs and reward deductions;
+- a separate local demo ledger plus a server-only verified GemPoints ledger;
+- authenticated photo contributions, private moderation storage and an idempotent 70-GemPoint award only after admin/owner approval;
+- `member`, `content_editor`, `admin` and `owner` roles with server-side authorization;
 - temporary reward codes and device-local impact metrics;
 - responsive desktop and mobile layouts;
 - source and regression tests for the integrated product boundaries.
@@ -91,7 +95,8 @@ CI runs for pull requests and every push to `main`.
 app/
   page.tsx                              public pan-Alpine homepage
   app/page.tsx                          integrated application route
-  app/profile/page.tsx                  device-local profile
+  app/profile/page.tsx                  Supabase Auth profile and guest handoff
+  app/admin/page.tsx                    moderation queue and owner-only role controls
   app/notifications/page.tsx            notification centre
   components/IntegratedAppShell.tsx     tourist and institutional product journey
   components/ExperienceMap.tsx          Leaflet maps, clusters, origin and route geometry
@@ -101,7 +106,9 @@ app/
   product/transit.ts                    lazy Bavarian GTFS boundary
   product/recommendation-engine.ts      parsing, compatibility gates and distinct ranking roles
   product/live-context.ts               geocoding, weather and route context
-  product/storage.ts                    trips, GemPoints ledger and reward codes
+  product/storage.ts                    scoped guest/account caches and demo ledger
+lib/supabase/                           SSR/client Auth and session helpers
+supabase/migrations/                    RLS, roles, contributions and verified ledger
   styles/                               modular desktop/mobile design system
 public/
   manifest.webmanifest                  PWA manifest
@@ -115,4 +122,4 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for state boundaries and the pr
 
 Vercel is the only public release target. It is connected to GitHub and builds the native Next.js application from `main` using `npm run build:vercel`.
 
-A legacy D1-backed endpoint still receives Gem contribution writes through a server-side Vercel compatibility bridge. This is an internal temporary dependency, not a second public release. The planned production migration is Supabase with Row Level Security. See [docs/VERCEL_SUPABASE_DEPLOYMENT.md](docs/VERCEL_SUPABASE_DEPLOYMENT.md).
+Supabase now provides Auth, account persistence, private contribution media, role-based moderation and the verified GemPoints ledger. Google OAuth credentials, redirect allow-lists and production SMTP remain dashboard configuration requirements. See [docs/VERCEL_SUPABASE_DEPLOYMENT.md](docs/VERCEL_SUPABASE_DEPLOYMENT.md).

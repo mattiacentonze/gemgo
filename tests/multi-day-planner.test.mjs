@@ -20,8 +20,10 @@ test("multi-day itineraries can be exported without pretending to provide live b
   assert.doesNotMatch(planner, /confirmed booking/i);
 });
 
-test("privacy export and deletion include the multi-day plan", () => {
-  const privacy = read("app/components/PrivacyControls.tsx");
-  assert.match(privacy, /gemgo-multiday-itinerary-v1/);
-  assert.match(privacy, /multi-day plans/);
+test("privacy export and deletion cover every GemGo local namespace", () => {
+  const privacy = read("app/privacy/page.tsx");
+  assert.match(privacy, /key\?\.startsWith\("gemgo"\)/);
+  assert.match(privacy, /key\.startsWith\("gemgo"\)/);
+  assert.match(privacy, /sessionStorage/);
+  assert.doesNotMatch(privacy, /localStorage\.clear/);
 });

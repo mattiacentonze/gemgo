@@ -93,7 +93,7 @@ test("map keeps one base layer and assigns semantic styles to each travel mode",
   assert.match(map, /focusRequestId/);
 });
 
-test("Vercel uses the native Next build and preserves the Sites contribution backend", () => {
+test("Vercel uses the native Next build and the authenticated Supabase contribution backend", () => {
   const packageJson = JSON.parse(read("package.json"));
   const vercel = JSON.parse(read("vercel.json"));
   const route = read("app/api/gems/route.ts");
@@ -102,7 +102,8 @@ test("Vercel uses the native Next build and preserves the Sites contribution bac
   assert.equal(vercel.framework, "nextjs");
   assert.equal(vercel.buildCommand, "npm run build:vercel");
   assert.equal(vercel.outputDirectory, undefined);
-  assert.match(route, /process\.env\.VERCEL/);
-  assert.match(route, /gemgo-pan-alpine\.aloneeagle\.chatgpt\.site/);
-  assert.match(route, /cache: "no-store"/);
+  assert.match(route, /createClient/);
+  assert.match(route, /dynamic = "force-dynamic"/);
+  assert.match(route, /"cache-control": "private, no-store, max-age=0"/);
+  assert.doesNotMatch(route, /GEMGO_SITES_API_BASE_URL|aloneeagle\.chatgpt\.site/);
 });

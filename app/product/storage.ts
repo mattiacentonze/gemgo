@@ -18,6 +18,11 @@ export type SavedCollection = {
   updatedAt: string;
 };
 
+export type PersistenceTombstone = {
+  id: string;
+  deletedAt: string;
+};
+
 export type GemPointEvent = {
   id: string;
   amount: number;
@@ -52,29 +57,110 @@ const ACTIVE_TRIP_KEY = "gemgo-active-trip-v3";
 const LEDGER_KEY = "gemgo-points-ledger-v3";
 const REWARDS_KEY = "gemgo-reward-unlocks-v1";
 const COLLECTIONS_KEY = "gemgo-collections-v1";
+const TRIP_TOMBSTONES_KEY = "gemgo-trip-tombstones-v1";
+const COLLECTION_TOMBSTONES_KEY = "gemgo-collection-tombstones-v1";
+const PERSISTENCE_SCOPE_KEY = "gemgo-persistence-scope-v1";
+const PERSISTENCE_EVENT = "gemgo:persistence-change";
 const LEGACY_TRIP_KEYS = ["gemgo-demo-trip", "gemgo-saved-plans", "gemgo-saved-plans-v2"];
 
-const read = <T,>(key: string, fallback: T): T => {
+const currentScope = () => {
+  if (typeof window === "undefined") return "guest";
+  return window.localStorage.getItem(PERSISTENCE_SCOPE_KEY) || "guest";
+};
+
+const scopedKey = (key: string, scope = currentScope()) =>
+  scope === "guest" ? key : `${key}:user:${scope}`;
+
+const read = <T,>(key: string, fallback: T, scope?: string): T => {
   if (typeof window === "undefined") return fallback;
   try {
-    const value = window.localStorage.getItem(key);
+    const value = window.localStorage.getItem(scopedKey(key, scope));
     return value ? (JSON.parse(value) as T) : fallback;
   } catch {
     return fallback;
   }
 };
 
-const write = (key: string, value: unknown) => {
+const write = (key: string, value: unknown, scope?: string) => {
   if (typeof window === "undefined") return;
   try {
-    window.localStorage.setItem(key, JSON.stringify(value));
+    const resolvedScope = scope ?? currentScope();
+    window.localStorage.setItem(scopedKey(key, resolvedScope), JSON.stringify(value));
+    window.dispatchEvent(new CustomEvent(PERSISTENCE_EVENT, {
+      detail: { key, scope: resolvedScope },
+    }));
   } catch {
     // Persistence is optional in private browsing and restricted webviews.
   }
 };
 
+const deletionTombstones = <T extends { id: string; updatedAt: string }>(
+  key: string,
+  previous: T[],
+  next: T[],
+  scope: string,
+) => {
+  const byId = new Map(
+    read<PersistenceTombstone[]>(key, [], scope).map((item) => [item.id, item]),
+  );
+  const nextById = new Map(next.map((item) => [item.id, item]));
+  const deletedAt = new Date().toISOString();
+
+  for (const item of previous) {
+    if (!nextById.has(item.id)) byId.set(item.id, { id: item.id, deletedAt });
+  }
+  for (const item of next) {
+    const tombstone = byId.get(item.id);
+    if (
+      tombstone &&
+      Date.parse(item.updatedAt) > Date.parse(tombstone.deletedAt)
+    ) {
+      byId.delete(item.id);
+    }
+  }
+
+  return [...byId.values()].sort(
+    (a, b) => Date.parse(b.deletedAt) - Date.parse(a.deletedAt),
+  );
+};
+
+export const persistenceEventName = PERSISTENCE_EVENT;
+export const getPersistenceScope = currentScope;
+export const setPersistenceScope = (scope: string | null) => {
+  if (typeof window === "undefined") return;
+  const safeScope = scope && /^[0-9a-f-]{36}$/i.test(scope) ? scope : "guest";
+  try {
+    window.localStorage.setItem(PERSISTENCE_SCOPE_KEY, safeScope);
+    window.dispatchEvent(new CustomEvent(PERSISTENCE_EVENT, {
+      detail: { key: "scope", scope: safeScope },
+    }));
+  } catch {
+    // The app remains usable without persistence in storage-restricted views.
+  }
+};
+
 export const loadSavedTrips = (): SavedTrip[] => read<SavedTrip[]>(TRIPS_KEY, []);
-export const saveTrips = (trips: SavedTrip[]) => write(TRIPS_KEY, trips);
+export const saveTrips = (trips: SavedTrip[]) => {
+  const scope = currentScope();
+  const previous = read<SavedTrip[]>(TRIPS_KEY, [], scope);
+  write(
+    TRIP_TOMBSTONES_KEY,
+    deletionTombstones(TRIP_TOMBSTONES_KEY, previous, trips, scope),
+    scope,
+  );
+  write(TRIPS_KEY, trips, scope);
+};
+export const loadGuestSavedTrips = (): SavedTrip[] => read<SavedTrip[]>(TRIPS_KEY, [], "guest");
+export const loadAccountSavedTrips = (userId: string): SavedTrip[] =>
+  read<SavedTrip[]>(TRIPS_KEY, [], userId);
+export const saveAccountTrips = (userId: string, trips: SavedTrip[]) =>
+  write(TRIPS_KEY, trips, userId);
+export const loadAccountTripTombstones = (userId: string): PersistenceTombstone[] =>
+  read<PersistenceTombstone[]>(TRIP_TOMBSTONES_KEY, [], userId);
+export const saveAccountTripTombstones = (
+  userId: string,
+  tombstones: PersistenceTombstone[],
+) => write(TRIP_TOMBSTONES_KEY, tombstones, userId);
 
 export const loadActiveTrip = (): SavedTrip | null => read<SavedTrip | null>(ACTIVE_TRIP_KEY, null);
 export const saveActiveTrip = (trip: SavedTrip | null) => write(ACTIVE_TRIP_KEY, trip);
@@ -137,8 +223,35 @@ export const createSavedTrip = (
 
 export const loadCollections = (): SavedCollection[] =>
   read<SavedCollection[]>(COLLECTIONS_KEY, []);
-export const saveCollections = (collections: SavedCollection[]) =>
-  write(COLLECTIONS_KEY, collections);
+export const saveCollections = (collections: SavedCollection[]) => {
+  const scope = currentScope();
+  const previous = read<SavedCollection[]>(COLLECTIONS_KEY, [], scope);
+  write(
+    COLLECTION_TOMBSTONES_KEY,
+    deletionTombstones(
+      COLLECTION_TOMBSTONES_KEY,
+      previous,
+      collections,
+      scope,
+    ),
+    scope,
+  );
+  write(COLLECTIONS_KEY, collections, scope);
+};
+export const loadGuestCollections = (): SavedCollection[] =>
+  read<SavedCollection[]>(COLLECTIONS_KEY, [], "guest");
+export const loadAccountCollections = (userId: string): SavedCollection[] =>
+  read<SavedCollection[]>(COLLECTIONS_KEY, [], userId);
+export const saveAccountCollections = (userId: string, collections: SavedCollection[]) =>
+  write(COLLECTIONS_KEY, collections, userId);
+export const loadAccountCollectionTombstones = (
+  userId: string,
+): PersistenceTombstone[] =>
+  read<PersistenceTombstone[]>(COLLECTION_TOMBSTONES_KEY, [], userId);
+export const saveAccountCollectionTombstones = (
+  userId: string,
+  tombstones: PersistenceTombstone[],
+) => write(COLLECTION_TOMBSTONES_KEY, tombstones, userId);
 
 export const toggleExperienceInCollection = (
   collections: SavedCollection[],

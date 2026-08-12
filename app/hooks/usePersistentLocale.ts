@@ -19,7 +19,12 @@ export function usePersistentLocale(defaultLocale: Locale = "en") {
   const skipInitialWrite = useRef(true);
 
   useEffect(() => {
-    const stored = window.localStorage.getItem(STORAGE_KEY);
+    let stored: string | null = null;
+    try {
+      stored = window.localStorage.getItem(STORAGE_KEY);
+    } catch {
+      // Restricted webviews may deny storage; the server/default locale still works.
+    }
     if (stored && (locales as readonly string[]).includes(stored)) {
       queueMicrotask(() => setLocaleState(stored as Locale));
     }
@@ -37,7 +42,16 @@ export function usePersistentLocale(defaultLocale: Locale = "en") {
       return;
     }
     document.documentElement.lang = locale;
-    window.localStorage.setItem(STORAGE_KEY, locale);
+    try {
+      window.localStorage.setItem(STORAGE_KEY, locale);
+    } catch {
+      // The in-memory language switch remains usable without persistent storage.
+    }
+    try {
+      document.cookie = `gemgo-locale=${locale}; Path=/; Max-Age=31536000; SameSite=Lax`;
+    } catch {
+      // Cookie persistence is best-effort in embedded/private browsing contexts.
+    }
   }, [locale]);
 
   const setLocale = (next: Locale) => {
