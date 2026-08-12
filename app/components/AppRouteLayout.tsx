@@ -6,7 +6,7 @@ import AppUtilityHeader from "./AppUtilityHeader";
 import IntegratedAppShell from "./IntegratedAppShell";
 import UiSoundController from "./UiSoundController";
 
-const utilityRoutes = new Set(["/app/profile", "/app/notifications"]);
+const utilityRoutes = new Set(["/app/profile", "/app/notifications", "/app/admin"]);
 
 export default function AppRouteLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();

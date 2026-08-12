@@ -32,9 +32,9 @@ technical behaviour.
 - `Busy` predictions are excluded from automatic plans.
 - “How it works” is visible beside the planner and expanded below.
 - “Nearby” is used only when location is known.
-- GemXP has a detailed local ledger.
+- GemPoints has a detailed local ledger.
 - Red status treatment is reserved for errors and busy crowd conditions.
-- No email is required to plan or earn local GemXP.
+- No email is required to plan or earn local GemPoints.
 - Planned Explore cards remain visible with an `In your plan` state and may be
   hidden through an explicit filter.
 - Desktop and mobile navigation use one fluid active indicator.
@@ -55,3 +55,4 @@ technical behaviour.
   coloured legs.
 - Nearby accommodation cards show indicative prices and ratings and link to
   Booking.com; accommodation map markers remain future work.
+

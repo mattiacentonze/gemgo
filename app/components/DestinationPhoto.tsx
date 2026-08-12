@@ -50,13 +50,6 @@ const localDestinationMedia: Record<string, Media[]> = {
   ],
   "Falkenstein Ruin Pfronten": [
     {
-      url: "/assets/falkenstein-pfronten-team.webp",
-      source: "GemGo team upload",
-      author: "GemGo team",
-      license: "User-provided presentation asset",
-      title: "Falkenstein Ruin Pfronten panorama",
-    },
-    {
       url: "/assets/falkenstein-pfronten-ridge.webp",
       source: "https://commons.wikimedia.org/wiki/File:Falkenstein-Pfronten-JR-E-5485-2021-07-02.jpg",
       author: "Johannes Robalotoff",
@@ -77,12 +70,21 @@ const allowedLicense = /^(CC0|CC BY|CC BY-SA|Public domain)/i;
 const rejectedTitle = /\b(map|karte|plan|locator|flag|coat of arms|logo|icon|poster|diagram|sign|signage|stamp|emblem|book|manuscript|brochure|cover|painting|drawing|illustration|chart|document|menu|ticket|portrait|selfie|advertisement|scan|chicken|chickens|hen|hens|rooster|poultry|gallina|galline|pollo|huhn|hühner|henne|poule|coq|cow|cattle|sheep|goat|horse|duck)\b/i;
 
 const photoText = {
-  en: { unavailable: "Relevant licensed image unavailable", loading: "Loading licensed destination gallery", noPhoto: "No licensed photo available for", loadingFor: "Loading licensed photos of", gallery: "photo gallery", photo: "photo", previous: "Previous photo of", next: "Next photo of", show: "Show photo" },
-  it: { unavailable: "Immagine pertinente con licenza non disponibile", loading: "Caricamento della galleria della destinazione", noPhoto: "Nessuna foto con licenza disponibile per", loadingFor: "Caricamento delle foto con licenza di", gallery: "galleria fotografica", photo: "foto", previous: "Foto precedente di", next: "Foto successiva di", show: "Mostra foto" },
-  de: { unavailable: "Kein passendes lizenziertes Bild verfügbar", loading: "Lizenzierte Zielgalerie wird geladen", noPhoto: "Kein lizenziertes Foto verfügbar für", loadingFor: "Lizenzierte Fotos werden geladen für", gallery: "Fotogalerie", photo: "Foto", previous: "Vorheriges Foto von", next: "Nächstes Foto von", show: "Foto anzeigen" },
-  fr: { unavailable: "Aucune image pertinente sous licence disponible", loading: "Chargement de la galerie de la destination", noPhoto: "Aucune photo sous licence disponible pour", loadingFor: "Chargement des photos sous licence de", gallery: "galerie photo", photo: "photo", previous: "Photo précédente de", next: "Photo suivante de", show: "Afficher la photo" },
-  sl: { unavailable: "Ustrezna licencirana slika ni na voljo", loading: "Nalaganje galerije destinacije", noPhoto: "Licencirana fotografija ni na voljo za", loadingFor: "Nalaganje licenciranih fotografij za", gallery: "fotogalerija", photo: "fotografija", previous: "Prejšnja fotografija kraja", next: "Naslednja fotografija kraja", show: "Prikaži fotografijo" },
+  en: { unavailable: "Relevant licensed image unavailable", loading: "Loading licensed destination gallery", noPhoto: "No licensed photo available for", loadingFor: "Loading licensed photos of", gallery: "photo gallery", photo: "photo", photos: "photos", previous: "Previous photo of", next: "Next photo of", show: "Show photo", by: "by", source: "Source" },
+  it: { unavailable: "Immagine pertinente con licenza non disponibile", loading: "Caricamento della galleria della destinazione", noPhoto: "Nessuna foto con licenza disponibile per", loadingFor: "Caricamento delle foto con licenza di", gallery: "galleria fotografica", photo: "foto", photos: "foto", previous: "Foto precedente di", next: "Foto successiva di", show: "Mostra foto", by: "di", source: "Fonte" },
+  de: { unavailable: "Kein passendes lizenziertes Bild verfügbar", loading: "Lizenzierte Zielgalerie wird geladen", noPhoto: "Kein lizenziertes Foto verfügbar für", loadingFor: "Lizenzierte Fotos werden geladen für", gallery: "Fotogalerie", photo: "Foto", photos: "Fotos", previous: "Vorheriges Foto von", next: "Nächstes Foto von", show: "Foto anzeigen", by: "von", source: "Quelle" },
+  fr: { unavailable: "Aucune image pertinente sous licence disponible", loading: "Chargement de la galerie de la destination", noPhoto: "Aucune photo sous licence disponible pour", loadingFor: "Chargement des photos sous licence de", gallery: "galerie photo", photo: "photo", photos: "photos", previous: "Photo précédente de", next: "Photo suivante de", show: "Afficher la photo", by: "par", source: "Source" },
+  sl: { unavailable: "Ustrezna licencirana slika ni na voljo", loading: "Nalaganje galerije destinacije", noPhoto: "Licencirana fotografija ni na voljo za", loadingFor: "Nalaganje licenciranih fotografij za", gallery: "fotogalerija", photo: "fotografija", photos: "fotografij", previous: "Prejšnja fotografija kraja", next: "Naslednja fotografija kraja", show: "Prikaži fotografijo", by: "avtor", source: "Vir" },
 } as const;
+
+function MediaCredit({ media, by, source }: { media: Media; by: string; source: string }) {
+  return (
+    <span className="destination-photo-credit">
+      {media.title} · {by} {media.author} · {media.license} ·{" "}
+      <a href={media.source} target="_blank" rel="noreferrer noopener">{source}</a>
+    </span>
+  );
+}
 
 const plainText = (value?: { value?: string }) =>
   (value?.value ?? "")
@@ -389,6 +391,7 @@ export default function DestinationPhoto({
             </div>
           ))}
         </div>
+        <figcaption>{gallery.slice(0, 5).map((media) => <MediaCredit key={media.url} media={media} by={t.by} source={t.source} />)}</figcaption>
       </figure>
     );
   }
@@ -432,7 +435,7 @@ export default function DestinationPhoto({
             <button type="button" className="gallery-arrow gallery-arrow-next" aria-label={`${t.next} ${name}`} onClick={(event) => { event.preventDefault(); event.stopPropagation(); move(1); }}>
               <ChevronRight size={compact ? 18 : 21} />
             </button>
-            <div className="gallery-dots" aria-label={`${gallery.length} photos`}>
+            <div className="gallery-dots" aria-label={`${gallery.length} ${t.photos}`}>
               {gallery.map((media, index) => (
                 <button
                   type="button"
@@ -460,6 +463,7 @@ export default function DestinationPhoto({
           </div>
         )}
       </div>
+      <figcaption><MediaCredit media={activeMedia} by={t.by} source={t.source} /></figcaption>
     </figure>
   );
 }

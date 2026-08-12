@@ -194,7 +194,8 @@ test("My Trip persists multiple plans and GemPoints use an event ledger", async 
   assert.doesNotMatch(shell, /GemCredits/);
   assert.match(shell, /header-points-link/);
   assert.match(shell, /notification-page-link/);
-  assert.match(shell, /balance\.toLocaleString\(locale\)/);
+  assert.match(shell, /displayedBalance\.toLocaleString\(locale\)/);
+  assert.match(shell, /auth\.user \? auth\.verifiedBalance : balance/);
 });
 
 test("visit verification supports GPS, partner codes and an explicitly labelled demo path", async () => {
@@ -204,6 +205,9 @@ test("visit verification supports GPS, partner codes and an explicitly labelled 
   assert.match(shell, /Partner QR code/);
   assert.match(shell, /demo verification/);
   assert.match(shell, /status: "demo" \| "verified"/);
+  assert.match(shell, /distance <= 2\) completeVerification\("demo"/);
+  assert.match(shell, /GEMGO-DEMO-2026/);
+  assert.doesNotMatch(shell, /\^\(GEMGO\|GEM\)-/);
 });
 
 test("the redesigned interface exposes all five required locales", async () => {
@@ -238,5 +242,8 @@ test("homepage language, regional map controls and result-card hierarchy are int
   assert.match(card, /recommendation-reasons/);
   assert.match(card, /result-metrics/);
   assert.doesNotMatch(card, /rank-label/);
-  assert.doesNotMatch(photo, /<figcaption>/);
+  assert.match(photo, /<figcaption>/);
+  assert.match(photo, /media\.author/);
+  assert.match(photo, /media\.license/);
+  assert.match(photo, /href=\{media\.source\}/);
 });
