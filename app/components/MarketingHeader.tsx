@@ -7,6 +7,7 @@ import { locales, type Locale } from "../domain";
 import { localeNames } from "../hooks/usePersistentLocale";
 import type { MarketingCopy } from "../i18n/marketing";
 import { loadLedger, pointBalance } from "../product/storage";
+import { useAuth } from "./AuthProvider";
 
 type Props = {
   locale: Locale;
@@ -15,6 +16,7 @@ type Props = {
 };
 
 export default function MarketingHeader({ locale, onLocaleChange, copy }: Props) {
+  const auth = useAuth();
   const [languageOpen, setLanguageOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [balance, setBalance] = useState(0);
@@ -41,6 +43,14 @@ export default function MarketingHeader({ locale, onLocaleChange, copy }: Props)
     setMenuOpen(false);
   };
 
+  const displayedBalance = auth.user ? auth.verifiedBalance : balance;
+  const ariaCopy = {
+    en: { home: "GemGo home", nav: "Homepage navigation", mobile: "Mobile homepage navigation" },
+    it: { home: "Home GemGo", nav: "Navigazione della homepage", mobile: "Navigazione mobile della homepage" },
+    de: { home: "GemGo-Startseite", nav: "Startseitennavigation", mobile: "Mobile Startseitennavigation" },
+    fr: { home: "Accueil GemGo", nav: "Navigation de la page d’accueil", mobile: "Navigation mobile de la page d’accueil" },
+    sl: { home: "Domov GemGo", nav: "Krmarjenje domače strani", mobile: "Mobilno krmarjenje domače strani" },
+  }[locale];
   const links = [
     ["/#how", copy.navigation.how],
     ["/about", copy.navigation.about],
@@ -50,12 +60,12 @@ export default function MarketingHeader({ locale, onLocaleChange, copy }: Props)
   return (
     <header className="marketing-header" ref={headerRef}>
       <div className="marketing-header-inner">
-        <Link href="/" className="brand marketing-brand" aria-label="GemGo homepage" onClick={closeMenus}>
+        <Link href="/" className="brand marketing-brand" aria-label={ariaCopy.home} onClick={closeMenus}>
           <span className="brand-mark"><img src="/assets/gemgo-logo-green.svg?v=2" alt="" /></span>
           <span><strong>GemGo</strong><small>{copy.tagline}</small></span>
         </Link>
 
-        <nav className="marketing-desktop-nav" aria-label="Homepage navigation">
+        <nav className="marketing-desktop-nav" aria-label={ariaCopy.nav}>
           {links.map(([href, label]) => <a key={href} href={href}>{label}</a>)}
         </nav>
 
@@ -89,7 +99,7 @@ export default function MarketingHeader({ locale, onLocaleChange, copy }: Props)
               </div>
             )}
           </div>
-          <Link href="/app/gempoints" className="marketing-points-link"><Gem size={18} /><span><strong>{balance.toLocaleString(locale)}</strong><small>GemPoints</small></span></Link>
+          <Link href="/app/gempoints" className="marketing-points-link"><Gem size={18} /><span><strong>{displayedBalance.toLocaleString(locale)}</strong><small>GemPoints</small></span></Link>
           <Link href="/app/profile" className="icon-button marketing-profile-link" aria-label={copy.navigation.profile}><UserRound size={19} /></Link>
           <Link href="/app/explore" className="button button-primary marketing-try-button">{copy.navigation.openApp}</Link>
           <button
@@ -104,7 +114,7 @@ export default function MarketingHeader({ locale, onLocaleChange, copy }: Props)
         </div>
 
         {menuOpen && (
-          <nav className="marketing-mobile-menu" aria-label="Mobile homepage navigation">
+          <nav className="marketing-mobile-menu" aria-label={ariaCopy.mobile}>
             {links.map(([href, label]) => <a key={href} href={href} onClick={closeMenus}>{label}</a>)}
             <Link href="/app/profile" onClick={closeMenus}>{copy.navigation.profile}</Link>
             <Link href="/app/explore" className="button button-primary" onClick={closeMenus}>{copy.navigation.openApp}</Link>

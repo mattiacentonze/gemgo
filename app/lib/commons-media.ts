@@ -1,7 +1,9 @@
 const preferredFiles: Record<string, string[]> = {
   Torgnon: ["File:Torgnon.JPG"],
   "Châtillon": ["File:Châtillon vista dal castello di Ussel..JPG"],
-  "Gressoney-Saint-Jean": ["File:Gressoney-St-Jean - été.JPG"],
+  "Gressoney-Saint-Jean": [
+    "File:02E1680001-MIBAC Castel Savoia a Gressoney-Saint-Jean.jpg",
+  ],
   "Colle del Piccolo San Bernardo": ["File:Piccolo S Bernardo.jpg"],
   "Fenis Castle": ["File:Fénis Castle.jpg"],
 };

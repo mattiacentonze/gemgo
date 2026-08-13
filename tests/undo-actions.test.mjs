@@ -13,6 +13,9 @@ test("trip deletion and GemDrop switching expose a local Undo action", () => {
   assert.match(shell, /Restore original plan|Ripristina piano originale/);
   assert.match(shell, /const undoLastAction/);
   assert.match(shell, /toast-undo-button/);
+  assert.match(shell, /const closeGemDrop/);
+  assert.match(shell, /params\.delete\("gemdrop"\)/);
+  assert.match(shell, /onClose=\{closeGemDrop\}/);
   assert.doesNotMatch(shell, /window\.location\.reload\(\)/);
   assert.match(css, /toast-undo-button/);
 });

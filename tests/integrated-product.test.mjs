@@ -113,14 +113,33 @@ test("the homepage uses real Alpine cartography with a geographic animated route
   assert.match(hero, /tile\.opentopomap\.org/);
   assert.match(hero, /quadraticRoute/);
   assert.match(hero, /hero-route-line/);
+  assert.match(hero, /clientHeight \?\? 0\) \* 0\.1/);
+  assert.match(hero, /cardClearance \+ topCropOffset/);
   assert.match(hero, /Illustrative crowd scenario · not live data/);
   assert.doesNotMatch(hero, /alpine-redistribution-map\.png|<img|<svg|alpineMassPath/);
   assert.match(css, /mask-image:/);
+  assert.match(css, /\.landing-hero-question \{ white-space: nowrap; \}/);
   assert.match(css, /\.hero-route-line[\s\S]*stroke-dasharray:[\s\S]*animation: hero-route-flow/);
+  assert.match(home, /className="landing-hero-question"/);
   assert.match(home, /<HeroComparison locale=\{locale\} \/>/);
   assert.match(home, /<HeroAlpineMap locale=\{locale\} \/>/);
   assert.match(home, /<LandingImpactStrip locale=\{locale\} \/>/);
   assert.match(strip, /landing-impact-strip/);
+});
+
+test("landing comparison cards use curated automatic galleries without manual controls", async () => {
+  const comparison = await source("app/components/HeroComparison.tsx");
+  const gallery = await source("app/components/DestinationPhoto.tsx");
+  const css = await source("app/styles/photo-polish.css");
+  assert.doesNotMatch(comparison, /<h2>/);
+  assert.equal((comparison.match(/autoPlay/g) ?? []).length, 4);
+  assert.equal((comparison.match(/interactive=\{false\}/g) ?? []).length, 2);
+  assert.match(gallery, /"Neuschwanstein Castle": \[/);
+  assert.match(gallery, /"Falkenstein Ruin Pfronten": \[/);
+  assert.match(gallery, /window\.setInterval/);
+  assert.match(gallery, /prefers-reduced-motion: reduce/);
+  assert.match(gallery, /interactive && gallery\.length > 1/);
+  assert.match(css, /\.destination-gallery\.is-autoplay \.destination-gallery-image/);
 });
 
 test("the About story connects the founding anecdote to overtourism and the response", async () => {
@@ -175,7 +194,8 @@ test("My Trip persists multiple plans and GemPoints use an event ledger", async 
   assert.doesNotMatch(shell, /GemCredits/);
   assert.match(shell, /header-points-link/);
   assert.match(shell, /notification-page-link/);
-  assert.match(shell, /balance\.toLocaleString\(locale\)/);
+  assert.match(shell, /displayedBalance\.toLocaleString\(locale\)/);
+  assert.match(shell, /auth\.user \? auth\.verifiedBalance : balance/);
 });
 
 test("visit verification supports GPS, partner codes and an explicitly labelled demo path", async () => {
@@ -185,6 +205,9 @@ test("visit verification supports GPS, partner codes and an explicitly labelled 
   assert.match(shell, /Partner QR code/);
   assert.match(shell, /demo verification/);
   assert.match(shell, /status: "demo" \| "verified"/);
+  assert.match(shell, /distance <= 2\) completeVerification\("demo"/);
+  assert.match(shell, /GEMGO-DEMO-2026/);
+  assert.doesNotMatch(shell, /\^\(GEMGO\|GEM\)-/);
 });
 
 test("the redesigned interface exposes all five required locales", async () => {
@@ -219,5 +242,8 @@ test("homepage language, regional map controls and result-card hierarchy are int
   assert.match(card, /recommendation-reasons/);
   assert.match(card, /result-metrics/);
   assert.doesNotMatch(card, /rank-label/);
-  assert.doesNotMatch(photo, /<figcaption>/);
+  assert.match(photo, /<figcaption>/);
+  assert.match(photo, /media\.author/);
+  assert.match(photo, /media\.license/);
+  assert.match(photo, /href=\{media\.source\}/);
 });

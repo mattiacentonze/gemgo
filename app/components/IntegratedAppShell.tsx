@@ -83,7 +83,7 @@ import {
   totalCatalogueEntries,
   type PilotRegion,
 } from "../product/catalogue";
-import type { NearbyTransitStop } from "../product/transit";
+import type { TransitAccessPlan } from "../product/transit";
 import {
   applyPromptToPreferences,
   getEligibleExperiences,
@@ -133,12 +133,14 @@ import { mvpCopy } from "../i18n/mvp-copy";
 import {
   localizedExperienceCaption,
   localizedExperienceNarrative,
+  localizedPracticalInfo,
   localizedExperienceReasons,
 } from "../i18n/experience-content";
 import { seasonLabel, seasonUi } from "../i18n/season";
 import { loadStoredNotifications, upsertStoredNotification } from "../product/notifications";
 import { calculateVisitPoints } from "../product/gempoints";
 import { curatedScenarioFor } from "../product/curated-alternatives";
+import { useAuth } from "./AuthProvider";
 
 type ExploreStage = "brief" | "results" | "experience";
 type TripMode = "active" | "saved" | "collections";
@@ -562,6 +564,13 @@ const plannerCopy = {
     hoursHint: "Shown in hours and minutes",
     notifications: "Notifications",
     transitStatic: "km from the experience · static regional-rail stop from GTFS.de / DELFI, not a live departure",
+    transitAccess: "Public-transport access",
+    transitOrigin: "Nearest static stop to your Alpine start",
+    transitDestination: "Nearest static stop to this experience",
+    transitBavaria: "Static GTFS access points only. Open an external planner for the actual timetable and transfers.",
+    transitAosta: "No verified reusable GTFS feed is available in this revision. Check the current official Valle d’Aosta operator timetable.",
+    transitGoogle: "Open transit directions",
+    transitOfficial: "Open official timetable",
   },
   it: {
     alpineStart:
@@ -569,6 +578,13 @@ const plannerCopy = {
     hoursHint: "Mostrato in ore e minuti",
     notifications: "Notifiche",
     transitStatic: "km dall’esperienza · fermata ferroviaria regionale statica da GTFS.de / DELFI, non una partenza live",
+    transitAccess: "Accesso con trasporto pubblico",
+    transitOrigin: "Fermata statica più vicina alla partenza alpina",
+    transitDestination: "Fermata statica più vicina a questa esperienza",
+    transitBavaria: "Solo punti di accesso GTFS statici. Apri un planner esterno per orari e cambi effettivi.",
+    transitAosta: "In questa revisione non è disponibile un feed GTFS verificato e riutilizzabile. Controlla l’orario attuale dell’operatore ufficiale valdostano.",
+    transitGoogle: "Apri indicazioni con trasporto pubblico",
+    transitOfficial: "Apri orario ufficiale",
   },
   de: {
     alpineStart:
@@ -576,6 +592,13 @@ const plannerCopy = {
     hoursHint: "In Stunden und Minuten",
     notifications: "Benachrichtigungen",
     transitStatic: "km vom Erlebnis · statischer Regionalbahnhof aus GTFS.de / DELFI, keine Live-Abfahrt",
+    transitAccess: "Anreise mit öffentlichen Verkehrsmitteln",
+    transitOrigin: "Nächste statische Haltestelle zum Alpen-Start",
+    transitDestination: "Nächste statische Haltestelle zu diesem Erlebnis",
+    transitBavaria: "Nur statische GTFS-Zugangspunkte. Für tatsächliche Fahrpläne und Umstiege einen externen Planer öffnen.",
+    transitAosta: "In dieser Version ist kein verifizierter, wiederverwendbarer GTFS-Feed verfügbar. Bitte den aktuellen Fahrplan des offiziellen Aostatal-Betreibers prüfen.",
+    transitGoogle: "ÖPNV-Route öffnen",
+    transitOfficial: "Offiziellen Fahrplan öffnen",
   },
   fr: {
     alpineStart:
@@ -583,6 +606,13 @@ const plannerCopy = {
     hoursHint: "Affiché en heures et minutes",
     notifications: "Notifications",
     transitStatic: "km de l’expérience · arrêt ferroviaire régional statique issu de GTFS.de / DELFI, pas un départ en direct",
+    transitAccess: "Accès en transports publics",
+    transitOrigin: "Arrêt statique le plus proche du départ alpin",
+    transitDestination: "Arrêt statique le plus proche de cette expérience",
+    transitBavaria: "Points d’accès GTFS statiques uniquement. Ouvrez un planificateur externe pour les horaires et correspondances réels.",
+    transitAosta: "Aucun flux GTFS vérifié et réutilisable n’est disponible dans cette version. Consultez l’horaire actuel de l’opérateur officiel valdôtain.",
+    transitGoogle: "Ouvrir l’itinéraire en transports publics",
+    transitOfficial: "Ouvrir l’horaire officiel",
   },
   sl: {
     alpineStart:
@@ -590,6 +620,13 @@ const plannerCopy = {
     hoursHint: "Prikazano v urah in minutah",
     notifications: "Obvestila",
     transitStatic: "km od doživetja · statična regionalna železniška postaja iz GTFS.de / DELFI, ne odhod v živo",
+    transitAccess: "Dostop z javnim prevozom",
+    transitOrigin: "Najbližja statična postaja alpskemu izhodišču",
+    transitDestination: "Najbližja statična postaja temu doživetju",
+    transitBavaria: "Samo statične dostopne točke GTFS. Za dejanski vozni red in prestope odprite zunanji načrtovalnik.",
+    transitAosta: "V tej različici ni preverjenega in ponovno uporabnega vira GTFS. Preverite trenutni vozni red uradnega prevoznika Doline Aoste.",
+    transitGoogle: "Odpri navodila za javni prevoz",
+    transitOfficial: "Odpri uradni vozni red",
   },
 } as const;
 
@@ -603,7 +640,7 @@ const activityCopy = {
     actual: "Mode recorded by the activity",
     provider: "Activity source",
     import: "Import demo activity and verify",
-    verified: "Stop verified",
+    verified: "Demo stop recorded",
     standard: "Standard visit points",
     bonus: "Lower-impact change · points bonus",
     malus: "Higher-impact change · points reduction",
@@ -629,7 +666,7 @@ const activityCopy = {
     actual: "Mezzo registrato dall’attività",
     provider: "Fonte attività",
     import: "Importa attività demo e verifica",
-    verified: "Tappa verificata",
+    verified: "Tappa demo registrata",
     standard: "Punti visita standard",
     bonus: "Cambio a minore impatto · punti bonus",
     malus: "Cambio a maggiore impatto · punti ridotti",
@@ -655,7 +692,7 @@ const activityCopy = {
     actual: "In der Aktivität erkannt",
     provider: "Aktivitätsquelle",
     import: "Demo-Aktivität importieren und bestätigen",
-    verified: "Stopp bestätigt",
+    verified: "Demo-Stopp erfasst",
     standard: "Standard-Besuchspunkte",
     bonus: "Umweltschonenderer Wechsel · Bonus",
     malus: "Belastenderer Wechsel · weniger Punkte",
@@ -681,7 +718,7 @@ const activityCopy = {
     actual: "Mode enregistré",
     provider: "Source de l’activité",
     import: "Importer l’activité démo et vérifier",
-    verified: "Étape vérifiée",
+    verified: "Étape démo enregistrée",
     standard: "Points de visite standard",
     bonus: "Changement à moindre impact · bonus",
     malus: "Changement à plus fort impact · points réduits",
@@ -707,7 +744,7 @@ const activityCopy = {
     actual: "Zabeleženi način",
     provider: "Vir dejavnosti",
     import: "Uvozi predstavitveno dejavnost in potrdi",
-    verified: "Postanek potrjen",
+    verified: "Predstavitveni postanek zabeležen",
     standard: "Običajne točke obiska",
     bonus: "Sprememba z manjšim vplivom · bonus",
     malus: "Sprememba z večjim vplivom · manj točk",
@@ -767,11 +804,11 @@ const promptExamples: Record<Locale, string> = {
 };
 
 const systemUi = {
-  en: { tripName: "Trip name", duplicated: "Trip duplicated", deleted: "Trip deleted", geoUnavailable: "Geolocation is not available on this device.", checkingLocation: "Checking your current location…", currentLocation: "Current location", distanceArea: (distance: string) => `You are about ${distance} km from the verification area.`, geoDenied: "Location permission was denied or the position could not be determined.", invalidQr: "The QR code is not valid for this demonstration.", switched: "Trip switched to the lower-pressure alternative", rewardUnlocked: (code: string) => `Demo reward unlocked: ${code}`, demoLedger: "Clearly labelled jury demo balance", rewardLedger: (label: string) => `Demo reward: ${label}`, visitLedger: (name: string, tone: string) => `Verified visit: ${name}${tone === "bonus" ? " · lower-impact bonus" : tone === "malus" ? " · mobility adjustment" : ""}`, gemDropLedger: "Accepted a lower-pressure GemDrop", badge: (title: string) => `Congratulations! Badge earned: ${title}` },
-  it: { tripName: "Nome del viaggio", duplicated: "Viaggio duplicato", deleted: "Viaggio eliminato", geoUnavailable: "La geolocalizzazione non è disponibile su questo dispositivo.", checkingLocation: "Verifica della posizione attuale…", currentLocation: "Posizione attuale", distanceArea: (distance: string) => `Sei a circa ${distance} km dall’area di verifica.`, geoDenied: "Il permesso di localizzazione è stato negato o non è stato possibile determinare la posizione.", invalidQr: "Il codice QR non è valido per questa dimostrazione.", switched: "Viaggio aggiornato con l’alternativa a minore pressione", rewardUnlocked: (code: string) => `Premio demo sbloccato: ${code}`, demoLedger: "Saldo demo per la giuria chiaramente indicato", rewardLedger: (label: string) => `Premio demo: ${label}`, visitLedger: (name: string, tone: string) => `Visita verificata: ${name}${tone === "bonus" ? " · bonus a minore impatto" : tone === "malus" ? " · adeguamento mobilità" : ""}`, gemDropLedger: "GemDrop a minore pressione accettato", badge: (title: string) => `Complimenti! Badge ottenuto: ${title}` },
-  de: { tripName: "Reisename", duplicated: "Reise dupliziert", deleted: "Reise gelöscht", geoUnavailable: "Geolokalisierung ist auf diesem Gerät nicht verfügbar.", checkingLocation: "Aktueller Standort wird geprüft…", currentLocation: "Aktueller Standort", distanceArea: (distance: string) => `Du bist etwa ${distance} km vom Bestätigungsbereich entfernt.`, geoDenied: "Die Standortfreigabe wurde verweigert oder die Position konnte nicht bestimmt werden.", invalidQr: "Der QR-Code ist für diese Demonstration ungültig.", switched: "Reise auf die weniger belastete Alternative umgestellt", rewardUnlocked: (code: string) => `Demo-Prämie freigeschaltet: ${code}`, demoLedger: "Klar gekennzeichneter Demo-Punktestand für die Jury", rewardLedger: (label: string) => `Demo-Prämie: ${label}`, visitLedger: (name: string, tone: string) => `Besuch bestätigt: ${name}${tone === "bonus" ? " · Bonus für geringere Wirkung" : tone === "malus" ? " · Mobilitätsanpassung" : ""}`, gemDropLedger: "GemDrop mit geringerem Andrang angenommen", badge: (title: string) => `Glückwunsch! Abzeichen erhalten: ${title}` },
-  fr: { tripName: "Nom du voyage", duplicated: "Voyage dupliqué", deleted: "Voyage supprimé", geoUnavailable: "La géolocalisation n’est pas disponible sur cet appareil.", checkingLocation: "Vérification de votre position…", currentLocation: "Position actuelle", distanceArea: (distance: string) => `Vous êtes à environ ${distance} km de la zone de vérification.`, geoDenied: "L’autorisation de localisation a été refusée ou la position n’a pas pu être déterminée.", invalidQr: "Le code QR n’est pas valide pour cette démonstration.", switched: "Voyage remplacé par l’alternative à moindre pression", rewardUnlocked: (code: string) => `Récompense démo débloquée : ${code}`, demoLedger: "Solde démo jury clairement signalé", rewardLedger: (label: string) => `Récompense démo : ${label}`, visitLedger: (name: string, tone: string) => `Visite vérifiée : ${name}${tone === "bonus" ? " · bonus à moindre impact" : tone === "malus" ? " · ajustement mobilité" : ""}`, gemDropLedger: "GemDrop à moindre pression accepté", badge: (title: string) => `Félicitations ! Badge obtenu : ${title}` },
-  sl: { tripName: "Ime potovanja", duplicated: "Potovanje podvojeno", deleted: "Potovanje izbrisano", geoUnavailable: "Geolokacija v tej napravi ni na voljo.", checkingLocation: "Preverjanje trenutne lokacije…", currentLocation: "Trenutna lokacija", distanceArea: (distance: string) => `Od območja potrditve ste oddaljeni približno ${distance} km.`, geoDenied: "Dovoljenje za lokacijo je bilo zavrnjeno ali položaja ni bilo mogoče določiti.", invalidQr: "QR-koda ni veljavna za to predstavitev.", switched: "Potovanje preusmerjeno na manj obremenjeno alternativo", rewardUnlocked: (code: string) => `Predstavitvena nagrada odklenjena: ${code}`, demoLedger: "Jasno označeno predstavitveno stanje za žirijo", rewardLedger: (label: string) => `Predstavitvena nagrada: ${label}`, visitLedger: (name: string, tone: string) => `Obisk potrjen: ${name}${tone === "bonus" ? " · bonus za manjši vpliv" : tone === "malus" ? " · prilagoditev mobilnosti" : ""}`, gemDropLedger: "Sprejet GemDrop z manjšo obremenitvijo", badge: (title: string) => `Čestitamo! Pridobljena značka: ${title}` },
+  en: { tripName: "Trip name", duplicated: "Trip duplicated", deleted: "Trip deleted", geoUnavailable: "Geolocation is not available on this device.", checkingLocation: "Checking your current location…", currentLocation: "Current location", distanceArea: (distance: string) => `You are about ${distance} km from the verification area.`, geoDenied: "Location permission was denied or the position could not be determined.", invalidQr: "The QR code is not valid for this demonstration.", switched: "Trip switched to the lower-pressure alternative", rewardUnlocked: (code: string) => `Demo reward unlocked: ${code}`, demoLedger: "Clearly labelled jury demo balance", rewardLedger: (label: string) => `Demo reward: ${label}`, visitLedger: (name: string, tone: string) => `Demo visit: ${name}${tone === "bonus" ? " · lower-impact bonus" : tone === "malus" ? " · mobility adjustment" : ""}`, gemDropLedger: "Accepted a lower-pressure GemDrop", badge: (title: string) => `Congratulations! Badge earned: ${title}` },
+  it: { tripName: "Nome del viaggio", duplicated: "Viaggio duplicato", deleted: "Viaggio eliminato", geoUnavailable: "La geolocalizzazione non è disponibile su questo dispositivo.", checkingLocation: "Verifica della posizione attuale…", currentLocation: "Posizione attuale", distanceArea: (distance: string) => `Sei a circa ${distance} km dall’area di verifica.`, geoDenied: "Il permesso di localizzazione è stato negato o non è stato possibile determinare la posizione.", invalidQr: "Il codice QR non è valido per questa dimostrazione.", switched: "Viaggio aggiornato con l’alternativa a minore pressione", rewardUnlocked: (code: string) => `Premio demo sbloccato: ${code}`, demoLedger: "Saldo demo per la giuria chiaramente indicato", rewardLedger: (label: string) => `Premio demo: ${label}`, visitLedger: (name: string, tone: string) => `Visita demo: ${name}${tone === "bonus" ? " · bonus a minore impatto" : tone === "malus" ? " · adeguamento mobilità" : ""}`, gemDropLedger: "GemDrop a minore pressione accettato", badge: (title: string) => `Complimenti! Badge ottenuto: ${title}` },
+  de: { tripName: "Reisename", duplicated: "Reise dupliziert", deleted: "Reise gelöscht", geoUnavailable: "Geolokalisierung ist auf diesem Gerät nicht verfügbar.", checkingLocation: "Aktueller Standort wird geprüft…", currentLocation: "Aktueller Standort", distanceArea: (distance: string) => `Du bist etwa ${distance} km vom Bestätigungsbereich entfernt.`, geoDenied: "Die Standortfreigabe wurde verweigert oder die Position konnte nicht bestimmt werden.", invalidQr: "Der QR-Code ist für diese Demonstration ungültig.", switched: "Reise auf die weniger belastete Alternative umgestellt", rewardUnlocked: (code: string) => `Demo-Prämie freigeschaltet: ${code}`, demoLedger: "Klar gekennzeichneter Demo-Punktestand für die Jury", rewardLedger: (label: string) => `Demo-Prämie: ${label}`, visitLedger: (name: string, tone: string) => `Demo-Besuch: ${name}${tone === "bonus" ? " · Bonus für geringere Wirkung" : tone === "malus" ? " · Mobilitätsanpassung" : ""}`, gemDropLedger: "GemDrop mit geringerem Andrang angenommen", badge: (title: string) => `Glückwunsch! Abzeichen erhalten: ${title}` },
+  fr: { tripName: "Nom du voyage", duplicated: "Voyage dupliqué", deleted: "Voyage supprimé", geoUnavailable: "La géolocalisation n’est pas disponible sur cet appareil.", checkingLocation: "Vérification de votre position…", currentLocation: "Position actuelle", distanceArea: (distance: string) => `Vous êtes à environ ${distance} km de la zone de vérification.`, geoDenied: "L’autorisation de localisation a été refusée ou la position n’a pas pu être déterminée.", invalidQr: "Le code QR n’est pas valide pour cette démonstration.", switched: "Voyage remplacé par l’alternative à moindre pression", rewardUnlocked: (code: string) => `Récompense démo débloquée : ${code}`, demoLedger: "Solde démo jury clairement signalé", rewardLedger: (label: string) => `Récompense démo : ${label}`, visitLedger: (name: string, tone: string) => `Visite démo : ${name}${tone === "bonus" ? " · bonus à moindre impact" : tone === "malus" ? " · ajustement mobilité" : ""}`, gemDropLedger: "GemDrop à moindre pression accepté", badge: (title: string) => `Félicitations ! Badge obtenu : ${title}` },
+  sl: { tripName: "Ime potovanja", duplicated: "Potovanje podvojeno", deleted: "Potovanje izbrisano", geoUnavailable: "Geolokacija v tej napravi ni na voljo.", checkingLocation: "Preverjanje trenutne lokacije…", currentLocation: "Trenutna lokacija", distanceArea: (distance: string) => `Od območja potrditve ste oddaljeni približno ${distance} km.`, geoDenied: "Dovoljenje za lokacijo je bilo zavrnjeno ali položaja ni bilo mogoče določiti.", invalidQr: "QR-koda ni veljavna za to predstavitev.", switched: "Potovanje preusmerjeno na manj obremenjeno alternativo", rewardUnlocked: (code: string) => `Predstavitvena nagrada odklenjena: ${code}`, demoLedger: "Jasno označeno predstavitveno stanje za žirijo", rewardLedger: (label: string) => `Predstavitvena nagrada: ${label}`, visitLedger: (name: string, tone: string) => `Predstavitveni obisk: ${name}${tone === "bonus" ? " · bonus za manjši vpliv" : tone === "malus" ? " · prilagoditev mobilnosti" : ""}`, gemDropLedger: "Sprejet GemDrop z manjšo obremenitvijo", badge: (title: string) => `Čestitamo! Pridobljena značka: ${title}` },
 } as const;
 
 const transportOptions: Array<{
@@ -1134,6 +1171,25 @@ const badgeValuesFor = (events: GemPointEvent[], trips: SavedTrip[]) => {
 };
 
 export default function IntegratedAppShell() {
+  const auth = useAuth();
+  const persistenceIdentity = auth.user?.id ?? "guest";
+
+  return (
+    <IntegratedAppShellForIdentity
+      key={persistenceIdentity}
+      auth={auth}
+      persistenceIdentity={persistenceIdentity}
+    />
+  );
+}
+
+function IntegratedAppShellForIdentity({
+  auth,
+  persistenceIdentity,
+}: {
+  auth: ReturnType<typeof useAuth>;
+  persistenceIdentity: string;
+}) {
   const { locale, setLocale } = usePersistentLocale();
   const [languageOpen, setLanguageOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -1179,12 +1235,13 @@ export default function IntegratedAppShell() {
   const [qrCode, setQrCode] = useState("");
   const [toast, setToast] = useState("");
   const [undoSnapshot, setUndoSnapshot] = useState<UndoSnapshot | null>(null);
-  const [activeTransitStop, setActiveTransitStop] =
-    useState<NearbyTransitStop | null>(null);
+  const [activeTransitPlan, setActiveTransitPlan] =
+    useState<TransitAccessPlan | null>(null);
   const [interpretationSummary, setInterpretationSummary] = useState("");
   const [conditionModalOpen, setConditionModalOpen] = useState(false);
   const [conditionReminderVisible, setConditionReminderVisible] = useState(false);
   const [toastAction, setToastAction] = useState<"condition" | null>(null);
+  const [hydratedPersistenceIdentity, setHydratedPersistenceIdentity] = useState<string | null>(null);
 
   const [tripMapExpanded, setTripMapExpanded] = useState(false);
   const [floatingTarget, setFloatingTarget] = useState<HTMLElement | null>(null);
@@ -1336,6 +1393,7 @@ export default function IntegratedAppShell() {
     activeTrip?.preferences.transport ?? preferences.transport,
   );
   const balance = pointBalance(ledger);
+  const displayedBalance = auth.user ? auth.verifiedBalance : balance;
   const nearbyWaterAvailable = Boolean(
     activeExperience &&
       allExperiences.some(
@@ -1410,7 +1468,11 @@ export default function IntegratedAppShell() {
     queueMicrotask(() => setFloatingTarget(document.body));
   }, []);
 
+  const canPersist =
+    !auth.loading && hydratedPersistenceIdentity === persistenceIdentity;
+
   useEffect(() => {
+    if (auth.loading) return;
     const trips = loadSavedTrips();
     const active = loadActiveTrip();
     const migrated = migrateLegacyTrip(defaultPreferences);
@@ -1432,9 +1494,11 @@ export default function IntegratedAppShell() {
       };
       return { ...current, startsAt: localInput(start), endsAt: localInput(end) };
     });
-  }, []);
+    setHydratedPersistenceIdentity(persistenceIdentity);
+  }, [auth.loading, persistenceIdentity]);
 
   useEffect(() => {
+    if (!canPersist) return;
     const params = new URLSearchParams(window.location.search);
     const shared = params.get("shared");
     if (!shared) return;
@@ -1450,7 +1514,7 @@ export default function IntegratedAppShell() {
     setTripMode("active");
     setToast(mvp.shared);
     window.history.replaceState(null, "", appPath.trip);
-  }, [mvp.invalidShare, mvp.shared]);
+  }, [canPersist, mvp.invalidShare, mvp.shared]);
 
   useEffect(() => {
     const syncFromUrl = () => {
@@ -1521,30 +1585,36 @@ export default function IntegratedAppShell() {
   }, [activeTrip]);
 
   useEffect(() => {
-    if (
-      section !== "trip" ||
-      !activeExperience ||
-      activeExperience.country !== "Germany"
-    ) {
+    if (section !== "trip" || !activeExperience) {
       queueMicrotask(() =>
-        setActiveTransitStop((current) => (current ? null : current)),
+        setActiveTransitPlan((current) => (current ? null : current)),
       );
       return;
     }
     let active = true;
-    import("../product/transit").then(({ nearestGtfsStop }) => {
-      if (active) setActiveTransitStop(nearestGtfsStop(activeExperience));
+    import("../product/transit").then(({ transitAccessPlan }) => {
+      if (active) setActiveTransitPlan(transitAccessPlan(activeExperience, origin));
     });
     return () => {
       active = false;
     };
-  }, [activeExperience, section]);
+  }, [activeExperience, origin, section]);
 
-  useEffect(() => saveTrips(savedTrips), [savedTrips]);
-  useEffect(() => saveCollections(collections), [collections]);
-  useEffect(() => saveActiveTrip(activeTrip), [activeTrip]);
-  useEffect(() => saveLedger(ledger), [ledger]);
-  useEffect(() => saveRewardUnlocks(unlocks), [unlocks]);
+  useEffect(() => {
+    if (canPersist) saveTrips(savedTrips);
+  }, [canPersist, savedTrips]);
+  useEffect(() => {
+    if (canPersist) saveCollections(collections);
+  }, [canPersist, collections]);
+  useEffect(() => {
+    if (canPersist) saveActiveTrip(activeTrip);
+  }, [activeTrip, canPersist]);
+  useEffect(() => {
+    if (canPersist) saveLedger(ledger);
+  }, [canPersist, ledger]);
+  useEffect(() => {
+    if (canPersist) saveRewardUnlocks(unlocks);
+  }, [canPersist, unlocks]);
 
   useEffect(() => {
     if (!activeTrip || !("caches" in window)) return;
@@ -2015,7 +2085,7 @@ export default function IntegratedAppShell() {
       updatedAt: new Date().toISOString(),
       trip: {
         ...activeTrip.trip,
-        verified: allStopsVerified,
+        verified: status === "verified" && allStopsVerified,
         verifiedExperienceIds: nextVerifiedIds,
         verificationRecords: [
           ...(activeTrip.trip.verificationRecords ?? []).filter(
@@ -2138,7 +2208,7 @@ export default function IntegratedAppShell() {
           },
           verificationExperience,
         );
-        if (distance <= 2) completeVerification("verified", { source: "gps" });
+        if (distance <= 2) completeVerification("demo", { source: "gps" });
         else
           setVerificationMessage(systemUi[locale].distanceArea(distance.toFixed(1)));
       },
@@ -2148,9 +2218,22 @@ export default function IntegratedAppShell() {
   };
 
   const verifyQr = () => {
-    if (/^(GEMGO|GEM)-/i.test(qrCode.trim()))
-      completeVerification("verified", { source: "qr" });
+    if (qrCode.trim().toUpperCase() === "GEMGO-DEMO-2026")
+      completeVerification("demo", { source: "qr" });
     else setVerificationMessage(systemUi[locale].invalidQr);
+  };
+
+  const closeGemDrop = () => {
+    setGemDropOpen(false);
+    const params = new URLSearchParams(window.location.search);
+    if (!params.has("gemdrop")) return;
+    params.delete("gemdrop");
+    const query = params.toString();
+    window.history.replaceState(
+      null,
+      "",
+      `${window.location.pathname}${query ? `?${query}` : ""}`,
+    );
   };
 
   const switchGemDrop = () => {
@@ -2173,7 +2256,7 @@ export default function IntegratedAppShell() {
         acceptedGemDrop: true,
       },
     });
-    setGemDropOpen(false);
+    closeGemDrop();
     setToast(systemUi[locale].switched);
   };
 
@@ -2243,6 +2326,8 @@ export default function IntegratedAppShell() {
   return (
     <main
       className={`product-app integrated-app ${resultsView === "map" ? "mobile-results-map-mode" : ""}`}
+      aria-busy={!canPersist}
+      inert={!canPersist}
     >
       <header className="app-header">
         <Link
@@ -2314,12 +2399,12 @@ export default function IntegratedAppShell() {
           <button
             type="button"
             className="header-points-link"
-            aria-label={`${balance.toLocaleString(locale)} GemPoints`}
+            aria-label={`${displayedBalance.toLocaleString(locale)} GemPoints`}
             onClick={() => chooseSection("rewards")}
           >
             <Coins size={18} />
             <span>
-              <strong>{balance.toLocaleString(locale)}</strong>
+              <strong>{displayedBalance.toLocaleString(locale)}</strong>
               <small>GemPoints</small>
             </span>
           </button>
@@ -2375,14 +2460,22 @@ export default function IntegratedAppShell() {
         )}
       </header>
 
-      {activeTransitStop && section === "trip" && (
+      {activeTransitPlan && section === "trip" && (
         <aside className="gtfs-source-banner">
           <Bus size={18} />
           <span>
-            <strong>{activeTransitStop.name}</strong>
-            <small>
-              {activeTransitStop.distanceKm.toFixed(1)} {plannerText.transitStatic}
-            </small>
+            <strong>{plannerText.transitAccess}</strong>
+            {activeTransitPlan.status === "static-gtfs-access" ? (
+              <>
+                {activeTransitPlan.originStop && <small>{plannerText.transitOrigin}: {activeTransitPlan.originStop.name} · {activeTransitPlan.originStop.distanceKm.toFixed(1)} km</small>}
+                {activeTransitPlan.destinationStop && <small>{plannerText.transitDestination}: {activeTransitPlan.destinationStop.name} · {activeTransitPlan.destinationStop.distanceKm.toFixed(1)} {plannerText.transitStatic}</small>}
+                <small>{plannerText.transitBavaria}</small>
+              </>
+            ) : <small>{plannerText.transitAosta}</small>}
+            <span className="gtfs-source-actions">
+              <a href={activeTransitPlan.directionsUrl} target="_blank" rel="noreferrer noopener">{plannerText.transitGoogle}</a>
+              <a href={activeTransitPlan.operatorUrl} target="_blank" rel="noreferrer noopener">{plannerText.transitOfficial}</a>
+            </span>
           </span>
         </aside>
       )}
@@ -3124,7 +3217,7 @@ export default function IntegratedAppShell() {
                 <div className={`trip-main-card${tripMapExpanded ? " has-expanded-map" : ""}`}>
                   <div className={`trip-photo-puzzle count-${Math.min(3, activeExperiences.length)}`}>
                     {activeExperiences.slice(0, 3).map((experience) => (
-                      <DestinationPhoto key={experience.id} name={experience.name} region={experience.region} className="trip-real-photo" compact />
+                      <DestinationPhoto destinationId={experience.id} key={experience.id} name={experience.name} region={experience.region} className="trip-real-photo" compact />
                     ))}
                   </div>
                   <div className="trip-title-block">
@@ -3275,7 +3368,7 @@ export default function IntegratedAppShell() {
                   return (
                     <article className="saved-trip-card" key={trip.id}>
                       <div className={`saved-trip-photo-puzzle count-${Math.min(3, tripExperiences.length)}`}>
-                        {tripExperiences.slice(0, 3).map((item) => <DestinationPhoto key={item.id} name={item.name} region={item.region} compact />)}
+                        {tripExperiences.slice(0, 3).map((item) => <DestinationPhoto destinationId={item.id} key={item.id} name={item.name} region={item.region} compact />)}
                       </div>
                       <div className="saved-trip-copy">
                         <span>{experience?.region ?? "Alps"}</span>
@@ -3339,7 +3432,7 @@ export default function IntegratedAppShell() {
                       .filter((experience): experience is Experience => Boolean(experience))
                       .map((experience) => {
                         const narrative = localizedExperienceNarrative(locale, experience);
-                        return <article className="collection-location-card" key={experience.id}><DestinationPhoto name={experience.name} region={experience.region} compact /><div><span className={`crowd-chip crowd-${experience.crowd}`}>{narrative.crowd}</span><h3>{experience.name}</h3><p>{localizedExperienceCaption(locale, experience)}</p><button type="button" className="button button-primary" onClick={() => addCollectionExperienceToTrip(experience)}>{mvp.addTrip}<ArrowRight size={16} /></button></div></article>;
+                        return <article className="collection-location-card" key={experience.id}><DestinationPhoto destinationId={experience.id} name={experience.name} region={experience.region} compact /><div><span className={`crowd-chip crowd-${experience.crowd}`}>{narrative.crowd}</span><h3>{experience.name}</h3><p>{localizedExperienceCaption(locale, experience)}</p><button type="button" className="button button-primary" onClick={() => addCollectionExperienceToTrip(experience)}>{mvp.addTrip}<ArrowRight size={16} /></button></div></article>;
                       })}
                   </div>
                 </section>
@@ -3358,6 +3451,7 @@ export default function IntegratedAppShell() {
         <RewardsPage
           locale={locale}
           balance={balance}
+          verifiedBalance={auth.user ? auth.verifiedBalance : null}
           ledger={ledger}
           unlocks={unlocks}
           activeTrip={activeTrip}
@@ -3394,7 +3488,7 @@ export default function IntegratedAppShell() {
           locale={locale}
           original={activeExperience}
           alternative={gemDropAlternative}
-          onClose={() => setGemDropOpen(false)}
+          onClose={closeGemDrop}
           onSwitch={switchGemDrop}
         />
       )}
@@ -3572,6 +3666,7 @@ function ExperienceDetail({
   const narrative = localizedExperienceNarrative(locale, experience);
   const caption = localizedExperienceCaption(locale, experience);
   const reasons = localizedExperienceReasons(locale, experience, travel, visitDate);
+  const practical = localizedPracticalInfo(locale, experience);
   return (
     <div className="experience-detail">
       <button type="button" className="back-button" onClick={onBack}>
@@ -3579,7 +3674,7 @@ function ExperienceDetail({
         {tr(locale, "Back to alternatives", "Torna alle alternative")}
       </button>
       <div className="integrated-detail-hero">
-        <DestinationPhoto name={experience.name} region={experience.region} layout="puzzle" />
+        <DestinationPhoto destinationId={experience.id} name={experience.name} region={experience.region} layout="puzzle" />
         <div className="detail-hero-copy">
           <div>
             <span>{narrative.validation}</span>
@@ -3656,6 +3751,17 @@ function ExperienceDetail({
                 <ul>{narrative.mobility.map((item) => <li key={item}><CheckCircle2 size={15} />{item}</li>)}</ul>
               </div>
             </div>
+            {practical && (
+              <div className="practical-info-grid" aria-label={practical.checked}>
+                <span><strong>{practical.access}</strong></span>
+                <span><strong>{practical.opening}</strong></span>
+                <span><strong>{practical.booking}</strong></span>
+                <span><strong>{practical.price}</strong></span>
+                <a href={practical.sourceUrl} target="_blank" rel="noreferrer">
+                  {practical.source} · {practical.checked}
+                </a>
+              </div>
+            )}
           </section>
           <section className="content-card">
             <h2>{text.plan}</h2>
@@ -3897,6 +4003,7 @@ function GemDropModal({
         <div className="gemdrop-comparison">
           <div className="gemdrop-option original-option">
             <DestinationPhoto
+              destinationId={original.id}
               name={original.name}
               region={original.region}
               compact
@@ -3916,6 +4023,7 @@ function GemDropModal({
           <ArrowRight size={24} />
           <div className="gemdrop-option alternative-option">
             <DestinationPhoto
+              destinationId={alternative.id}
               name={alternative.name}
               region={alternative.region}
               compact
@@ -4146,11 +4254,11 @@ function RewardQrModal({ locale, unlock, label, onClose }: { locale: Locale; unl
 }
 
 const rewardVisionCopy = {
-  en: { title: "From actions to Alpine rewards", body: "With enough GemPoints, visitors may redeem demonstrative gift cards or discounts from international outdoor retailers, local ski and sports shops, Alpine food producers and participating attractions. Badge milestones may also unlock selected offers.", demo: "Load jury demo balance", decathlon: "€10 Decathlon gift card", ski: "Local Alpine ski shop voucher", food: "Regional Alpine food box", visit: "50% off a participating Alpine visit", disclosure: "Reward examples are a product simulation. No gift card or partner discount is issued until commercial agreements are active." },
-  it: { title: "Dalle azioni ai premi alpini", body: "Con abbastanza GemPoints, i visitatori potranno ottenere gift card o sconti dimostrativi presso retailer outdoor internazionali, negozi locali di sci e sport, produttori di cibo alpino e attrazioni aderenti. Anche alcuni badge potranno sbloccare offerte.", demo: "Carica saldo demo per la giuria", decathlon: "Gift card Decathlon da 10 €", ski: "Buono negozio di sci alpino locale", food: "Box di prodotti alimentari alpini", visit: "50% su una visita alpina aderente", disclosure: "Gli esempi di premio sono una simulazione di prodotto. Nessuna gift card o sconto partner viene emesso prima di accordi commerciali attivi." },
-  de: { title: "Von Aktionen zu Alpenprämien", body: "Mit genügend GemPoints können Besucher Demo-Gutscheine oder Rabatte bei internationalen Outdoor-Händlern, lokalen Ski- und Sportgeschäften, Alpenproduzenten und teilnehmenden Attraktionen einlösen. Auch Abzeichen können Angebote freischalten.", demo: "Demo-Punktestand laden", decathlon: "10-€-Decathlon-Gutschein", ski: "Gutschein eines lokalen Skigeschäfts", food: "Regionale Alpen-Genussbox", visit: "50 % auf einen teilnehmenden Alpenbesuch", disclosure: "Prämien sind eine Produktsimulation. Gutscheine und Rabatte werden erst nach aktiven Vereinbarungen ausgegeben." },
-  fr: { title: "Des actions aux récompenses alpines", body: "Avec assez de GemPoints, les visiteurs pourront obtenir des cartes-cadeaux ou réductions de démonstration auprès d’enseignes outdoor, magasins locaux, producteurs alpins et attractions participantes. Certains badges pourront aussi débloquer des offres.", demo: "Charger le solde démo jury", decathlon: "Carte-cadeau Decathlon de 10 €", ski: "Bon d’un magasin de ski local", food: "Coffret de produits alpins", visit: "−50 % sur une visite alpine participante", disclosure: "Ces récompenses sont une simulation. Aucune carte-cadeau ni réduction n’est émise avant la conclusion d’accords." },
-  sl: { title: "Od dejanj do alpskih nagrad", body: "Z dovolj GemPoints bodo obiskovalci lahko unovčili predstavitvene darilne kartice ali popuste pri outdoor trgovcih, lokalnih športnih trgovinah, alpskih proizvajalcih in sodelujočih znamenitostih. Ponudbe lahko odklenejo tudi značke.", demo: "Naloži demo stanje za žirijo", decathlon: "Darilna kartica Decathlon 10 €", ski: "Bon lokalne alpske smučarske trgovine", food: "Paket alpskih živil", visit: "50 % popusta za sodelujoči alpski obisk", disclosure: "Nagrade so simulacija izdelka. Kartice in popusti niso izdani brez aktivnih dogovorov." },
+  en: { title: "From actions to Alpine rewards", body: "Verified GemPoints are account events issued by the server. The offers below remain a separate local simulation until partner agreements are active.", verified: "Verified account balance", local: "Local demo balance", demo: "Load jury demo balance", decathlon: "€10 Decathlon gift card", ski: "Local Alpine ski shop voucher", food: "Regional Alpine food box", visit: "50% off a participating Alpine visit", disclosure: "Reward examples are a product simulation. No gift card or partner discount is issued until commercial agreements are active." },
+  it: { title: "Dalle azioni ai premi alpini", body: "I GemPoints verificati sono eventi dell’account emessi dal server. Le offerte qui sotto restano una simulazione locale separata fino ad accordi attivi con i partner.", verified: "Saldo account verificato", local: "Saldo demo locale", demo: "Carica saldo demo per la giuria", decathlon: "Gift card Decathlon da 10 €", ski: "Buono negozio di sci alpino locale", food: "Box di prodotti alimentari alpini", visit: "50% su una visita alpina aderente", disclosure: "Gli esempi di premio sono una simulazione di prodotto. Nessuna gift card o sconto partner viene emesso prima di accordi commerciali attivi." },
+  de: { title: "Von Aktionen zu Alpenprämien", body: "Bestätigte GemPoints sind serverseitig ausgestellte Kontoereignisse. Die folgenden Angebote bleiben bis zu aktiven Partnervereinbarungen eine getrennte lokale Simulation.", verified: "Bestätigter Kontostand", local: "Lokaler Demo-Kontostand", demo: "Demo-Punktestand laden", decathlon: "10-€-Decathlon-Gutschein", ski: "Gutschein eines lokalen Skigeschäfts", food: "Regionale Alpen-Genussbox", visit: "50 % auf einen teilnehmenden Alpenbesuch", disclosure: "Prämien sind eine Produktsimulation. Gutscheine und Rabatte werden erst nach aktiven Vereinbarungen ausgegeben." },
+  fr: { title: "Des actions aux récompenses alpines", body: "Les GemPoints vérifiés sont des événements de compte émis par le serveur. Les offres ci-dessous restent une simulation locale distincte jusqu’à la conclusion d’accords partenaires.", verified: "Solde de compte vérifié", local: "Solde démo local", demo: "Charger le solde démo jury", decathlon: "Carte-cadeau Decathlon de 10 €", ski: "Bon d’un magasin de ski local", food: "Coffret de produits alpins", visit: "−50 % sur une visite alpine participante", disclosure: "Ces récompenses sont une simulation. Aucune carte-cadeau ni réduction n’est émise avant la conclusion d’accords." },
+  sl: { title: "Od dejanj do alpskih nagrad", body: "Potrjeni GemPoints so dogodki računa, ki jih izda strežnik. Spodnje ponudbe ostajajo ločena lokalna predstavitev do sklenitve partnerstev.", verified: "Potrjeno stanje računa", local: "Lokalno predstavitveno stanje", demo: "Naloži demo stanje za žirijo", decathlon: "Darilna kartica Decathlon 10 €", ski: "Bon lokalne alpske smučarske trgovine", food: "Paket alpskih živil", visit: "50 % popusta za sodelujoči alpski obisk", disclosure: "Nagrade so simulacija izdelka. Kartice in popusti niso izdani brez aktivnih dogovorov." },
 } as const;
 
 const feedbackBadgeCopy = {
@@ -4172,6 +4280,7 @@ const collectionUi = {
 function RewardsPage({
   locale,
   balance,
+  verifiedBalance,
   ledger,
   unlocks,
   activeTrip,
@@ -4182,6 +4291,7 @@ function RewardsPage({
 }: {
   locale: Locale;
   balance: number;
+  verifiedBalance: number | null;
   ledger: GemPointEvent[];
   unlocks: RewardUnlock[];
   activeTrip: SavedTrip | null;
@@ -4300,14 +4410,15 @@ function RewardsPage({
         </div>
         <div className="points-balance">
           <Coins size={27} />
-          <strong>{balance}</strong>
+          <strong>{verifiedBalance ?? balance}</strong>
           <span>GemPoints</span>
+          <small>{verifiedBalance === null ? vision.local : vision.verified}</small>
         </div>
       </div>
       <div className="reward-progress-card">
         <div>
           <strong>{Math.min(balance, 100)} / 100</strong>
-          <span>{text.progress}</span>
+          <span>{vision.local}</span>
         </div>
         <div className="progress-track large">
           <span style={{ width: `${Math.min(balance, 100)}%` }} />

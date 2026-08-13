@@ -2,16 +2,16 @@
 
 ## Source and release scope
 
-- Product changes belong on `agent/pan-alpine-product-redesign`; never merge or push directly to the GitHub `main` branch.
-- The existing Sites project is the deployment target. Use its lifecycle checkout and checkpoint flow; do not create a second site.
+- `main` is the canonical development and production branch. Keep GitHub and Vercel aligned to the same reviewed `main` revision.
+- Vercel is the sole public deployment target. Do not publish or maintain an OpenAI Sites release unless the user explicitly restores that target.
 - Preserve the Pan-Alpine positioning: comparable lower-pressure alternatives, explainable ranking, visit verification, GemPoints and aggregated territorial outcomes.
 
 ## Product truth
 
 - Clearly distinguish live, estimated, static and demonstrative data.
-- Do not present partner rewards, crowd prediction, account sync or institutional metrics as production capabilities until their real backends and agreements exist.
+- Do not present partner rewards, crowd prediction or institutional metrics as production capabilities until their real backends and agreements exist. Account sync is backed by Supabase for trips and collections only; demo points never migrate to an account.
 - `GemPoints` is the public name in every language. Never rename this section to Rewards, GemXP or Credits.
-- Device-local profile and authentication are demo functionality. Never imply server-side account security or cross-device persistence.
+- Accounts use Supabase Auth with Google (when the provider is configured) and email/password fallback. Guests remain local-first. Roles and verified GemPoints are server-controlled; never present local demo activity as verified account value.
 
 ## Internationalisation
 
@@ -34,7 +34,7 @@
 - Destination photography must be landscape (minimum source ratio 1.22, rendered with `object-fit: cover`) and show the named place or its immediate setting.
 - Reject maps, books, covers, diagrams, flags, logos, posters, scans, portraits and weakly related results.
 - Do not place ranking text over destination photos. Crowd status may remain as a compact chip.
-- Wikimedia source, author and licence metadata must remain in the data model even while attribution is temporarily hidden in the demo UI. Restoring compliant attribution is a release requirement before production use.
+- Wikimedia source, author and licence metadata must remain in the data model and be rendered with a source link. Do not claim all 66 locations have reviewed media until each location has a persisted editorial record.
 
 ## UI composition
 

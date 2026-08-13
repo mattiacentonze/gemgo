@@ -86,6 +86,11 @@
   animation: destination-gallery-enter 380ms cubic-bezier(.2,.8,.2,1) both;
 }
 
+.destination-gallery.is-autoplay .destination-gallery-image {
+  animation-duration: 820ms;
+  animation-timing-function: cubic-bezier(.22, 1, .36, 1);
+}
+
 .gallery-arrow {
   position: absolute;
   z-index: 4;

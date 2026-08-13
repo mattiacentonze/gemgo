@@ -20,13 +20,13 @@ test("photo galleries support arrows keyboard and touch swipe", () => {
   const gallery = read("app/components/DestinationPhoto.tsx");
   const css = read("app/styles/gallery-accessibility.css");
   assert.match(gallery, /touchStartRef/);
-  assert.match(gallery, /onTouchStart=\{handleTouchStart\}/);
-  assert.match(gallery, /onTouchEnd=\{handleTouchEnd\}/);
+  assert.match(gallery, /onTouchStart=\{interactive \? handleTouchStart : undefined\}/);
+  assert.match(gallery, /onTouchEnd=\{interactive \? handleTouchEnd : undefined\}/);
   assert.match(gallery, /event\.key === "ArrowLeft"/);
   assert.match(gallery, /event\.key === "ArrowRight"/);
   assert.match(gallery, /Math\.abs\(start - end\) < 44/);
   assert.match(gallery, /chicken\|chickens\|hen\|hens\|rooster/);
-  assert.match(gallery, /gemgo-commons-landscape-v5/);
+  assert.match(gallery, /gemgo-commons-landscape-v6/);
   assert.match(css, /touch-action: pan-y pinch-zoom/);
   assert.match(css, /focus-visible/);
 });

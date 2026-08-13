@@ -2,7 +2,7 @@
 
 ## Runtime
 
-GemGo is a React 19 application served through Next.js-compatible Vinext and deployed as a Cloudflare Worker by OpenAI Sites. The hosting identity and deployment contract remain unchanged by the product redesign.
+GemGo is a React 19 application with one public production target: native Next.js on Vercel from `main`. Supabase provides Auth, Postgres Row Level Security and private contribution Storage. A legacy Next.js-compatible Vinext/Cloudflare artifact remains buildable for compatibility testing but is not a release target.
 
 ## Product boundary
 
@@ -15,13 +15,17 @@ The visible application has four primary sections: Explore, My Trip, Rewards and
 ## Main modules
 
 - `app/page.tsx`: pan-Alpine marketing homepage and `/app` route handoff.
-- `app/components/AppShell.tsx`: tourist journey, deterministic ranking, trip state, contextual GemDrop, verification, rewards, impact, methodology, privacy and territory dashboard.
+- `app/components/IntegratedAppShell.tsx`: tourist journey, deterministic ranking, scoped trip state, contextual GemDrop, demo verification and rewards.
+- `app/components/AuthProvider.tsx`: Supabase session state plus serialized guest/account persistence sync.
+- `app/api/gems/route.ts`: authenticated image validation, sanitisation and private contribution upload.
+- `app/app/admin/page.tsx`: moderation queue and role controls.
+- `lib/supabase/`: browser/server clients, PKCE callback and request proxy.
 - `app/components/AlpineOverview.tsx`: reusable pan-Alpine coverage and tourism-pressure visualisation.
 - `app/components/ExperienceCard.tsx`: explainable result card with travel time, crowd window, confidence, recommendation reasons and validation level.
 - `app/product/types.ts`: product-domain types independent from presentation.
 - `app/product/data.ts`: curated demonstration experiences and their explicit confidence, trade-offs, mobility, safety and local-benefit fields.
 - `app/styles/`: foundation, product, institutional and responsive style layers.
-- `.openai/hosting.json`: existing OpenAI Sites hosting identity.
+- `.openai/hosting.json`: legacy Cloudflare/Vinext build identity retained for compatibility.
 
 Legacy destination, map, parser and moderation modules remain in the repository while the redesigned path is evaluated. They can be migrated into the new feature boundaries incrementally instead of being deleted before parity is proven.
 
@@ -44,21 +48,15 @@ Quietness alone cannot make a result valid. Production ranking must first apply 
 
 ## State
 
-The demonstration persists only device-local presentation state:
+Guests keep plans, collections, demo points and settings in a namespaced browser cache. After sign-in, only trips and collections are imported and synchronised to account-owned Supabase rows. Explicit tombstones prevent an old tab from deleting a newer edit or reviving an ordinary sequential deletion. Demo points, reward codes and demo verification records are never promoted into an account.
 
-- selected and saved experiences;
-- one active trip;
-- contextual GemDrop acceptance;
-- visit-verification state;
-- GemPoints balance.
-
-This state is not a production financial ledger and does not follow a user across devices. Production accounts and rewards must use a server-side append-only event ledger, signed/idempotent verification sessions and auditable partner redemption records.
+Verified GemPoints use server-created ledger events. Clients can read their own events but cannot insert, update, delete or truncate them. A contribution approval locks the pending row and inserts a single `contribution:<id>` event; retries award zero additional points.
 
 ## GemPoints
 
 GemPoints are the only visible reward currency. The former GemXP/GemCredits split is removed from the redesigned journey. Points are secondary to recommendation quality and are awarded only after a verifiable action in the intended production model.
 
-The demonstration can illustrate:
+The local demonstration can illustrate:
 
 - verified experience completion;
 - eligible lower-pressure timing;
@@ -93,15 +91,15 @@ Visitors may explore and receive recommendations without an account. Location is
 
 The same semantic components serve notebook and phone layouts. Desktop uses split planning/result layouts and a full header. Mobile uses stacked content, a compact header and a fixed four-item bottom navigation. Critical cards, comparison blocks, metrics and GemDrop controls collapse without hiding decision-relevant information.
 
-## Production migration
+## Remaining production work
 
-The next backend phase should provide:
+Implemented: Supabase Auth (Google hook plus email/password), guest/account persistence, four roles, private contribution uploads, moderation audit and idempotent contribution awards. Passkeys are intentionally out of scope.
 
-1. account and passkey authentication;
-2. append-only GemPoints ledger;
-3. signed GPS/QR/offline verification sessions;
-4. partner and reward redemption records;
-5. versioned recommendation inputs and explanations;
-6. real/estimated/demonstration data provenance;
-7. anonymised territory metrics with sample thresholds;
-8. moderation and fragile-place protection controls.
+Still required before a full public launch:
+
+1. enable Google OAuth and its redirect allow-list, configure production SMTP and manually assign the first owner after a real sign-in;
+2. signed GPS/QR/offline verification sessions and stronger server-coordinated conflict ordering;
+3. partner and reward redemption records;
+4. reviewed persisted media for all 66 locations;
+5. final controller/contact, retention schedule and in-product cloud account deletion;
+6. anonymised territory metrics with sample thresholds and operational crowd inputs.

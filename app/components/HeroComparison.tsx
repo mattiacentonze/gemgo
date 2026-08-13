@@ -19,8 +19,7 @@ export default function HeroComparison({ locale }: { locale: Locale }) {
     <div className="hero-comparison" aria-label={`${t.hotspot} → ${t.alternative}`}>
       <article className="hero-plan-card hero-plan-original">
         <span className="hero-card-kicker">{t.original}</span>
-        <h2>{t.hotspot}</h2>
-        <DestinationPhoto compact name="Neuschwanstein Castle" region="Bavaria" />
+        <DestinationPhoto destinationId="catalogue-alpify-castle-neuschwanstein" autoPlay autoPlayIntervalMs={4800} compact interactive={false} name="Neuschwanstein Castle" region="Bavaria" />
         <div className="hero-card-facts">
           <span><Users size={19} />{t.crowd}</span>
           <span><ParkingCircle size={19} />{t.parking}</span>
@@ -30,8 +29,7 @@ export default function HeroComparison({ locale }: { locale: Locale }) {
       <span className="hero-plan-arrow"><ArrowRight className="desktop-arrow" size={24} /><ArrowDown className="mobile-arrow" size={24} /></span>
       <article className="hero-plan-card hero-plan-alternative">
         <span className="hero-card-kicker">{t.suggested}</span>
-        <h2>{t.alternative}</h2>
-        <DestinationPhoto compact name="Falkenstein Ruin Pfronten" region="Bavaria" />
+        <DestinationPhoto destinationId="catalogue-bav_020" autoPlay autoPlayIntervalMs={5600} compact interactive={false} name="Falkenstein Ruin Pfronten" region="Bavaria" />
         <div className="hero-card-facts">
           <span><Users size={19} />{t.lower}</span>
           <span><Car size={19} />{t.away}</span>

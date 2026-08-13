@@ -1,4 +1,4 @@
-import type { Season } from "./types";
+import type { DestinationPracticalInfo, Season } from "./types";
 
 export type DestinationEditorial = {
   name?: string;
@@ -8,6 +8,7 @@ export type DestinationEditorial = {
   seasons: Season[];
   peakSeasons: Season[];
   operationalNote?: string;
+  practical?: Partial<DestinationPracticalInfo>;
 };
 
 const all: Season[] = ["spring", "summer", "autumn", "winter"];
@@ -15,6 +16,25 @@ const green: Season[] = ["spring", "summer", "autumn"];
 const alpine: Season[] = ["summer", "autumn"];
 const warm: Season[] = ["summer"];
 const winter: Season[] = ["winter"];
+const practicalCheckedAt = "2026-08-13";
+
+const accessFromSeasons = (seasons: Season[]): DestinationPracticalInfo["access"] =>
+  seasons.length === all.length ? "open-area" : "seasonal-route";
+
+const defaultPractical = (
+  sourceUrl: string,
+  seasons: Season[],
+  operationalNote?: string,
+): DestinationPracticalInfo => ({
+  access: accessFromSeasons(seasons),
+  openingStatus:
+    seasons.length === all.length ? "check-required" : "seasonal",
+  booking: "check-required",
+  price: { type: "unknown", checkedAt: practicalCheckedAt },
+  officialUrl: sourceUrl,
+  checkedAt: practicalCheckedAt,
+  note: operationalNote,
+});
 
 // Short, factual editorial copy replaces the prototype's generated marketing
 // phrases. Each entry points to a public authority, destination-management
@@ -89,6 +109,55 @@ export const catalogueEditorial: Record<string, DestinationEditorial> = {
   "alpify-eisenberg-hohenfreyberg": { name: "Eisenberg and Hohenfreyberg Castle Ruins", caption: "Eisenberg and Hohenfreyberg are neighbouring hilltop castle ruins connected by a short walking route.", sourceUrl: "https://www.burgenregion.de/burgen/burgen-eisenberg-hohenfreyberg/", sourceLabel: "Allgäu-Außerfern castle region", seasons: green, peakSeasons: ["spring", "summer", "autumn"] },
   "alpify-buchenegger-waterfalls": { name: "Buchenegger Waterfalls", caption: "The Buchenegger waterfalls are reached on forest paths; water level and slippery terrain require current-condition checks.", sourceUrl: "https://www.oberstaufen.de/natur/buchenegger-wasserfaelle", sourceLabel: "Oberstaufen tourism", seasons: green, peakSeasons: ["spring", "summer"], operationalNote: "Swimming and jumping can be dangerous; follow current local safety guidance." },
 };
+
+const verifiedPracticalOverrides: Record<
+  string,
+  Partial<DestinationPracticalInfo>
+> = {
+  bav_003: {
+    access: "managed-site",
+    openingStatus: "published-hours",
+    booking: "not-required",
+    price: { type: "paid", amountEur: 6, checkedAt: practicalCheckedAt },
+    officialUrl: "https://www.burg-burghausen.de/englisch/tourist/opening.htm",
+    note:
+      "Castle courtyards are generally accessible; museum opening hours and the 2026 admission tariff are published by the Bavarian Palace Department.",
+  },
+  "alpify-breitachklamm": {
+    access: "managed-site",
+    openingStatus: "published-hours",
+    booking: "recommended",
+    price: { type: "variable", checkedAt: practicalCheckedAt },
+    note:
+      "The operator publishes the current daily opening status and ticket shop; closures can occur for safety or maintenance.",
+  },
+  "alpify-castle-neuschwanstein": {
+    access: "managed-site",
+    openingStatus: "published-hours",
+    booking: "recommended",
+    price: { type: "paid", amountEur: 21, checkedAt: practicalCheckedAt },
+    officialUrl: "https://www.neuschwanstein.de/englisch/tourist/opening.htm",
+    note:
+      "The Bavarian Palace Department publishes seasonal hours and a 2026 regular admission of EUR 21; timed tickets can sell out.",
+  },
+};
+
+for (const [id, editorial] of Object.entries(catalogueEditorial)) {
+  const base = defaultPractical(
+    editorial.sourceUrl,
+    editorial.seasons,
+    editorial.operationalNote,
+  );
+  const override = {
+    ...editorial.practical,
+    ...verifiedPracticalOverrides[id],
+  };
+  editorial.practical = {
+    ...base,
+    ...override,
+    price: override.price ?? base.price,
+  };
+}
 
 export const seasonForDate = (dateValue?: string): Season => {
   const date = dateValue ? new Date(dateValue) : new Date();

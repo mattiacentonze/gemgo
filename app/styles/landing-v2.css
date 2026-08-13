@@ -58,6 +58,7 @@
 .landing-hero-copy { position: relative; z-index: 5; align-self: center; max-width: 650px; padding-block: 12px; }
 .landing-eyebrow { display: block; margin-bottom: 15px; color: var(--landing-green); font-size: .84rem; font-weight: 880; letter-spacing: .055em; text-transform: uppercase; }
 .landing-hero-copy h1 { max-width: 680px; margin: 0; color: var(--landing-ink); font-size: clamp(3rem,4.75vw,5.25rem); font-weight: 920; line-height: .96; letter-spacing: -.064em; }
+.landing-hero-question { white-space: nowrap; }
 .landing-hero-copy h1 em { color: var(--landing-green); font-style: normal; }
 .landing-hero-copy > p { max-width: 610px; margin: 20px 0; color: #183e43; font-size: clamp(1rem,1.28vw,1.2rem); line-height: 1.48; }
 .landing-hero-actions { display: flex; flex-wrap: wrap; gap: 14px; }
@@ -72,7 +73,6 @@
 .hero-plan-original { border-color: rgba(229,79,66,.38); }
 .hero-card-kicker { color: var(--landing-green); font-size: .74rem; font-weight: 880; letter-spacing: .04em; text-transform: uppercase; }
 .hero-plan-original .hero-card-kicker { color: #df4f43; }
-.hero-plan-card h2 { min-height: 2.5em; margin: 0; color: var(--landing-ink); font-size: .92rem; line-height: 1.25; }
 .hero-plan-card .destination-photo { min-height: 0; aspect-ratio: 1.62; border-radius: 14px; }
 .hero-plan-card .destination-photo img { width: 100%; height: 100%; object-fit: cover; }
 .hero-card-facts { display: grid; gap: 6px; min-height: 92px; }
@@ -136,9 +136,8 @@
   .hero-plan-arrow { margin: -9px auto; transform: none; }
   .desktop-arrow { display: none; }
   .mobile-arrow { display: block; }
-  .hero-plan-card { grid-template-columns: minmax(0,1fr) minmax(210px,1fr); grid-template-areas: "kicker kicker" "title title" "photo facts" "button button"; }
+  .hero-plan-card { grid-template-columns: minmax(0,1fr) minmax(210px,1fr); grid-template-areas: "kicker kicker" "photo facts" "button button"; }
   .hero-card-kicker { grid-area: kicker; }
-  .hero-plan-card h2 { grid-area: title; min-height: 0; }
   .hero-plan-card .destination-photo { grid-area: photo; align-self: stretch; }
   .hero-card-facts { grid-area: facts; min-height: 0; }
   .hero-plan-card .button { grid-area: button; }
@@ -175,7 +174,7 @@
   .landing-hero-grid { padding-inline: 12px; }
   .landing-hero-copy h1 { font-size: 2.55rem; }
   .landing-map-layer { width: calc(100% + 24px); margin-left: -12px; }
-  .hero-plan-card { grid-template-columns: 1fr; grid-template-areas: "kicker" "title" "photo" "facts" "button"; }
+  .hero-plan-card { grid-template-columns: 1fr; grid-template-areas: "kicker" "photo" "facts" "button"; }
   .hero-plan-card .destination-photo { aspect-ratio: 1.7; }
 }
 
