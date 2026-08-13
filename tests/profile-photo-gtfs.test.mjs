@@ -60,7 +60,7 @@ test("destination media rejects vertical and non-place results", () => {
   assert.match(gallery, /info\.width \/ info\.height >= 1\.22/);
   assert.match(gallery, /book\|manuscript\|brochure/);
   assert.match(gallery, /isPlaceRelevant/);
-  assert.match(gallery, /gemgo-commons-landscape-v5/);
+  assert.match(gallery, /gemgo-commons-landscape-v6/);
 });
 
 test("the Bavarian transit subset is traceable and used by the product", () => {

@@ -23,7 +23,7 @@ test("flagship experiences use reviewed Commons file sets", () => {
   const expected = [
     "Torgnon.JPG",
     "Châtillon vista dal castello di Ussel..JPG",
-    "Gressoney-St-Jean - été.JPG",
+    "02E1680001-MIBAC Castel Savoia a Gressoney-Saint-Jean.jpg",
     "Piccolo S Bernardo.jpg",
     "Fénis Castle.jpg",
   ];

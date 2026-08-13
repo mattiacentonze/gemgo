@@ -18,6 +18,20 @@ export type CrowdLevel = "low" | "moderate" | "high";
 export type Season = "spring" | "summer" | "autumn" | "winter";
 export type ValidationLevel = "Data-based suggestion" | "Locally reviewed" | "Verified Gem";
 
+export type DestinationPracticalInfo = {
+  access: "open-area" | "managed-site" | "seasonal-route" | "guided-only";
+  openingStatus: "always-accessible" | "published-hours" | "seasonal" | "check-required";
+  booking: "not-required" | "recommended" | "required" | "check-required";
+  price: {
+    type: "free" | "from" | "paid" | "variable" | "unknown";
+    amountEur?: number;
+    checkedAt: string;
+  };
+  officialUrl: string;
+  checkedAt: string;
+  note?: string;
+};
+
 export type Experience = {
   id: string;
   name: string;
@@ -33,6 +47,7 @@ export type Experience = {
   editorialSourceUrl?: string;
   editorialSourceLabel?: string;
   operationalNote?: string;
+  practical?: DestinationPracticalInfo;
   difficulty: Difficulty;
   latitude: number;
   longitude: number;

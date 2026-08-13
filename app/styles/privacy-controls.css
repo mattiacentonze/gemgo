@@ -57,6 +57,45 @@
   background: #a13c2e;
 }
 
+.privacy-account-delete {
+  align-items: end;
+  margin-top: -18px;
+  border: 1px solid rgba(176, 63, 47, 0.22);
+  background: #351b18;
+}
+
+.privacy-account-delete > div:first-child {
+  display: grid;
+  gap: 8px;
+}
+
+.privacy-account-delete .eyebrow {
+  color: #ffc1b6;
+}
+
+.privacy-account-delete label {
+  display: grid;
+  gap: 7px;
+  max-width: 420px;
+  font-weight: 750;
+}
+
+.privacy-account-delete input {
+  min-height: 46px;
+  padding: 0 14px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.09);
+  color: #fff;
+  font: inherit;
+  letter-spacing: 0.08em;
+}
+
+.privacy-account-delete input:focus-visible {
+  outline: 3px solid rgba(255, 169, 147, 0.38);
+  outline-offset: 2px;
+}
+
 .privacy-confirm {
   position: relative;
   grid-column: 1 / -1;

@@ -17,6 +17,15 @@ NEXT_PUBLIC_SUPABASE_URL=https://lhowrxqddjfvzmlwnuoj.supabase.co
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_...
 ```
 
+Quando `gemgo.app` è verificato su Vercel, configurare inoltre in Production:
+
+```text
+NEXT_PUBLIC_SITE_URL=https://gemgo.app
+```
+
+La procedura completa e i controlli di rollback sono in
+[`docs/GEMGO_APP_CUTOVER.md`](./GEMGO_APP_CUTOVER.md).
+
 Non aggiungere mai `service_role`, `sb_secret_*`, password o connection string a una variabile `NEXT_PUBLIC_*`. Il runtime dell’app non richiede un secret Supabase.
 
 ## Auth ancora da configurare nel dashboard

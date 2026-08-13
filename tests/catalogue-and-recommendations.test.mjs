@@ -11,6 +11,9 @@ import {
   seasonForDate,
 } from "../app/product/catalogue-editorial.ts";
 import {
+  destinationMediaAudit,
+} from "../app/product/destination-media-audit.ts";
+import {
   curatedScenarioExperiences,
   curatedScenarios,
   curatedScenarioFor,
@@ -159,14 +162,56 @@ test("all 66 prototype catalogue locations have factual editorial metadata and s
     assert(editorial.sourceLabel.trim().length > 2, `${id} source label`);
     assert(editorial.seasons.length > 0, `${id} seasons`);
     assert(editorial.seasons.every((season) => validSeasons.has(season)), `${id} season values`);
+    assert(editorial.practical, `${id} practical info`);
+    assert.match(editorial.practical.officialUrl, /^https:\/\//, `${id} practical URL`);
+    assert.match(editorial.practical.checkedAt, /^2026-\d{2}-\d{2}$/, `${id} practical checkedAt`);
+    assert.match(editorial.practical.price.checkedAt, /^2026-\d{2}-\d{2}$/, `${id} price checkedAt`);
+    assert(!String(editorial.practical.price.type).includes("placeholder"), `${id} price status`);
   }
+});
+
+test("all 66 destinations have a persistent, honest media audit record", () => {
+  const entries = Object.entries(destinationMediaAudit);
+  assert.equal(entries.length, 66);
+  for (const [id, audit] of entries) {
+    assert.match(audit.reviewedAt, /^2026-\d{2}-\d{2}$/, `${id} reviewedAt`);
+    assert.equal(audit.minimumLandscapeRatio, 1.22, `${id} landscape policy`);
+    assert(audit.note.trim().length > 25, `${id} audit note`);
+    if (audit.status === "reviewed") {
+      assert.match(audit.sourceUrl, /^https:\/\/commons\.wikimedia\.org\//, `${id} source`);
+      assert.match(audit.license, /^(CC0|CC BY|CC BY-SA|Public domain)/, `${id} licence`);
+      assert(audit.width / audit.height >= 1.22, `${id} reviewed image is landscape`);
+      assert.equal(audit.relevance === "pending-human-review", false, `${id} relevance`);
+    } else {
+      assert.equal(audit.relevance, "pending-human-review", `${id} honest pending state`);
+      assert.equal(audit.sourceUrl, undefined, `${id} has no unreviewed source claim`);
+    }
+  }
+});
+
+test("known ticket prices are primary-source checked and unknown prices stay unknown", () => {
+  assert.deepEqual(catalogueEditorial.bav_003.practical.price, {
+    type: "paid",
+    amountEur: 6,
+    checkedAt: "2026-08-13",
+  });
+  assert.deepEqual(catalogueEditorial["alpify-castle-neuschwanstein"].practical.price, {
+    type: "paid",
+    amountEur: 21,
+    checkedAt: "2026-08-13",
+  });
+  assert.equal(catalogueEditorial.bav_001.practical.price.type, "unknown");
 });
 
 test("every catalogue and expert caption has all four non-English translations", async () => {
   const editorialSource = await source("app/product/catalogue-editorial.ts");
   const expertSource = await source("app/product/curated-alternatives.ts");
   const translationSource = await source("app/i18n/experience-content.ts");
-  const editorialIds = [...editorialSource.matchAll(/^\s{2}(?:"([^"]+)"|([a-z0-9_]+)): \{/gm)]
+  const catalogueBlock = editorialSource.slice(
+    editorialSource.indexOf("export const catalogueEditorial"),
+    editorialSource.indexOf("const verifiedPracticalOverrides"),
+  );
+  const editorialIds = [...catalogueBlock.matchAll(/^\s{2}(?:"([^"]+)"|([a-z0-9_]+)): \{/gm)]
     .map((match) => `catalogue-${match[1] ?? match[2]}`);
   const expertIds = [...expertSource.matchAll(/^\s{2}\{ id: "(expert-[^"]+)"/gm)]
     .map((match) => match[1]);

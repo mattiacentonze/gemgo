@@ -44,8 +44,8 @@ export const featureCopy: Record<Locale, Record<string, string>> = {
     "contribute.category": "Category",
     "contribute.why": "Why is it a gem?",
     "contribute.mapUrl": "Map link (optional)",
-    "contribute.mapHelp": "Share a public map link. GemGo does not collect your live location here.",
-    "contribute.disclosure": "Your suggestion is stored for moderation and is not published automatically. Do not include personal information or photos of people.",
+    "contribute.mapHelp": "Share a public map link as additional context for the editor.",
+    "contribute.disclosure": "Your suggestion, selected photo and one claimed location point are stored privately for moderation and are not published automatically. GemGo never records a continuous route here.",
     "contribute.submit": "Suggest this gem",
     "contribute.submitting": "Sending suggestion…",
     "contribute.duplicate": "This place has already been suggested.",
@@ -103,8 +103,8 @@ export const featureCopy: Record<Locale, Record<string, string>> = {
     "contribute.category": "Categoria",
     "contribute.why": "Perché è una gem?",
     "contribute.mapUrl": "Link alla mappa (facoltativo)",
-    "contribute.mapHelp": "Condividi un link pubblico. Qui GemGo non raccoglie la tua posizione in tempo reale.",
-    "contribute.disclosure": "Il suggerimento viene conservato per la moderazione e non viene pubblicato automaticamente. Non inserire dati personali o foto di persone.",
+    "contribute.mapHelp": "Condividi un link pubblico come contesto aggiuntivo per l’editor.",
+    "contribute.disclosure": "Il suggerimento, la foto scelta e un singolo punto di posizione dichiarato vengono conservati privatamente per la moderazione e non pubblicati automaticamente. GemGo non registra un percorso continuo.",
     "contribute.submit": "Suggerisci questa gem",
     "contribute.submitting": "Invio del suggerimento…",
     "contribute.duplicate": "Questo luogo è già stato suggerito.",
@@ -161,4 +161,17 @@ Object.assign(featureCopy.sl, {
   "deals.categoryFilterAria":"Filtriraj ponudbe po kategoriji","deals.subcategory.all":"Vse ponudbe","deals.subcategory.bar":"Bari","deals.subcategory.restaurant":"Restavracije","deals.subcategory.experience":"Doživetja","deals.subcategory.activity":"Dejavnosti","deals.empty":"Tem filtrom še ne ustreza nobena ponudba.",
   "points.earnedGem":"predlog novega bisera","contribute.eyebrow":"Razširi zemljevid GemGo","contribute.title":"Predlagaj nov biser","contribute.intro":"Poznaš lep kraj stran od množic? Pošlji ga ekipi GemGo v pregled.","contribute.name":"Ime kraja","contribute.region":"Regija","contribute.category":"Kategorija","contribute.why":"Zakaj je kraj biser?","contribute.mapUrl":"Povezava do zemljevida (neobvezno)","contribute.mapHelp":"Deli javno povezavo. GemGo tukaj ne zbira tvoje trenutne lokacije.","contribute.disclosure":"Predlog se shrani za moderiranje in ni objavljen samodejno. Ne vključuj osebnih podatkov ali fotografij ljudi.","contribute.submit":"Predlagaj ta biser","contribute.submitting":"Pošiljanje predloga…","contribute.duplicate":"Ta kraj je bil že predlagan.","contribute.unavailable":"Predlogi trenutno niso na voljo. Poskusi pozneje.","contribute.invalid":"Preveri polja in dodaj vsaj 20 znakov opisa.","contribute.success":"Predlog prejet. Hvala, ker pomagaš odkrivati mirnejše kraje.","contribute.rewarded":"+70 GemPoints za predlog {name}.","contribute.category.nature":"Narava","contribute.category.culture":"Kultura","contribute.category.viewpoint":"Razgledna točka","contribute.category.activity":"Dejavnost","contribute.category.local_place":"Lokalni kraj","event.newGem":"Predlagan nov biser: {place}.",
   "privacy.body":"Ta MVP daje prednost lokalni hrambi. Načrtovanje in večina podatkov GemPoints ostaneta na napravi; le izrecno poslani predlog bisera se pošlje GemGo v moderiranje.","privacy.updated":"Trenutno obvestilo MVP · 4. avgust 2026","privacy.localBody":"Načrti, nastavitve, obvestila in zgodovina GemPoints ostanejo v brskalniku. Fotografije obiska in prihoda GemDrop se ne nalagajo.","privacy.retentionBody":"Lokalni zapisi ostanejo do brisanja v brskalniku ali s spodnjim gumbom. Poslani predlogi čakajo na moderiranje in se izbrišejo, če so zavrnjeni ali niso več potrebni.","privacy.contributionTitle":"Predlogi novih biserov","privacy.contributionBody":"Ob predlogu se GemGo pošljejo ime, opis, regija, kategorija in neobvezna javna povezava. Trenutna GPS-lokacija in fotografije niso del pošiljanja.",
+});
+
+Object.assign(featureCopy.de, {
+  "contribute.mapHelp": "Teile einen öffentlichen Kartenlink als zusätzlichen Hinweis für die Redaktion.",
+  "contribute.disclosure": "Vorschlag, ausgewähltes Foto und ein angegebener Standortpunkt werden privat zur Moderation gespeichert und nicht automatisch veröffentlicht. GemGo zeichnet hier keinen Bewegungsverlauf auf.",
+});
+Object.assign(featureCopy.fr, {
+  "contribute.mapHelp": "Partagez un lien public comme contexte supplémentaire pour l’équipe éditoriale.",
+  "contribute.disclosure": "La proposition, la photo choisie et un seul point de position déclaré sont stockés de façon privée pour modération et ne sont pas publiés automatiquement. GemGo n’enregistre jamais un trajet continu ici.",
+});
+Object.assign(featureCopy.sl, {
+  "contribute.mapHelp": "Deli javno povezavo kot dodaten kontekst za urednika.",
+  "contribute.disclosure": "Predlog, izbrana fotografija in ena navedena lokacijska točka se zasebno shranijo za moderiranje ter se ne objavijo samodejno. GemGo tukaj nikoli ne beleži neprekinjene poti.",
 });

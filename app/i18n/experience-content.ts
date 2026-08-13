@@ -610,6 +610,84 @@ export const localizedExperienceReasons = (
   ].filter((value): value is string => Boolean(value));
 };
 
+const practicalCopy = {
+  en: {
+    access: { "open-area": "Open area", "managed-site": "Managed site", "seasonal-route": "Seasonal route", "guided-only": "Guided access" },
+    opening: { "always-accessible": "Generally accessible", "published-hours": "Published opening hours", seasonal: "Seasonal access", "check-required": "Current hours not verified — check the official source" },
+    booking: { "not-required": "No booking normally required", recommended: "Booking recommended", required: "Booking required", "check-required": "Booking rules require a current check" },
+    price: { free: "Free access", variable: "Price varies — check the official source", unknown: "Current price not verified", from: "Price from", paid: "Regular price" },
+    checked: "Practical information checked",
+    source: "Current official information",
+  },
+  it: {
+    access: { "open-area": "Area aperta", "managed-site": "Sito gestito", "seasonal-route": "Percorso stagionale", "guided-only": "Accesso con visita guidata" },
+    opening: { "always-accessible": "Generalmente accessibile", "published-hours": "Orari pubblicati", seasonal: "Accesso stagionale", "check-required": "Orari attuali non verificati — controlla la fonte ufficiale" },
+    booking: { "not-required": "Di norma non serve prenotare", recommended: "Prenotazione consigliata", required: "Prenotazione obbligatoria", "check-required": "Le regole di prenotazione vanno ricontrollate" },
+    price: { free: "Accesso gratuito", variable: "Prezzo variabile — controlla la fonte ufficiale", unknown: "Prezzo attuale non verificato", from: "Prezzo da", paid: "Prezzo intero" },
+    checked: "Informazioni pratiche controllate",
+    source: "Informazioni ufficiali aggiornate",
+  },
+  de: {
+    access: { "open-area": "Offenes Gebiet", "managed-site": "Betreute Anlage", "seasonal-route": "Saisonale Route", "guided-only": "Zugang mit Führung" },
+    opening: { "always-accessible": "Im Allgemeinen zugänglich", "published-hours": "Veröffentlichte Öffnungszeiten", seasonal: "Saisonaler Zugang", "check-required": "Aktuelle Zeiten nicht geprüft — offizielle Quelle beachten" },
+    booking: { "not-required": "Normalerweise keine Buchung nötig", recommended: "Buchung empfohlen", required: "Buchung erforderlich", "check-required": "Buchungsregeln aktuell prüfen" },
+    price: { free: "Kostenloser Zugang", variable: "Preis variiert — offizielle Quelle prüfen", unknown: "Aktueller Preis nicht geprüft", from: "Preis ab", paid: "Regulärer Preis" },
+    checked: "Praktische Angaben geprüft",
+    source: "Aktuelle offizielle Informationen",
+  },
+  fr: {
+    access: { "open-area": "Espace ouvert", "managed-site": "Site géré", "seasonal-route": "Itinéraire saisonnier", "guided-only": "Accès guidé" },
+    opening: { "always-accessible": "Généralement accessible", "published-hours": "Horaires publiés", seasonal: "Accès saisonnier", "check-required": "Horaires actuels non vérifiés — consulter la source officielle" },
+    booking: { "not-required": "Réservation généralement inutile", recommended: "Réservation recommandée", required: "Réservation obligatoire", "check-required": "Règles de réservation à vérifier" },
+    price: { free: "Accès gratuit", variable: "Prix variable — consulter la source officielle", unknown: "Prix actuel non vérifié", from: "Prix à partir de", paid: "Tarif normal" },
+    checked: "Informations pratiques vérifiées",
+    source: "Informations officielles à jour",
+  },
+  sl: {
+    access: { "open-area": "Odprto območje", "managed-site": "Upravljana lokacija", "seasonal-route": "Sezonska pot", "guided-only": "Voden dostop" },
+    opening: { "always-accessible": "Praviloma dostopno", "published-hours": "Objavljen odpiralni čas", seasonal: "Sezonski dostop", "check-required": "Trenutni urnik ni preverjen — preverite uradni vir" },
+    booking: { "not-required": "Rezervacija navadno ni potrebna", recommended: "Rezervacija priporočena", required: "Rezervacija obvezna", "check-required": "Pravila rezervacije je treba preveriti" },
+    price: { free: "Brezplačen dostop", variable: "Cena se spreminja — preverite uradni vir", unknown: "Trenutna cena ni preverjena", from: "Cena od", paid: "Redna cena" },
+    checked: "Praktični podatki preverjeni",
+    source: "Najnovejše uradne informacije",
+  },
+} as const;
+
+const formatCheckedDate = (locale: Locale, value: string) =>
+  new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeZone: "UTC" }).format(
+    new Date(`${value}T00:00:00Z`),
+  );
+
+export const localizedPracticalInfo = (
+  locale: Locale,
+  experience: Experience,
+) => {
+  if (!experience.practical) return null;
+  const practical = experience.practical;
+  const copy = practicalCopy[locale];
+  const price = practical.price;
+  const amount =
+    typeof price.amountEur === "number"
+      ? new Intl.NumberFormat(locale, {
+          style: "currency",
+          currency: "EUR",
+          maximumFractionDigits: 2,
+        }).format(price.amountEur)
+      : null;
+  return {
+    access: copy.access[practical.access],
+    opening: copy.opening[practical.openingStatus],
+    booking: copy.booking[practical.booking],
+    price:
+      amount && (price.type === "paid" || price.type === "from")
+        ? `${copy.price[price.type]} ${amount}`
+        : copy.price[price.type],
+    checked: `${copy.checked}: ${formatCheckedDate(locale, practical.checkedAt)}`,
+    source: copy.source,
+    sourceUrl: practical.officialUrl,
+  };
+};
+
 const narrativeCopy = {
   en: {
     crowd: { low: "Low crowd", moderate: "Moderate crowd", high: "High crowd" },

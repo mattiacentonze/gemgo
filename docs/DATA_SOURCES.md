@@ -5,7 +5,7 @@ GemGo must distinguish operational facts from estimates and demonstration conten
 | Feature | Current source | Classification | Product rule |
 |---|---|---|---|
 | Pilot catalogue | 50 official team destinations plus 16 unique Bavarian Alpify additions | Static public pilot data | Active map coverage is limited to Bavaria and Valle d’Aosta; the Alpify Tyrol record is excluded. |
-| Experience content | `app/data/destinations.json`, `app/data/alpify-locations.json` and `app/product/catalogue.ts` | Existing pilot metadata plus adapted prototype content | Copy, itinerary, mobility and safety fields must be locally validated before production. |
+| Experience content | `app/data/destinations.json`, `app/data/alpify-locations.json`, `app/product/catalogue-editorial.ts` and `app/product/catalogue.ts` | Source-checked captions plus structured practical editorial records | Every active destination has access, opening, booking, price-status, official-source and check-date fields. Unknown prices and schedules remain explicitly unknown rather than being inferred. |
 | Recommendation ranking | Deterministic client score | Operational prototype logic | Explainable and reproducible; not described as a trained production AI model. |
 | Crowd windows | Curated values and intended future factors | Demonstration prediction | Always display them as estimated unless an operational provider is explicitly connected. |
 | Weather context | Open-Meteo through `app/product/live-context.ts` | Live external data when available | Show the live source state and fall back conservatively when unavailable. |
@@ -19,7 +19,7 @@ GemGo must distinguish operational facts from estimates and demonstration conten
 | Personal impact | Device-local trip, ledger and feedback events | Local prototype metric | Reports only recorded actions; no invented CO₂ or visitor-removal claim. |
 | Territory dashboard | Device-local counters and clearly labelled demonstration concepts | Local prototype and demonstration data | Production use requires anonymisation and minimum sample thresholds. |
 | Map tiles and geography | OpenStreetMap through Leaflet | Live external context | Attribution and provider usage requirements remain applicable. |
-| Destination photography | Two local reviewed galleries, five preferred Commons filenames and live Wikimedia Commons search for the remaining catalogue | Mixed persisted and live licensed media | Accept only CC0, CC BY, CC BY-SA or public-domain files; display attribution and a source link. Do not claim all 66 destinations are editorially reviewed. |
+| Destination photography | Reviewed local/Commons records in `app/product/destination-media-audit.ts`, with live Commons discovery for unreviewed destinations | Mixed persisted review metadata and live licensed media discovery | Accept only CC0, CC BY, CC BY-SA or public-domain files; display attribution and source. `metadata-only` means the destination still requires human image selection and must never be presented as reviewed. |
 
 ## Destination media policy
 
@@ -32,14 +32,29 @@ The current prototype:
 - rejects obvious maps, flags, logos, diagrams, signs and other unsuitable media by filename;
 - scores candidates against the destination name, region and a curated search alias;
 - favours landscape and higher-resolution files for travel cards;
+- persists one audit record for every active catalogue ID, including review status and timestamp;
+- stores source, author, licence and dimensions for the reviewed files rather than relying on an undocumented filename list;
 - provides complete local reviewed galleries for Neuschwanstein Castle and Falkenstein Ruin Pfronten;
-- requests one preferred Commons filename for five additional destinations, but still depends on the live Commons service;
+- pins reviewed Commons filenames for Fénis Castle, Torgnon, Gressoney-Saint-Jean, the Little Saint Bernard Pass and Châtillon;
 - uses relevance-ranked live Commons search for the rest of the 66-location catalogue;
 - exposes up to three images in compact recommendation cards and up to five in full detail views;
 - displays the author, licence and Commons source link for the active image;
 - falls back to a branded non-photographic state rather than using an unverified copyrighted image.
 
-The database now has a `destination_media` review model, but it is not populated for the full catalogue. Media coverage remains incomplete until every destination has persisted file/source identifiers, author, licence, dimensions, orientation and review timestamps plus tested fallbacks.
+The database has a `destination_media` review model, but it is not populated for the full catalogue. The source-controlled audit deliberately marks the remaining destinations `metadata-only`: a filename-filtered Commons result is not equivalent to a human visual review. Full coverage remains incomplete until a reviewer approves a relevant landscape file for every location and the records are subsequently migrated into the database.
+
+## Practical destination data
+
+Each of the 66 active catalogue entries now resolves to a structured practical record with:
+
+- access type and opening-status classification;
+- seasonal scope;
+- booking status;
+- a price type and check date, including explicit `unknown` when no reliable current tariff was verified;
+- an official or primary editorial URL;
+- a `checkedAt` date and destination-specific operational warning where available.
+
+The default record is conservative. It never converts missing information into “free”, “always open” or “no booking required”. Exact 2026 tariffs are stored only where a primary operator published them and remain paired with the current official link.
 
 ## Crowd prediction production model
 
