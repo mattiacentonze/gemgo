@@ -9,7 +9,7 @@ import {
   MapPinned,
   Sparkles,
 } from "lucide-react";
-import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
+import { type FormEvent, useCallback, useEffect, useRef, useState } from "react";
 
 import { regionCodes, type Locale, type RegionCode } from "../domain";
 import { msg } from "../i18n/catalogs";
