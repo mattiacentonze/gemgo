@@ -22,7 +22,9 @@
     "i18n:check": "node scripts/check-i18n.mjs",
     "typecheck": "tsc --noEmit",
     "validate:artifact": "bash scripts/validate-artifact.sh",
-    "lint": "npm run i18n:check && bash scripts/sites-env.sh -- eslint . --ignore-pattern dist --ignore-pattern .next",
+    "lint": "npm run i18n:check && bash scripts/sites-env.sh -- npx --yes @biomejs/biome@2.5.6 lint .",
+    "lint:fix": "npm run i18n:check && bash scripts/sites-env.sh -- npx --yes @biomejs/biome@2.5.6 lint . --write",
+    "preflight": "npm run lint && npm run typecheck && npm test",
     "db:generate": "bash scripts/sites-env.sh -- drizzle-kit generate"
   },
   "dependencies": {
