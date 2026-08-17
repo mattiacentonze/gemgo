@@ -20,5 +20,7 @@ jobs:
           node-version: "22"
           cache: npm
       - run: npm ci
-      - run: npm run lint
-      - run: npm test
+      - name: Run the same preflight required before push
+        run: npm run preflight
+      - name: Audit production dependencies
+        run: npm run audit:dependencies
