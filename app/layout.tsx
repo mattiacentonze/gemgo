@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import type { Locale } from "./domain";
 import { AuthProvider } from "./components/AuthProvider";
 import GlobalFooter from "./components/GlobalFooter";
+import { publicSiteUrl } from "./lib/site-url";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -33,6 +34,8 @@ export async function generateMetadata(): Promise<Metadata> {
   const locale = await readServerLocale();
   return {
     ...metadataCopy[locale],
+    metadataBase: publicSiteUrl(),
+    alternates: { canonical: "/" },
     other: { "codex-preview": "development" },
     icons: {
       icon: "/favicon.svg",

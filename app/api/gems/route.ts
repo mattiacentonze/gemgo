@@ -16,7 +16,9 @@ const MAX_INPUT_PIXELS = 40_000_000;
 const MAX_NORMALIZED_EDGE = 2560;
 const MIN_LANDSCAPE_RATIO = 1.22;
 const CONTRIBUTION_BUCKET = "gem-contributions";
-const TERMS_VERSION = "2026-08-12";
+const TERMS_VERSION = "2026-08-13";
+const MIN_FORM_AGE_MS = 2_000;
+const MAX_FORM_AGE_MS = 4 * 60 * 60 * 1_000;
 
 const contributionCategories = [
   "nature",
@@ -57,6 +59,13 @@ const cleanText = (form: FormData, key: string) => {
   return typeof value === "string"
     ? value.replace(/\s+/g, " ").trim()
     : "";
+};
+
+const finiteFormNumber = (form: FormData, key: string) => {
+  const raw = cleanText(form, key);
+  if (raw === "") return null;
+  const value = Number(raw);
+  return Number.isFinite(value) ? value : null;
 };
 
 const isUuid = (value: string) =>
@@ -144,12 +153,35 @@ const normalizePhoto = async (photo: File) => {
       throw new ContributionRequestError("image_too_large", 413);
     }
 
+    const pixels = await sharp(normalized.data)
+      .greyscale()
+      .resize(9, 8, { fit: "fill" })
+      .raw()
+      .toBuffer();
+    let differenceHash = BigInt(0);
+    for (let row = 0; row < 8; row += 1) {
+      for (let column = 0; column < 8; column += 1) {
+        differenceHash =
+          (differenceHash << BigInt(1)) |
+          (pixels[row * 9 + column] > pixels[row * 9 + column + 1]
+            ? BigInt(1)
+            : BigInt(0));
+      }
+    }
+    // PostgreSQL bigint is signed; preserve all 64 dHash bits using two's
+    // complement so bit_count(hash_a # hash_b) remains meaningful.
+    const signedDifferenceHash =
+      differenceHash >= BigInt(1) << BigInt(63)
+        ? differenceHash - (BigInt(1) << BigInt(64))
+        : differenceHash;
+
     return {
       bytes: normalized.data,
       width,
       height,
       size,
       sha256: createHash("sha256").update(normalized.data).digest("hex"),
+      perceptualHash: signedDifferenceHash.toString(),
     };
   } catch (error) {
     if (error instanceof ContributionRequestError) throw error;
@@ -171,6 +203,15 @@ const mapSupabaseError = (error: {
   }
   if (/rate_limit_exceeded/i.test(evidence)) {
     return new ContributionRequestError("rate_limit_exceeded", 429);
+  }
+  if (/reward_farming_limit/i.test(evidence)) {
+    return new ContributionRequestError("reward_farming_limit", 429);
+  }
+  if (/location_outside_region/i.test(evidence)) {
+    return new ContributionRequestError("location_outside_region", 400);
+  }
+  if (/duplicate_media/i.test(evidence)) {
+    return new ContributionRequestError("duplicate_media", 409);
   }
   if (/23505|duplicate|unique/i.test(evidence)) {
     return new ContributionRequestError("duplicate_contribution", 409);
@@ -211,6 +252,15 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
+    const requestOrigin = new URL(request.url).origin;
+    const suppliedOrigin = request.headers.get("origin");
+    const fetchSite = request.headers.get("sec-fetch-site");
+    if (
+      (suppliedOrigin && suppliedOrigin !== requestOrigin) ||
+      fetchSite === "cross-site"
+    ) {
+      throw new ContributionRequestError("cross_site_request", 403);
+    }
     const contentLength = Number(request.headers.get("content-length") ?? 0);
     if (Number.isFinite(contentLength) && contentLength > MAX_MULTIPART_BYTES) {
       throw new ContributionRequestError("image_too_large", 413);
@@ -235,10 +285,17 @@ export async function POST(request: Request) {
     const category = cleanText(form, "category");
     const rawMapUrl = cleanText(form, "mapUrl");
     const termsAccepted = cleanText(form, "termsAccepted");
+    const honeypot = cleanText(form, "website");
+    const formStartedAt = finiteFormNumber(form, "formStartedAt");
+    const locationLatitude = finiteFormNumber(form, "locationLatitude");
+    const locationLongitude = finiteFormNumber(form, "locationLongitude");
+    const locationAccuracy = finiteFormNumber(form, "locationAccuracy");
+    const locationCapturedAt = cleanText(form, "locationCapturedAt");
     const suppliedRequestId = cleanText(form, "clientRequestId");
     const clientRequestId = suppliedRequestId || crypto.randomUUID();
     const photo = form.get("photo");
 
+    const formAge = formStartedAt === null ? Number.NaN : Date.now() - formStartedAt;
     if (
       name.length < 3 ||
       name.length > 90 ||
@@ -252,6 +309,23 @@ export async function POST(request: Request) {
       (suppliedRequestId !== "" && !isUuid(suppliedRequestId))
     ) {
       throw new ContributionRequestError("invalid_contribution", 400);
+    }
+    if (
+      honeypot !== "" ||
+      !Number.isFinite(formAge) ||
+      formAge < MIN_FORM_AGE_MS ||
+      formAge > MAX_FORM_AGE_MS
+    ) {
+      throw new ContributionRequestError("invalid_contribution", 400);
+    }
+    if (
+      locationLatitude === null ||
+      locationLongitude === null ||
+      locationAccuracy === null ||
+      locationCapturedAt === "" ||
+      !Number.isFinite(Date.parse(locationCapturedAt))
+    ) {
+      throw new ContributionRequestError("location_required", 400);
     }
     if (!photo || !(photo instanceof File)) {
       throw new ContributionRequestError("invalid_file_type", 400);
@@ -282,9 +356,14 @@ export async function POST(request: Request) {
         p_category: category,
         p_map_url: mapUrl,
         p_photo_sha256: normalized.sha256,
+        p_photo_perceptual_hash: normalized.perceptualHash,
         p_photo_size: normalized.size,
         p_photo_width: normalized.width,
         p_photo_height: normalized.height,
+        p_location_latitude: locationLatitude,
+        p_location_longitude: locationLongitude,
+        p_location_accuracy_m: locationAccuracy,
+        p_location_captured_at: locationCapturedAt,
         p_terms_version: TERMS_VERSION,
         p_consent_confirmed: true,
       },

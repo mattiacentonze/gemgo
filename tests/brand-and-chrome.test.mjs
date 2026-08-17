@@ -51,13 +51,17 @@ test("mobile results provide an explicit list and map switch", () => {
 
 test("privacy controls export account and GemGo device data without clearing the origin", () => {
   const page = read("app/privacy/page.tsx");
+  const exportRoute = read("app/api/account/export/route.ts");
+  const migration = read("supabase/migrations/20260813083427_admin_content_privacy_workflows.sql");
   assert.match(page, /key\?\.startsWith\("gemgo"\)/);
   assert.match(page, /new Blob/);
   assert.match(page, /gemgo-data-export\.json/);
-  assert.match(page, /supabase\.auth\.getUser/);
-  assert.match(page, /saved_trips/);
-  assert.match(page, /gempoint_events/);
-  assert.match(page, /gem_suggestions/);
+  assert.match(page, /fetch\("\/api\/account\/export"/);
+  assert.match(exportRoute, /supabase\.auth\.getUser/);
+  assert.match(exportRoute, /export_my_account_data/);
+  assert.match(migration, /savedTrips/);
+  assert.match(migration, /gemPointEvents/);
+  assert.match(migration, /suggestions/);
   assert.match(page, /localStorage\.removeItem\(key\)/);
   assert.match(page, /sessionStorage\.removeItem\(key\)/);
   assert.doesNotMatch(page, /localStorage\.clear\(/);

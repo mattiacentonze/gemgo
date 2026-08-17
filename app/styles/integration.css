@@ -29,8 +29,10 @@
   color: var(--forest);
 }
 
-.gtfs-source-banner span { display: grid; gap: 2px; }
+.gtfs-source-banner>span { display: grid; gap: 4px; min-width:0; }
 .gtfs-source-banner small { color: var(--slate); }
+.gtfs-source-actions { display:flex; flex-wrap:wrap; gap:8px!important; margin-top:5px; }
+.gtfs-source-actions a { display:inline-flex; min-height:38px; align-items:center; padding:7px 10px; border:1px solid rgba(38,116,95,.25); border-radius:999px; background:#fff; color:var(--forest); font-size:.78rem; font-weight:800; text-decoration:none; }
 
 .catalogue-card > strong {
   font-size: clamp(2.4rem, 6vw, 4.3rem);

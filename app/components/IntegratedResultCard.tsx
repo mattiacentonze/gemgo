@@ -45,7 +45,7 @@ export default function IntegratedResultCard({ locale, item, visitDate, saved, o
   return (
     <article className="experience-card integrated-result-card">
       <div className="experience-card-media">
-        <DestinationPhoto name={experience.name} region={experience.region} compact />
+        <DestinationPhoto destinationId={experience.id} name={experience.name} region={experience.region} compact />
         <span className={`crowd-chip crowd-${experience.crowd}`}>{text.crowd[experience.crowd]}</span>
       </div>
       <div className="experience-card-body">

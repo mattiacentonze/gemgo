@@ -55,4 +55,3 @@ technical behaviour.
   coloured legs.
 - Nearby accommodation cards show indicative prices and ratings and link to
   Booking.com; accommodation map markers remain future work.
-

@@ -6,10 +6,11 @@ import {
   Gem,
   LoaderCircle,
   LogIn,
+  LocateFixed,
   MapPinned,
   Sparkles,
 } from "lucide-react";
-import { type FormEvent, useCallback, useEffect, useRef, useState } from "react";
+import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 
 import { regionCodes, type Locale, type RegionCode } from "../domain";
 import { msg } from "../i18n/catalogs";
@@ -29,6 +30,13 @@ type ContributionSummary = {
 };
 
 type AuthState = "checking" | "authenticated" | "anonymous" | "unverified" | "unavailable";
+
+type LocationEvidence = {
+  latitude: number;
+  longitude: number;
+  accuracy: number;
+  capturedAt: string;
+};
 
 const MAX_PHOTO_BYTES = 4 * 1024 * 1024;
 
@@ -52,7 +60,17 @@ const contributionCopy = {
     unavailable: "We could not verify your account. Check your connection and try again.",
     retry: "Try again",
     photo: "Landscape photo of the place",
-    photoHelp: "JPG, PNG or WebP, maximum 4 MB. Do not include faces, personal data or GPS metadata.",
+    photoHelp: "JPG, PNG or WebP, maximum 4 MB. Image metadata is removed; the separate location claim is retained for moderation.",
+    gpsTitle: "Location claim at the gem",
+    gpsHelp: "Capture your position while you are at the place. GemGo stores one coordinate and its accuracy, never a continuous track. Browser GPS can be spoofed, so an editor still reviews it.",
+    gpsCapture: "Capture current location",
+    gpsCapturing: "Capturing location…",
+    gpsReady: "Location captured · ±{accuracy} m",
+    gpsError: "A fresh location with accuracy within 500 m is required for a reward-eligible proposal.",
+    gpsRequired: "Capture your current location before submitting.",
+    outsideRegion: "The captured location is outside the selected pilot region.",
+    duplicateMedia: "This photo is identical or very similar to one already under review.",
+    farmingLimit: "The rolling contribution/reward limit has been reached. Try again later.",
     consent: "I own this photo or have permission to submit it, and I accept that GemGo may store it privately for moderation.",
     invalidPhoto: "Add a JPG, PNG or WebP photo up to 4 MB.",
     invalidImage: "The file is not a valid supported image.",
@@ -78,7 +96,17 @@ const contributionCopy = {
     unavailable: "Non è stato possibile verificare l’account. Controlla la connessione e riprova.",
     retry: "Riprova",
     photo: "Foto orizzontale del luogo",
-    photoHelp: "JPG, PNG o WebP, massimo 4 MB. Non includere volti, dati personali o metadati GPS.",
+    photoHelp: "JPG, PNG o WebP, massimo 4 MB. I metadati dell’immagine vengono rimossi; la posizione separata resta disponibile per la moderazione.",
+    gpsTitle: "Posizione dichiarata presso la gem",
+    gpsHelp: "Acquisisci la posizione mentre sei sul posto. GemGo conserva una sola coordinata con la precisione, mai il percorso continuo. Il GPS del browser può essere falsificato, quindi un editor lo verifica comunque.",
+    gpsCapture: "Acquisisci posizione attuale",
+    gpsCapturing: "Acquisizione posizione…",
+    gpsReady: "Posizione acquisita · ±{accuracy} m",
+    gpsError: "Per una proposta premiabile serve una posizione recente con precisione entro 500 m.",
+    gpsRequired: "Acquisisci la posizione attuale prima di inviare.",
+    outsideRegion: "La posizione acquisita è fuori dalla regione pilota selezionata.",
+    duplicateMedia: "Questa foto è identica o molto simile a una già in revisione.",
+    farmingLimit: "Hai raggiunto il limite progressivo di contributi e premi. Riprova più avanti.",
     consent: "La foto è mia o ho il permesso di inviarla e accetto che GemGo la conservi privatamente per la moderazione.",
     invalidPhoto: "Aggiungi una foto JPG, PNG o WebP fino a 4 MB.",
     invalidImage: "Il file non è un’immagine valida supportata.",
@@ -104,7 +132,17 @@ const contributionCopy = {
     unavailable: "Das Konto konnte nicht geprüft werden. Prüfe die Verbindung und versuche es erneut.",
     retry: "Erneut versuchen",
     photo: "Querformatfoto des Ortes",
-    photoHelp: "JPG, PNG oder WebP, maximal 4 MB. Keine Gesichter, personenbezogenen Daten oder GPS-Metadaten.",
+    photoHelp: "JPG, PNG oder WebP, maximal 4 MB. Bildmetadaten werden entfernt; der separate Standortnachweis bleibt für die Prüfung erhalten.",
+    gpsTitle: "Standortangabe am Fundort",
+    gpsHelp: "Erfasse deinen Standort direkt am Ort. GemGo speichert nur eine Koordinate samt Genauigkeit, niemals einen Bewegungsverlauf. Browser-GPS kann manipuliert werden und wird deshalb redaktionell geprüft.",
+    gpsCapture: "Aktuellen Standort erfassen",
+    gpsCapturing: "Standort wird erfasst…",
+    gpsReady: "Standort erfasst · ±{accuracy} m",
+    gpsError: "Für einen belohnungsfähigen Vorschlag ist ein aktueller Standort mit höchstens 500 m Genauigkeit erforderlich.",
+    gpsRequired: "Erfasse vor dem Senden deinen aktuellen Standort.",
+    outsideRegion: "Der erfasste Standort liegt außerhalb der ausgewählten Pilotregion.",
+    duplicateMedia: "Dieses Foto ist mit einem bereits geprüften Bild identisch oder ihm sehr ähnlich.",
+    farmingLimit: "Das laufende Beitrags- und Belohnungslimit ist erreicht. Versuche es später erneut.",
     consent: "Ich besitze dieses Foto oder darf es einreichen und stimme der privaten Speicherung zur Moderation zu.",
     invalidPhoto: "Füge ein JPG-, PNG- oder WebP-Foto bis 4 MB hinzu.",
     invalidImage: "Die Datei ist kein gültiges unterstütztes Bild.",
@@ -130,7 +168,17 @@ const contributionCopy = {
     unavailable: "Impossible de vérifier votre compte. Vérifiez la connexion et réessayez.",
     retry: "Réessayer",
     photo: "Photo horizontale du lieu",
-    photoHelp: "JPG, PNG ou WebP, 4 Mo maximum. N’incluez ni visages, ni données personnelles, ni métadonnées GPS.",
+    photoHelp: "JPG, PNG ou WebP, 4 Mo maximum. Les métadonnées de l’image sont supprimées ; la position séparée reste disponible pour la modération.",
+    gpsTitle: "Position déclarée sur le lieu",
+    gpsHelp: "Enregistrez votre position lorsque vous êtes sur place. GemGo conserve un seul point et sa précision, jamais un trajet continu. Le GPS du navigateur pouvant être falsifié, un éditeur le contrôle toujours.",
+    gpsCapture: "Enregistrer la position actuelle",
+    gpsCapturing: "Enregistrement de la position…",
+    gpsReady: "Position enregistrée · ±{accuracy} m",
+    gpsError: "Une position récente et précise à 500 m près est nécessaire pour une proposition pouvant être récompensée.",
+    gpsRequired: "Enregistrez votre position actuelle avant l’envoi.",
+    outsideRegion: "La position enregistrée se trouve hors de la région pilote choisie.",
+    duplicateMedia: "Cette photo est identique ou très proche d’une image déjà en cours d’examen.",
+    farmingLimit: "La limite glissante de contributions et de récompenses est atteinte. Réessayez plus tard.",
     consent: "Je possède cette photo ou peux l’envoyer et j’accepte son stockage privé à des fins de modération.",
     invalidPhoto: "Ajoutez une photo JPG, PNG ou WebP de 4 Mo maximum.",
     invalidImage: "Le fichier n’est pas une image valide prise en charge.",
@@ -156,7 +204,17 @@ const contributionCopy = {
     unavailable: "Računa ni bilo mogoče preveriti. Preveri povezavo in poskusi znova.",
     retry: "Poskusi znova",
     photo: "Vodoravna fotografija kraja",
-    photoHelp: "JPG, PNG ali WebP, največ 4 MB. Brez obrazov, osebnih podatkov ali metapodatkov GPS.",
+    photoHelp: "JPG, PNG ali WebP, največ 4 MB. Metapodatki slike se odstranijo; ločena lokacija ostane za moderiranje.",
+    gpsTitle: "Navedena lokacija pri biseru",
+    gpsHelp: "Zajemi položaj, ko si na kraju. GemGo shrani le eno koordinato in natančnost, nikoli neprekinjene poti. GPS brskalnika je mogoče ponarediti, zato ga vedno pregleda urednik.",
+    gpsCapture: "Zajemi trenutno lokacijo",
+    gpsCapturing: "Zajemanje lokacije…",
+    gpsReady: "Lokacija zajeta · ±{accuracy} m",
+    gpsError: "Za predlog, upravičen do nagrade, je potrebna sveža lokacija z natančnostjo do 500 m.",
+    gpsRequired: "Pred oddajo zajemi trenutno lokacijo.",
+    outsideRegion: "Zajeta lokacija je zunaj izbrane pilotne regije.",
+    duplicateMedia: "Ta fotografija je enaka ali zelo podobna že pregledovani fotografiji.",
+    farmingLimit: "Dosežena je drseča omejitev prispevkov in nagrad. Poskusi pozneje.",
     consent: "Fotografija je moja ali jo smem poslati in soglašam z zasebno hrambo za moderiranje.",
     invalidPhoto: "Dodaj fotografijo JPG, PNG ali WebP do 4 MB.",
     invalidImage: "Datoteka ni veljavna podprta slika.",
@@ -181,6 +239,10 @@ export default function GemContributionForm({ locale }: Props) {
   const [authState, setAuthState] = useState<AuthState>("checking");
   const [suggestions, setSuggestions] = useState<ContributionSummary[]>([]);
   const [submitting, setSubmitting] = useState(false);
+  const [locating, setLocating] = useState(false);
+  const [locationEvidence, setLocationEvidence] =
+    useState<LocationEvidence | null>(null);
+  const [formStartedAt, setFormStartedAt] = useState(() => Date.now());
   const [feedback, setFeedback] = useState<{
     message: string;
     tone: "success" | "error";
@@ -227,6 +289,10 @@ export default function GemContributionForm({ locale }: Props) {
     if (code === "verified_account_required") return text.unverifiedBody;
     if (code === "duplicate_contribution") return t("contribute.duplicate");
     if (code === "rate_limit_exceeded") return text.rateLimit;
+    if (code === "reward_farming_limit") return text.farmingLimit;
+    if (code === "location_required") return text.gpsRequired;
+    if (code === "location_outside_region") return text.outsideRegion;
+    if (code === "duplicate_media") return text.duplicateMedia;
     if (code === "image_too_large" || code === "invalid_file_type") return text.invalidPhoto;
     if (code === "invalid_image") return text.invalidImage;
     if (code === "image_too_small") return text.smallImage;
@@ -238,11 +304,47 @@ export default function GemContributionForm({ locale }: Props) {
     return t("contribute.unavailable");
   };
 
+  const captureLocation = () => {
+    setFeedback(null);
+    if (!("geolocation" in navigator)) {
+      setFeedback({ message: text.gpsError, tone: "error" });
+      return;
+    }
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setLocating(false);
+        if (!Number.isFinite(position.coords.accuracy) || position.coords.accuracy > 500) {
+          setLocationEvidence(null);
+          setFeedback({ message: text.gpsError, tone: "error" });
+          return;
+        }
+        setLocationEvidence({
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+          accuracy: position.coords.accuracy,
+          capturedAt: new Date(position.timestamp || Date.now()).toISOString(),
+        });
+      },
+      () => {
+        setLocating(false);
+        setLocationEvidence(null);
+        setFeedback({ message: text.gpsError, tone: "error" });
+      },
+      { enableHighAccuracy: true, maximumAge: 0, timeout: 15_000 },
+    );
+  };
+
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const formElement = event.currentTarget;
     const form = new FormData(formElement);
     const photo = form.get("photo");
+
+    if (!locationEvidence) {
+      setFeedback({ message: text.gpsRequired, tone: "error" });
+      return;
+    }
 
     if (
       !(photo instanceof File) ||
@@ -258,6 +360,11 @@ export default function GemContributionForm({ locale }: Props) {
     setFeedback(null);
     requestIdRef.current ??= crypto.randomUUID();
     form.set("clientRequestId", requestIdRef.current);
+    form.set("formStartedAt", String(formStartedAt));
+    form.set("locationLatitude", String(locationEvidence.latitude));
+    form.set("locationLongitude", String(locationEvidence.longitude));
+    form.set("locationAccuracy", String(locationEvidence.accuracy));
+    form.set("locationCapturedAt", locationEvidence.capturedAt);
 
     try {
       const response = await fetch("/api/gems", {
@@ -291,6 +398,8 @@ export default function GemContributionForm({ locale }: Props) {
         ...current.filter((item) => item.id !== submitted.id),
       ]);
       requestIdRef.current = null;
+      setLocationEvidence(null);
+      setFormStartedAt(Date.now());
       formElement.reset();
       setFeedback({ message: text.success, tone: "success" });
     } catch {
@@ -357,6 +466,10 @@ export default function GemContributionForm({ locale }: Props) {
       {authState === "authenticated" && (
         <>
           <form onSubmit={submit} className="contribution-form">
+            <label className="contribution-honeypot" aria-hidden="true">
+              <span>Website</span>
+              <input name="website" type="text" tabIndex={-1} autoComplete="off" />
+            </label>
             <label>
               <span>{t("contribute.name")}</span>
               <input name="name" minLength={3} maxLength={90} required />
@@ -391,6 +504,24 @@ export default function GemContributionForm({ locale }: Props) {
               <input name="photo" type="file" accept="image/jpeg,image/png,image/webp" required />
               <small>{text.photoHelp}</small>
             </label>
+            <div className="contribution-location-evidence">
+              <span><LocateFixed aria-hidden="true" size={18} />{text.gpsTitle}</span>
+              <p>{text.gpsHelp}</p>
+              <button
+                type="button"
+                className="button button-secondary"
+                disabled={locating}
+                onClick={captureLocation}
+              >
+                {locating ? <LoaderCircle className="spin" aria-hidden="true" size={18} /> : <LocateFixed aria-hidden="true" size={18} />}
+                {locating ? text.gpsCapturing : text.gpsCapture}
+              </button>
+              {locationEvidence && (
+                <small role="status">
+                  {text.gpsReady.replace("{accuracy}", String(Math.round(locationEvidence.accuracy)))}
+                </small>
+              )}
+            </div>
             <label className="contribution-consent">
               <input name="termsAccepted" type="checkbox" value="true" required />
               <span>{text.consent}</span>

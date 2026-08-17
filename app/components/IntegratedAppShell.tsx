@@ -83,7 +83,7 @@ import {
   totalCatalogueEntries,
   type PilotRegion,
 } from "../product/catalogue";
-import type { NearbyTransitStop } from "../product/transit";
+import type { TransitAccessPlan } from "../product/transit";
 import {
   applyPromptToPreferences,
   getEligibleExperiences,
@@ -133,6 +133,7 @@ import { mvpCopy } from "../i18n/mvp-copy";
 import {
   localizedExperienceCaption,
   localizedExperienceNarrative,
+  localizedPracticalInfo,
   localizedExperienceReasons,
 } from "../i18n/experience-content";
 import { seasonLabel, seasonUi } from "../i18n/season";
@@ -563,6 +564,13 @@ const plannerCopy = {
     hoursHint: "Shown in hours and minutes",
     notifications: "Notifications",
     transitStatic: "km from the experience · static regional-rail stop from GTFS.de / DELFI, not a live departure",
+    transitAccess: "Public-transport access",
+    transitOrigin: "Nearest static stop to your Alpine start",
+    transitDestination: "Nearest static stop to this experience",
+    transitBavaria: "Static GTFS access points only. Open an external planner for the actual timetable and transfers.",
+    transitAosta: "No verified reusable GTFS feed is available in this revision. Check the current official Valle d’Aosta operator timetable.",
+    transitGoogle: "Open transit directions",
+    transitOfficial: "Open official timetable",
   },
   it: {
     alpineStart:
@@ -570,6 +578,13 @@ const plannerCopy = {
     hoursHint: "Mostrato in ore e minuti",
     notifications: "Notifiche",
     transitStatic: "km dall’esperienza · fermata ferroviaria regionale statica da GTFS.de / DELFI, non una partenza live",
+    transitAccess: "Accesso con trasporto pubblico",
+    transitOrigin: "Fermata statica più vicina alla partenza alpina",
+    transitDestination: "Fermata statica più vicina a questa esperienza",
+    transitBavaria: "Solo punti di accesso GTFS statici. Apri un planner esterno per orari e cambi effettivi.",
+    transitAosta: "In questa revisione non è disponibile un feed GTFS verificato e riutilizzabile. Controlla l’orario attuale dell’operatore ufficiale valdostano.",
+    transitGoogle: "Apri indicazioni con trasporto pubblico",
+    transitOfficial: "Apri orario ufficiale",
   },
   de: {
     alpineStart:
@@ -577,6 +592,13 @@ const plannerCopy = {
     hoursHint: "In Stunden und Minuten",
     notifications: "Benachrichtigungen",
     transitStatic: "km vom Erlebnis · statischer Regionalbahnhof aus GTFS.de / DELFI, keine Live-Abfahrt",
+    transitAccess: "Anreise mit öffentlichen Verkehrsmitteln",
+    transitOrigin: "Nächste statische Haltestelle zum Alpen-Start",
+    transitDestination: "Nächste statische Haltestelle zu diesem Erlebnis",
+    transitBavaria: "Nur statische GTFS-Zugangspunkte. Für tatsächliche Fahrpläne und Umstiege einen externen Planer öffnen.",
+    transitAosta: "In dieser Version ist kein verifizierter, wiederverwendbarer GTFS-Feed verfügbar. Bitte den aktuellen Fahrplan des offiziellen Aostatal-Betreibers prüfen.",
+    transitGoogle: "ÖPNV-Route öffnen",
+    transitOfficial: "Offiziellen Fahrplan öffnen",
   },
   fr: {
     alpineStart:
@@ -584,6 +606,13 @@ const plannerCopy = {
     hoursHint: "Affiché en heures et minutes",
     notifications: "Notifications",
     transitStatic: "km de l’expérience · arrêt ferroviaire régional statique issu de GTFS.de / DELFI, pas un départ en direct",
+    transitAccess: "Accès en transports publics",
+    transitOrigin: "Arrêt statique le plus proche du départ alpin",
+    transitDestination: "Arrêt statique le plus proche de cette expérience",
+    transitBavaria: "Points d’accès GTFS statiques uniquement. Ouvrez un planificateur externe pour les horaires et correspondances réels.",
+    transitAosta: "Aucun flux GTFS vérifié et réutilisable n’est disponible dans cette version. Consultez l’horaire actuel de l’opérateur officiel valdôtain.",
+    transitGoogle: "Ouvrir l’itinéraire en transports publics",
+    transitOfficial: "Ouvrir l’horaire officiel",
   },
   sl: {
     alpineStart:
@@ -591,6 +620,13 @@ const plannerCopy = {
     hoursHint: "Prikazano v urah in minutah",
     notifications: "Obvestila",
     transitStatic: "km od doživetja · statična regionalna železniška postaja iz GTFS.de / DELFI, ne odhod v živo",
+    transitAccess: "Dostop z javnim prevozom",
+    transitOrigin: "Najbližja statična postaja alpskemu izhodišču",
+    transitDestination: "Najbližja statična postaja temu doživetju",
+    transitBavaria: "Samo statične dostopne točke GTFS. Za dejanski vozni red in prestope odprite zunanji načrtovalnik.",
+    transitAosta: "V tej različici ni preverjenega in ponovno uporabnega vira GTFS. Preverite trenutni vozni red uradnega prevoznika Doline Aoste.",
+    transitGoogle: "Odpri navodila za javni prevoz",
+    transitOfficial: "Odpri uradni vozni red",
   },
 } as const;
 
@@ -1199,8 +1235,8 @@ function IntegratedAppShellForIdentity({
   const [qrCode, setQrCode] = useState("");
   const [toast, setToast] = useState("");
   const [undoSnapshot, setUndoSnapshot] = useState<UndoSnapshot | null>(null);
-  const [activeTransitStop, setActiveTransitStop] =
-    useState<NearbyTransitStop | null>(null);
+  const [activeTransitPlan, setActiveTransitPlan] =
+    useState<TransitAccessPlan | null>(null);
   const [interpretationSummary, setInterpretationSummary] = useState("");
   const [conditionModalOpen, setConditionModalOpen] = useState(false);
   const [conditionReminderVisible, setConditionReminderVisible] = useState(false);
@@ -1549,24 +1585,20 @@ function IntegratedAppShellForIdentity({
   }, [activeTrip]);
 
   useEffect(() => {
-    if (
-      section !== "trip" ||
-      !activeExperience ||
-      activeExperience.country !== "Germany"
-    ) {
+    if (section !== "trip" || !activeExperience) {
       queueMicrotask(() =>
-        setActiveTransitStop((current) => (current ? null : current)),
+        setActiveTransitPlan((current) => (current ? null : current)),
       );
       return;
     }
     let active = true;
-    import("../product/transit").then(({ nearestGtfsStop }) => {
-      if (active) setActiveTransitStop(nearestGtfsStop(activeExperience));
+    import("../product/transit").then(({ transitAccessPlan }) => {
+      if (active) setActiveTransitPlan(transitAccessPlan(activeExperience, origin));
     });
     return () => {
       active = false;
     };
-  }, [activeExperience, section]);
+  }, [activeExperience, origin, section]);
 
   useEffect(() => {
     if (canPersist) saveTrips(savedTrips);
@@ -2428,14 +2460,22 @@ function IntegratedAppShellForIdentity({
         )}
       </header>
 
-      {activeTransitStop && section === "trip" && (
+      {activeTransitPlan && section === "trip" && (
         <aside className="gtfs-source-banner">
           <Bus size={18} />
           <span>
-            <strong>{activeTransitStop.name}</strong>
-            <small>
-              {activeTransitStop.distanceKm.toFixed(1)} {plannerText.transitStatic}
-            </small>
+            <strong>{plannerText.transitAccess}</strong>
+            {activeTransitPlan.status === "static-gtfs-access" ? (
+              <>
+                {activeTransitPlan.originStop && <small>{plannerText.transitOrigin}: {activeTransitPlan.originStop.name} · {activeTransitPlan.originStop.distanceKm.toFixed(1)} km</small>}
+                {activeTransitPlan.destinationStop && <small>{plannerText.transitDestination}: {activeTransitPlan.destinationStop.name} · {activeTransitPlan.destinationStop.distanceKm.toFixed(1)} {plannerText.transitStatic}</small>}
+                <small>{plannerText.transitBavaria}</small>
+              </>
+            ) : <small>{plannerText.transitAosta}</small>}
+            <span className="gtfs-source-actions">
+              <a href={activeTransitPlan.directionsUrl} target="_blank" rel="noreferrer noopener">{plannerText.transitGoogle}</a>
+              <a href={activeTransitPlan.operatorUrl} target="_blank" rel="noreferrer noopener">{plannerText.transitOfficial}</a>
+            </span>
           </span>
         </aside>
       )}
@@ -3177,7 +3217,7 @@ function IntegratedAppShellForIdentity({
                 <div className={`trip-main-card${tripMapExpanded ? " has-expanded-map" : ""}`}>
                   <div className={`trip-photo-puzzle count-${Math.min(3, activeExperiences.length)}`}>
                     {activeExperiences.slice(0, 3).map((experience) => (
-                      <DestinationPhoto key={experience.id} name={experience.name} region={experience.region} className="trip-real-photo" compact />
+                      <DestinationPhoto destinationId={experience.id} key={experience.id} name={experience.name} region={experience.region} className="trip-real-photo" compact />
                     ))}
                   </div>
                   <div className="trip-title-block">
@@ -3328,7 +3368,7 @@ function IntegratedAppShellForIdentity({
                   return (
                     <article className="saved-trip-card" key={trip.id}>
                       <div className={`saved-trip-photo-puzzle count-${Math.min(3, tripExperiences.length)}`}>
-                        {tripExperiences.slice(0, 3).map((item) => <DestinationPhoto key={item.id} name={item.name} region={item.region} compact />)}
+                        {tripExperiences.slice(0, 3).map((item) => <DestinationPhoto destinationId={item.id} key={item.id} name={item.name} region={item.region} compact />)}
                       </div>
                       <div className="saved-trip-copy">
                         <span>{experience?.region ?? "Alps"}</span>
@@ -3392,7 +3432,7 @@ function IntegratedAppShellForIdentity({
                       .filter((experience): experience is Experience => Boolean(experience))
                       .map((experience) => {
                         const narrative = localizedExperienceNarrative(locale, experience);
-                        return <article className="collection-location-card" key={experience.id}><DestinationPhoto name={experience.name} region={experience.region} compact /><div><span className={`crowd-chip crowd-${experience.crowd}`}>{narrative.crowd}</span><h3>{experience.name}</h3><p>{localizedExperienceCaption(locale, experience)}</p><button type="button" className="button button-primary" onClick={() => addCollectionExperienceToTrip(experience)}>{mvp.addTrip}<ArrowRight size={16} /></button></div></article>;
+                        return <article className="collection-location-card" key={experience.id}><DestinationPhoto destinationId={experience.id} name={experience.name} region={experience.region} compact /><div><span className={`crowd-chip crowd-${experience.crowd}`}>{narrative.crowd}</span><h3>{experience.name}</h3><p>{localizedExperienceCaption(locale, experience)}</p><button type="button" className="button button-primary" onClick={() => addCollectionExperienceToTrip(experience)}>{mvp.addTrip}<ArrowRight size={16} /></button></div></article>;
                       })}
                   </div>
                 </section>
@@ -3626,6 +3666,7 @@ function ExperienceDetail({
   const narrative = localizedExperienceNarrative(locale, experience);
   const caption = localizedExperienceCaption(locale, experience);
   const reasons = localizedExperienceReasons(locale, experience, travel, visitDate);
+  const practical = localizedPracticalInfo(locale, experience);
   return (
     <div className="experience-detail">
       <button type="button" className="back-button" onClick={onBack}>
@@ -3633,7 +3674,7 @@ function ExperienceDetail({
         {tr(locale, "Back to alternatives", "Torna alle alternative")}
       </button>
       <div className="integrated-detail-hero">
-        <DestinationPhoto name={experience.name} region={experience.region} layout="puzzle" />
+        <DestinationPhoto destinationId={experience.id} name={experience.name} region={experience.region} layout="puzzle" />
         <div className="detail-hero-copy">
           <div>
             <span>{narrative.validation}</span>
@@ -3710,6 +3751,17 @@ function ExperienceDetail({
                 <ul>{narrative.mobility.map((item) => <li key={item}><CheckCircle2 size={15} />{item}</li>)}</ul>
               </div>
             </div>
+            {practical && (
+              <div className="practical-info-grid" aria-label={practical.checked}>
+                <span><strong>{practical.access}</strong></span>
+                <span><strong>{practical.opening}</strong></span>
+                <span><strong>{practical.booking}</strong></span>
+                <span><strong>{practical.price}</strong></span>
+                <a href={practical.sourceUrl} target="_blank" rel="noreferrer">
+                  {practical.source} · {practical.checked}
+                </a>
+              </div>
+            )}
           </section>
           <section className="content-card">
             <h2>{text.plan}</h2>
@@ -3951,6 +4003,7 @@ function GemDropModal({
         <div className="gemdrop-comparison">
           <div className="gemdrop-option original-option">
             <DestinationPhoto
+              destinationId={original.id}
               name={original.name}
               region={original.region}
               compact
@@ -3970,6 +4023,7 @@ function GemDropModal({
           <ArrowRight size={24} />
           <div className="gemdrop-option alternative-option">
             <DestinationPhoto
+              destinationId={alternative.id}
               name={alternative.name}
               region={alternative.region}
               compact

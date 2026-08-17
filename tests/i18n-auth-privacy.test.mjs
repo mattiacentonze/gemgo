@@ -9,6 +9,7 @@ test("auth, contribution, moderation and privacy copy cover all five locales", a
     source("app/app/profile/page.tsx"),
     source("app/components/GemContributionForm.tsx"),
     source("app/app/admin/page.tsx"),
+    source("app/components/AdminContentOperations.tsx"),
     source("app/privacy/page.tsx"),
   ]);
   for (const file of files) {
@@ -45,16 +46,22 @@ test("live reward and profile paths use only the GemPoints vocabulary", async ()
 });
 
 test("privacy export stays inside the active account namespace", async () => {
-  const page = await source("app/privacy/page.tsx");
+  const [page, exportRoute, deleteRoute] = await Promise.all([
+    source("app/privacy/page.tsx"),
+    source("app/api/account/export/route.ts"),
+    source("app/api/account/delete/route.ts"),
+  ]);
 
-  assert.match(page, /belongsToCurrentAccount\(key, authData\.user\?\.id\)/);
+  assert.match(page, /belongsToCurrentAccount\(key, auth\.user\?\.id\)/);
   assert.match(page, /key\.endsWith\(`:user:\$\{userId\}`\)/);
-  assert.match(page, /\.eq\("author_id", authData\.user\.id\)/);
-  assert.match(page, /\.in\("contribution_id", contributionIds\)/);
-  assert.doesNotMatch(
-    page,
-    /from\("contribution_media"\)\.select\("\*"\)(?![\s\S]*?\.in\("contribution_id")/,
-  );
+  assert.match(page, /fetch\("\/api\/account\/export"/);
+  assert.match(exportRoute, /supabase\.auth\.getUser\(\)/);
+  assert.match(exportRoute, /rpc\("export_my_account_data"\)/);
+  assert.match(exportRoute, /Cache-Control.*no-store/);
+  assert.match(deleteRoute, /origin === request\.nextUrl\.origin/);
+  assert.match(deleteRoute, /confirmation.*DELETE/);
+  assert.match(deleteRoute, /rpc\("request_account_deletion"\)/);
+  assert.match(deleteRoute, /signOut\(\{ scope: "global" \}\)/);
   assert.match(page, /setStatus\(t\.removeError\)/);
   assert.match(page, /setPersistenceScope\(auth\.user\?\.id \?\? null\)/);
 });

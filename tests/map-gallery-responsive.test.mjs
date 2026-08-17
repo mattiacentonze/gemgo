@@ -26,7 +26,7 @@ test("photo galleries support arrows keyboard and touch swipe", () => {
   assert.match(gallery, /event\.key === "ArrowRight"/);
   assert.match(gallery, /Math\.abs\(start - end\) < 44/);
   assert.match(gallery, /chicken\|chickens\|hen\|hens\|rooster/);
-  assert.match(gallery, /gemgo-commons-landscape-v5/);
+  assert.match(gallery, /gemgo-commons-landscape-v6/);
   assert.match(css, /touch-action: pan-y pinch-zoom/);
   assert.match(css, /focus-visible/);
 });

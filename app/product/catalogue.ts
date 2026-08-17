@@ -337,6 +337,9 @@ const adaptDestination = (destination: PublicDestination): Experience => {
     throw new Error(`Missing editorial catalogue entry for ${destination.id}`);
   }
   const displayName = editorial.name ?? destination.name;
+  if (!editorial.practical) {
+    throw new Error(`Missing practical catalogue entry for ${destination.id}`);
+  }
   const kinds = kindsFor(destination);
   const difficulty = difficultyFor(destination);
   const crowd = crowdFor(destination);
@@ -370,6 +373,7 @@ const adaptDestination = (destination: PublicDestination): Experience => {
     editorialSourceUrl: editorial.sourceUrl,
     editorialSourceLabel: editorial.sourceLabel,
     operationalNote: editorial.operationalNote,
+    practical: editorial.practical as Experience["practical"],
     difficulty,
     latitude: destination.latitude,
     longitude: destination.longitude,

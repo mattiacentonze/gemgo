@@ -4,6 +4,7 @@ import { ChevronLeft, ChevronRight, ImageIcon } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { commonsImageParams, commonsSearchText } from "../lib/commons-media";
 import type { Locale } from "../domain";
+import { reviewedDestinationMedia } from "../product/destination-media-audit";
 
 type Media = {
   url: string;
@@ -14,6 +15,7 @@ type Media = {
 };
 
 type Props = {
+  destinationId?: string;
   name: string;
   region: string;
   className?: string;
@@ -128,6 +130,7 @@ const isPlaceRelevant = (title: string, name: string, region: string) => {
 };
 
 export default function DestinationPhoto({
+  destinationId,
   name,
   region,
   className = "",
@@ -137,6 +140,10 @@ export default function DestinationPhoto({
   autoPlayIntervalMs = 5200,
   interactive = true,
 }: Props) {
+  const catalogueId = destinationId?.replace(/^catalogue-/, "");
+  const mediaAudit = catalogueId
+    ? reviewedDestinationMedia[catalogueId]
+    : undefined;
   const localGallery = localDestinationMedia[name];
   const [gallery, setGallery] = useState<Media[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -187,7 +194,7 @@ export default function DestinationPhoto({
     }
     let active = true;
     const controller = new AbortController();
-    const cacheKey = `gemgo-commons-landscape-v5-${name}-${region}-${compact ? "compact" : "full"}`;
+    const cacheKey = `gemgo-commons-landscape-v6-${name}-${region}-${compact ? "compact" : "full"}`;
 
     queueMicrotask(() => {
       if (!active) return;
@@ -215,7 +222,19 @@ export default function DestinationPhoto({
       // The image cache is optional.
     }
 
-    const params = commonsImageParams(name, region, compact ? 720 : 1280, 24);
+    const params = commonsImageParams(
+      name,
+      region,
+      compact ? 720 : 1280,
+      mediaAudit ? 1 : 24,
+    );
+    if (mediaAudit?.fileTitle) {
+      params.delete("generator");
+      params.delete("gsrnamespace");
+      params.delete("gsrlimit");
+      params.delete("gsrsearch");
+      params.set("titles", mediaAudit.fileTitle);
+    }
 
     fetch(`https://commons.wikimedia.org/w/api.php?${params}`, {
       signal: controller.signal,
@@ -287,7 +306,7 @@ export default function DestinationPhoto({
       active = false;
       controller.abort();
     };
-  }, [compact, localGallery, name, region, shouldLoad]);
+  }, [compact, localGallery, mediaAudit, name, region, shouldLoad]);
 
   useEffect(() => {
     if (gallery.length < 2) return;
@@ -357,6 +376,7 @@ export default function DestinationPhoto({
         aria-label={failed || imageFailed ? `${t.noPhoto} ${name}` : `${t.loadingFor} ${name}`}
       >
         <span className="destination-photo-brand" aria-hidden="true">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/assets/gemgo-logo.png" alt="" />
         </span>
         <span className="destination-photo-status">
@@ -378,6 +398,7 @@ export default function DestinationPhoto({
         <div className={`destination-photo-puzzle-grid count-${Math.min(gallery.length, 5)}`}>
           {gallery.slice(0, 5).map((media, index) => (
             <div className="destination-photo-puzzle-cell" key={media.url}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={media.url}
                 alt={`${name}, ${region} — ${t.photo} ${index + 1} / ${gallery.length}`}
@@ -414,6 +435,7 @@ export default function DestinationPhoto({
       onTouchEnd={interactive ? handleTouchEnd : undefined}
     >
       <div className="destination-gallery-stage">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           key={activeMedia.url}
           className="destination-gallery-image"
@@ -454,6 +476,7 @@ export default function DestinationPhoto({
         {!compact && visibleMedia.length > 0 && (
           <div className="gallery-preview-strip" aria-hidden="true">
             {visibleMedia.map((media) => (
+              // eslint-disable-next-line @next/next/no-img-element
               <img key={media.url} src={media.url} alt="" loading="lazy" decoding="async" />
             ))}
           </div>
