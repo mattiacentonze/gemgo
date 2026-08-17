@@ -66,6 +66,39 @@ type TombstoneRow = {
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
+const localE2eAuthEnabled =
+  process.env.NEXT_PUBLIC_GEMGO_E2E_MOCK_AUTH === "1";
+
+const localE2eIdentity = (): { user: User; role: AppRole; balance: number } | null => {
+  if (
+    !localE2eAuthEnabled ||
+    typeof window === "undefined" ||
+    !["127.0.0.1", "localhost"].includes(window.location.hostname)
+  ) return null;
+  const role = window.localStorage.getItem("gemgo-e2e-role");
+  if (!role || !["member", "content_editor", "admin", "owner"].includes(role)) {
+    return null;
+  }
+  const id = role === "member"
+    ? "11111111-1111-4111-8111-111111111111"
+    : "22222222-2222-4222-8222-222222222222";
+  return {
+    user: {
+      id,
+      aud: "authenticated",
+      role: "authenticated",
+      email: `${role}@local.test`,
+      created_at: "2026-08-13T00:00:00.000Z",
+      app_metadata: { provider: "email", providers: ["email"] },
+      user_metadata: { full_name: role === "member" ? "Local member" : "Local reviewer" },
+    } as User,
+    role: role as AppRole,
+    balance: Math.max(
+      0,
+      Number(window.localStorage.getItem("gemgo-e2e-verified-balance") ?? 0) || 0,
+    ),
+  };
+};
 
 const timestamp = (value: string | undefined) => {
   const parsed = value ? Date.parse(value) : Number.NaN;
@@ -383,6 +416,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const generation = ++loadGenerationRef.current;
     currentUserIdRef.current = null;
     setLoading(true);
+    const e2eIdentity = localE2eIdentity();
+    if (e2eIdentity) {
+      setUser(e2eIdentity.user);
+      setDisplayName(
+        String(e2eIdentity.user.user_metadata.full_name ?? e2eIdentity.user.email),
+      );
+      setRole(e2eIdentity.role);
+      setVerifiedBalance(e2eIdentity.balance);
+      setPersistenceScope(e2eIdentity.user.id);
+      setSyncError(false);
+      setLoading(false);
+      return;
+    }
     let current = account;
     if (current === undefined) {
       const { data } = await supabase.auth.getUser();

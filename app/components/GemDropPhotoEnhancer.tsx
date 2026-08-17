@@ -48,6 +48,7 @@ export default function GemDropPhotoEnhancer() {
         const key = `${slot.role}-${slot.experience.id}`;
         return createPortal(
           <DestinationPhoto
+            destinationId={slot.experience.id}
             name={slot.experience.name}
             region={slot.experience.region}
             compact
