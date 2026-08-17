@@ -71,7 +71,6 @@ export default function MultiDayTripPlanner({ trips, locale }: { trips: SavedTri
     if (trips.some((trip) => trip.preferences.availableTime === "multi") || Object.keys(nextPlan.assignments).length > 0) setOpen(true);
     // The plan is read once. Subsequent changes flow through React props/state,
     // avoiding whole-document observers on every map or navigation update.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const savePlan = (next: MultiDayPlan) => {
