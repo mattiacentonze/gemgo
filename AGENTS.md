@@ -62,7 +62,10 @@
 
 ## Required verification before publishing
 
-- Run lint, production build, i18n checks and the full test suite.
+- ESLint is not used in this repository. Biome is the only JavaScript, TypeScript, JSX, TSX, JSON and CSS linter.
+- Run `npm run preflight` on the exact candidate commit before any push that can trigger GitHub Actions or a deployment. It covers Biome, i18n, typechecking, the production build and the full test suite.
+- Run `npm run audit:dependencies` when registry access is available, review the complete diff, and batch a coherent change into one validated push.
+- During the current autonomous-delivery phase, merge the reviewed PR to `main` only after the exact PR head and required checks are green; do not wait for a separate owner review unless an explicit approval boundary applies.
 - Use the agent preview for real visual and interaction QA at representative widths: 320, 360, 390, 430, 768, 1024 and 1440px. Test at least one short and one tall viewport.
 - On the homepage, test language switching, mobile menu, all anchor links, both CTAs, regional map controls and map overlays.
 - In `/app`, test language switching, profile, notifications, mobile menu, Explore results, image gallery, map, My Trip, GemPoints and About.
