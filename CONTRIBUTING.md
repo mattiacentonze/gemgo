@@ -16,8 +16,7 @@
 
 ```bash
 npm ci
-npm run lint
-npm test
+npm run preflight
 ```
 
 Commit source and documentation together when the change affects user-visible

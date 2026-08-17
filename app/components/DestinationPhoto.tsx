@@ -357,7 +357,6 @@ export default function DestinationPhoto({
         aria-label={failed || imageFailed ? `${t.noPhoto} ${name}` : `${t.loadingFor} ${name}`}
       >
         <span className="destination-photo-brand" aria-hidden="true">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/assets/gemgo-logo.png" alt="" />
         </span>
         <span className="destination-photo-status">
@@ -379,7 +378,6 @@ export default function DestinationPhoto({
         <div className={`destination-photo-puzzle-grid count-${Math.min(gallery.length, 5)}`}>
           {gallery.slice(0, 5).map((media, index) => (
             <div className="destination-photo-puzzle-cell" key={media.url}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={media.url}
                 alt={`${name}, ${region} — ${t.photo} ${index + 1} / ${gallery.length}`}
@@ -416,7 +414,6 @@ export default function DestinationPhoto({
       onTouchEnd={interactive ? handleTouchEnd : undefined}
     >
       <div className="destination-gallery-stage">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           key={activeMedia.url}
           className="destination-gallery-image"
@@ -457,7 +454,6 @@ export default function DestinationPhoto({
         {!compact && visibleMedia.length > 0 && (
           <div className="gallery-preview-strip" aria-hidden="true">
             {visibleMedia.map((media) => (
-              // eslint-disable-next-line @next/next/no-img-element
               <img key={media.url} src={media.url} alt="" loading="lazy" decoding="async" />
             ))}
           </div>
