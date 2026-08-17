@@ -106,7 +106,6 @@ export default function GlobalFooter() {
     <footer className="global-site-footer">
       <div className="global-footer-main">
         <Link href="/" className="global-footer-brand" aria-label={text.home}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/assets/gemgo-logo-green.svg?v=2" alt="" />
           <span><strong>GemGo</strong><small>{text.tagline}</small></span>
         </Link>
