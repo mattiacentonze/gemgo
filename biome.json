@@ -1,0 +1,68 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.5.8/schema.json",
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true
+  },
+  "files": {
+    "includes": [
+      "app/**",
+      "lib/**",
+      "scripts/**",
+      "tests/**",
+      "proxy.ts",
+      "next.config.ts",
+      "postcss.config.mjs",
+      "package.json",
+      "biome.json",
+      "!dist",
+      "!.next",
+      "!node_modules"
+    ]
+  },
+  "formatter": {
+    "enabled": false
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "preset": "recommended",
+      "a11y": {
+        "useAriaPropsSupportedByRole": "off",
+        "useButtonType": "off"
+      },
+      "complexity": {
+        "noImportantStyles": "off"
+      },
+      "correctness": {
+        "noInvalidGridAreas": "off",
+        "useExhaustiveDependencies": "off"
+      },
+      "security": {
+        "noDangerouslySetInnerHtml": "off"
+      },
+      "performance": {
+        "noImgElement": "off"
+      },
+      "style": {
+        "noDescendingSpecificity": "off",
+        "noNonNullAssertion": "off"
+      },
+      "suspicious": {
+        "noDocumentCookie": "off",
+        "noFocusedTests": "off",
+        "noArrayIndexKey": "off",
+        "noShadowRestrictedNames": "off",
+        "useIterableCallbackReturn": "off"
+      }
+    },
+    "domains": {
+      "react": "recommended",
+      "test": "recommended"
+    }
+  },
+  "assist": {
+    "enabled": false
+  }
+}
