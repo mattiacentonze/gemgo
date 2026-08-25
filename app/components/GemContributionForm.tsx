@@ -10,7 +10,7 @@ import {
   MapPinned,
   Sparkles,
 } from "lucide-react";
-import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
+import { type FormEvent, useCallback, useEffect, useRef, useState } from "react";
 
 import { regionCodes, type Locale, type RegionCode } from "../domain";
 import { msg } from "../i18n/catalogs";
@@ -78,12 +78,18 @@ const contributionCopy = {
     smallImage: "Use a photo at least 320 × 200 pixels.",
     terms: "Confirm that you have the right to submit the photo.",
     rateLimit: "You have reached the contribution limit. Please try again later.",
+    uploadRetry: "The previous upload did not complete. Please submit again.",
+    idempotencyConflict: "This form changed after an uncertain submission. Check the earlier suggestion below and withdraw it before submitting the changed version.",
     success: "Suggestion received and pending review. No GemPoints have been awarded yet.",
+    withdraw: "Withdraw suggestion",
+    withdrawing: "Withdrawing…",
+    withdrawSuccess: "Suggestion withdrawn.",
     recent: "Your recent suggestions",
     pending: "Pending review",
     approved: "Approved",
     rejected: "Not approved",
     withdrawn: "Withdrawn",
+    honeypot: "Website",
   },
   it: {
     reward: "70 GemPoints dopo l’approvazione",
@@ -114,12 +120,18 @@ const contributionCopy = {
     smallImage: "Usa una foto di almeno 320 × 200 pixel.",
     terms: "Conferma di avere il diritto di inviare la foto.",
     rateLimit: "Hai raggiunto il limite di contributi. Riprova più tardi.",
+    uploadRetry: "Il caricamento precedente non è stato completato. Invia di nuovo.",
+    idempotencyConflict: "Il modulo è cambiato dopo un invio incerto. Controlla il suggerimento precedente qui sotto e ritiralo prima di inviare la versione modificata.",
     success: "Suggerimento ricevuto e in attesa di revisione. Non è stato ancora assegnato alcun GemPoint.",
+    withdraw: "Ritira suggerimento",
+    withdrawing: "Ritiro in corso…",
+    withdrawSuccess: "Suggerimento ritirato.",
     recent: "I tuoi suggerimenti recenti",
     pending: "In attesa di revisione",
     approved: "Approvato",
     rejected: "Non approvato",
     withdrawn: "Ritirato",
+    honeypot: "Sito web",
   },
   de: {
     reward: "70 GemPoints nach der Freigabe",
@@ -150,12 +162,18 @@ const contributionCopy = {
     smallImage: "Verwende ein Foto mit mindestens 320 × 200 Pixeln.",
     terms: "Bestätige, dass du das Foto einreichen darfst.",
     rateLimit: "Du hast das Beitragslimit erreicht. Versuche es später erneut.",
+    uploadRetry: "Der vorherige Upload wurde nicht abgeschlossen. Bitte erneut senden.",
+    idempotencyConflict: "Das Formular wurde nach einer unsicheren Übermittlung geändert. Prüfe den früheren Vorschlag unten und ziehe ihn zurück, bevor du die geänderte Version sendest.",
     success: "Vorschlag erhalten und zur Prüfung vorgemerkt. Es wurden noch keine GemPoints vergeben.",
+    withdraw: "Vorschlag zurückziehen",
+    withdrawing: "Wird zurückgezogen…",
+    withdrawSuccess: "Vorschlag zurückgezogen.",
     recent: "Deine letzten Vorschläge",
     pending: "Prüfung ausstehend",
     approved: "Freigegeben",
     rejected: "Nicht freigegeben",
     withdrawn: "Zurückgezogen",
+    honeypot: "Website",
   },
   fr: {
     reward: "70 GemPoints après approbation",
@@ -186,12 +204,18 @@ const contributionCopy = {
     smallImage: "Utilisez une photo d’au moins 320 × 200 pixels.",
     terms: "Confirmez que vous avez le droit d’envoyer la photo.",
     rateLimit: "Vous avez atteint la limite de contributions. Réessayez plus tard.",
+    uploadRetry: "L’envoi précédent n’a pas abouti. Veuillez envoyer à nouveau.",
+    idempotencyConflict: "Le formulaire a changé après un envoi incertain. Vérifiez la proposition précédente ci-dessous et retirez-la avant d’envoyer la version modifiée.",
     success: "Proposition reçue et en attente de validation. Aucun GemPoint n’a encore été attribué.",
+    withdraw: "Retirer la proposition",
+    withdrawing: "Retrait en cours…",
+    withdrawSuccess: "Proposition retirée.",
     recent: "Vos propositions récentes",
     pending: "En attente de validation",
     approved: "Approuvée",
     rejected: "Non approuvée",
     withdrawn: "Retirée",
+    honeypot: "Site web",
   },
   sl: {
     reward: "70 GemPoints po odobritvi",
@@ -222,12 +246,18 @@ const contributionCopy = {
     smallImage: "Uporabi fotografijo velikosti najmanj 320 × 200 slikovnih pik.",
     terms: "Potrdi, da smeš poslati fotografijo.",
     rateLimit: "Dosegel si omejitev prispevkov. Poskusi znova pozneje.",
+    uploadRetry: "Prejšnje nalaganje ni uspelo. Pošlji znova.",
+    idempotencyConflict: "Obrazec je bil po negotovi oddaji spremenjen. Spodaj preveri prejšnji predlog in ga umakni, preden pošlješ spremenjeno različico.",
     success: "Predlog je prejet in čaka na pregled. GemPoints še niso bili dodeljeni.",
+    withdraw: "Umakni predlog",
+    withdrawing: "Umakam…",
+    withdrawSuccess: "Predlog je umaknjen.",
     recent: "Tvoji nedavni predlogi",
     pending: "Čaka na pregled",
     approved: "Odobreno",
     rejected: "Ni odobreno",
     withdrawn: "Umaknjeno",
+    honeypot: "Spletno mesto",
   },
 } as const;
 
@@ -239,6 +269,7 @@ export default function GemContributionForm({ locale }: Props) {
   const [authState, setAuthState] = useState<AuthState>("checking");
   const [suggestions, setSuggestions] = useState<ContributionSummary[]>([]);
   const [submitting, setSubmitting] = useState(false);
+  const [withdrawingId, setWithdrawingId] = useState<string | null>(null);
   const [locating, setLocating] = useState(false);
   const [locationEvidence, setLocationEvidence] =
     useState<LocationEvidence | null>(null);
@@ -293,6 +324,7 @@ export default function GemContributionForm({ locale }: Props) {
     if (code === "location_required") return text.gpsRequired;
     if (code === "location_outside_region") return text.outsideRegion;
     if (code === "duplicate_media") return text.duplicateMedia;
+    if (code === "idempotency_conflict") return text.idempotencyConflict;
     if (code === "image_too_large" || code === "invalid_file_type") return text.invalidPhoto;
     if (code === "invalid_image") return text.invalidImage;
     if (code === "image_too_small") return text.smallImage;
@@ -383,6 +415,23 @@ export default function GemContributionForm({ locale }: Props) {
       if (!response.ok || !result.suggestion?.id || result.suggestion.status !== "pending") {
         if (response.status === 401) setAuthState("anonymous");
         if (response.status === 403) setAuthState("unverified");
+        if (
+          result.error === "contribution_upload_failed" ||
+          result.error === "contribution_retry_required"
+        ) {
+          // These are definitive server responses. Rotate the id so a
+          // withdrawn attempt cannot trap the next user retry. Network and
+          // parsing failures below remain ambiguous and retain their id.
+          requestIdRef.current = null;
+          setFeedback({ message: text.uploadRetry, tone: "error" });
+          return;
+        }
+        if (result.error === "idempotency_conflict") {
+          // The earlier request exists and owns this UUID. Refresh the list so
+          // the user can inspect/withdraw it; never rotate silently and create
+          // a second contribution after an ambiguous response.
+          await loadContributions();
+        }
         setFeedback({ message: errorMessage(result.error), tone: "error" });
         return;
       }
@@ -412,6 +461,35 @@ export default function GemContributionForm({ locale }: Props) {
   };
 
   const statusLabel = (status: ContributionStatus) => text[status];
+
+  const withdraw = async (id: string) => {
+    setWithdrawingId(id);
+    setFeedback(null);
+    try {
+      const response = await fetch("/api/gems", {
+        method: "DELETE",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ id }),
+      });
+      if (!response.ok) {
+        const result = (await response.json().catch(() => ({}))) as { error?: string };
+        setFeedback({ message: errorMessage(result.error), tone: "error" });
+        return;
+      }
+      setSuggestions((current) => current.map((item) =>
+        item.id === id ? { ...item, status: "withdrawn" } : item,
+      ));
+      if (requestIdRef.current === id) {
+        requestIdRef.current = null;
+        setFormStartedAt(Date.now());
+      }
+      setFeedback({ message: text.withdrawSuccess, tone: "success" });
+    } catch {
+      setFeedback({ message: t("contribute.unavailable"), tone: "error" });
+    } finally {
+      setWithdrawingId(null);
+    }
+  };
 
   return (
     <section className="contribution-card" aria-labelledby="contribution-title">
@@ -467,7 +545,7 @@ export default function GemContributionForm({ locale }: Props) {
         <>
           <form onSubmit={submit} className="contribution-form">
             <label className="contribution-honeypot" aria-hidden="true">
-              <span>Website</span>
+              <span>{text.honeypot}</span>
               <input name="website" type="text" tabIndex={-1} autoComplete="off" />
             </label>
             <label>
@@ -551,6 +629,16 @@ export default function GemContributionForm({ locale }: Props) {
                     <span className={`contribution-state is-${suggestion.status}`}>
                       {statusLabel(suggestion.status)}
                     </span>
+                    {suggestion.status === "pending" && (
+                      <button
+                        type="button"
+                        className="button button-ghost"
+                        disabled={withdrawingId === suggestion.id}
+                        onClick={() => void withdraw(suggestion.id)}
+                      >
+                        {withdrawingId === suggestion.id ? text.withdrawing : text.withdraw}
+                      </button>
+                    )}
                   </article>
                 ))}
               </div>

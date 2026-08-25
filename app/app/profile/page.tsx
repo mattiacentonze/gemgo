@@ -21,6 +21,7 @@ import { getSupabaseConfig } from "../../../lib/supabase/config";
 import GemContributionForm from "../../components/GemContributionForm";
 import { useAuth } from "../../components/AuthProvider";
 import { usePersistentLocale } from "../../hooks/usePersistentLocale";
+import { authRecoveryCopy } from "../../i18n/auth-recovery";
 import {
   loadLedger,
   loadSavedTrips,
@@ -72,9 +73,30 @@ const isAuthSettings = (
   return external === undefined || Boolean(external && typeof external === "object");
 };
 
+const AUTH_RETURN_PATHS = new Set(["/app/profile", "/privacy"]);
+
+const safeAuthReturnPath = () => {
+  const current = new URL(window.location.href);
+  const requested = current.searchParams.get("next");
+  if (!requested?.startsWith("/") || requested.startsWith("//")) return "/app/profile";
+  try {
+    const destination = new URL(requested, current.origin);
+    if (destination.origin !== current.origin || !AUTH_RETURN_PATHS.has(destination.pathname)) {
+      return "/app/profile";
+    }
+    if (current.searchParams.get("reauth") === "delete") {
+      destination.searchParams.set("reauth", "delete");
+    }
+    return `${destination.pathname}${destination.search}${destination.hash}`;
+  } catch {
+    return "/app/profile";
+  }
+};
+
 export default function ProfilePage() {
   const { locale } = usePersistentLocale();
   const t = copy[locale];
+  const recovery = authRecoveryCopy[locale];
   const auth = useAuth();
   const supabase = useMemo(() => createClient(), []);
   const [mode, setMode] = useState<"signup" | "signin">("signup");
@@ -98,10 +120,13 @@ export default function ProfilePage() {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    if (!params.get("auth_error")) return;
-    const timeout = window.setTimeout(() => setError(t.authError), 0);
+    const timeout = window.setTimeout(() => {
+      if (params.get("password_reset") === "success") setMessage(recovery.passwordChanged);
+      if (params.get("auth_error")) setError(t.authError);
+      if (params.get("reauth") === "delete") setMode("signin");
+    }, 0);
     return () => window.clearTimeout(timeout);
-  }, [t.authError]);
+  }, [recovery.passwordChanged, t.authError]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -135,7 +160,8 @@ export default function ProfilePage() {
     setMessage("");
     setSubmitting(true);
     const email = form.email.trim().toLowerCase();
-    const redirect = `${window.location.origin}/auth/callback?next=/app/profile`;
+    const returnPath = safeAuthReturnPath();
+    const redirect = `${window.location.origin}/auth/callback?next=${encodeURIComponent(returnPath)}`;
     const result = mode === "signup"
       ? await supabase.auth.signUp({
           email,
@@ -150,14 +176,16 @@ export default function ProfilePage() {
     }
     setForm({ name: "", email: "", password: "" });
     if (mode === "signup" && !result.data.session) setMessage(t.checkEmail);
+    if (mode === "signin" && result.data.session) window.location.assign(returnPath);
   };
 
   const continueWithGoogle = async () => {
     if (!googleEnabled) return;
     setError("");
+    const returnPath = safeAuthReturnPath();
     const { error: oauthError } = await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: `${window.location.origin}/auth/callback?next=/app/profile` },
+      options: { redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(returnPath)}` },
     });
     if (oauthError) setError(t.authError);
   };
@@ -191,6 +219,7 @@ export default function ProfilePage() {
             {mode === "signup" && <label><span>{t.name}</span><input autoComplete="name" required value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} /></label>}
             <label><span>{t.email}</span><input type="email" autoComplete="email" required value={form.email} onChange={(event) => setForm({ ...form, email: event.target.value })} /></label>
             <label><span>{t.password}</span><input type="password" autoComplete={mode === "signup" ? "new-password" : "current-password"} minLength={8} required value={form.password} onChange={(event) => setForm({ ...form, password: event.target.value })} /></label>
+            {mode === "signin" && <Link className="profile-forgot-password" href="/auth/forgot-password">{recovery.forgot}</Link>}
             {error && <p className="profile-error" role="alert">{error}</p>}
             {message && <p className="profile-success" role="status">{message}</p>}
             <button className="button button-primary" disabled={submitting} type="submit">{mode === "signup" ? t.signup : t.login}</button>

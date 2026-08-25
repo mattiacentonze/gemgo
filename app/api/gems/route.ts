@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import sharp from "sharp";
 
 import { createClient } from "../../../lib/supabase/server";
+import { createServiceRoleClient } from "../../../lib/supabase/service";
 import { regionCodes } from "../../domain";
 
 export const runtime = "nodejs";
@@ -17,6 +18,7 @@ const MAX_NORMALIZED_EDGE = 2560;
 const MIN_LANDSCAPE_RATIO = 1.22;
 const CONTRIBUTION_BUCKET = "gem-contributions";
 const TERMS_VERSION = "2026-08-13";
+const MEDIA_VALIDATION_VERSION = "2026-08-25";
 const MIN_FORM_AGE_MS = 2_000;
 const MAX_FORM_AGE_MS = 4 * 60 * 60 * 1_000;
 
@@ -201,6 +203,9 @@ const mapSupabaseError = (error: {
   if (/verified_account_required/i.test(evidence)) {
     return new ContributionRequestError("verified_account_required", 403);
   }
+  if (/account_deletion_pending/i.test(evidence)) {
+    return new ContributionRequestError("account_deletion_pending", 409);
+  }
   if (/rate_limit_exceeded/i.test(evidence)) {
     return new ContributionRequestError("rate_limit_exceeded", 429);
   }
@@ -212,6 +217,9 @@ const mapSupabaseError = (error: {
   }
   if (/duplicate_media/i.test(evidence)) {
     return new ContributionRequestError("duplicate_media", 409);
+  }
+  if (/idempotency_conflict/i.test(evidence)) {
+    return new ContributionRequestError("idempotency_conflict", 409);
   }
   if (/23505|duplicate|unique/i.test(evidence)) {
     return new ContributionRequestError("duplicate_contribution", 409);
@@ -228,6 +236,58 @@ const isExistingStorageObject = (error: {
 }) =>
   Number(error.statusCode) === 409 ||
   /already exists|duplicate/i.test(error.message ?? "");
+
+type NormalizedPhoto = Awaited<ReturnType<typeof normalizePhoto>>;
+
+const mediaMatchesNormalizedPhoto = async (
+  service: ReturnType<typeof createServiceRoleClient>,
+  contributionId: string,
+  objectPath: string,
+  photo: NormalizedPhoto,
+  validationStatus?: "pending" | "validated",
+) => {
+  let query = service
+    .from("contribution_media")
+    .select("validation_status,validation_version")
+    .eq("contribution_id", contributionId)
+    .eq("object_path", objectPath)
+    .eq("mime_type", "image/webp")
+    .eq("sha256", photo.sha256)
+    .eq("perceptual_hash", photo.perceptualHash)
+    .eq("byte_size", photo.size)
+    .eq("width", photo.width)
+    .eq("height", photo.height)
+    .is("removed_at", null);
+  if (validationStatus) query = query.eq("validation_status", validationStatus);
+  const { data, error } = await query.maybeSingle();
+  if (error) {
+    // A failed recovery read is ambiguous: the validation marker may already
+    // have committed. Preserve both the row and private object for a safe retry.
+    throw new ContributionRequestError("contribution_unavailable", 503);
+  }
+  return data;
+};
+
+const existingObjectMatchesNormalizedPhoto = async (
+  service: ReturnType<typeof createServiceRoleClient>,
+  objectPath: string,
+  photo: NormalizedPhoto,
+) => {
+  const { data, error } = await service.storage
+    .from(CONTRIBUTION_BUCKET)
+    .download(objectPath);
+  if (error) {
+    // Do not withdraw a valid replay merely because Storage could not confirm
+    // its bytes during a transient read failure.
+    throw new ContributionRequestError("contribution_unavailable", 503);
+  }
+  if (!data) return false;
+  const bytes = Buffer.from(await data.arrayBuffer());
+  return (
+    bytes.byteLength === photo.size &&
+    createHash("sha256").update(bytes).digest("hex") === photo.sha256
+  );
+};
 
 export async function GET() {
   try {
@@ -256,7 +316,7 @@ export async function POST(request: Request) {
     const suppliedOrigin = request.headers.get("origin");
     const fetchSite = request.headers.get("sec-fetch-site");
     if (
-      (suppliedOrigin && suppliedOrigin !== requestOrigin) ||
+      suppliedOrigin !== requestOrigin ||
       fetchSite === "cross-site"
     ) {
       throw new ContributionRequestError("cross_site_request", 403);
@@ -270,7 +330,14 @@ export async function POST(request: Request) {
     }
 
     const supabase = await createClient();
-    await authenticatedUserId(supabase);
+    const userId = await authenticatedUserId(supabase);
+    const service = (() => {
+      try {
+        return createServiceRoleClient();
+      } catch {
+        throw new ContributionRequestError("contribution_unavailable", 503);
+      }
+    })();
 
     let form: FormData;
     try {
@@ -346,10 +413,10 @@ export async function POST(request: Request) {
     }
 
     const normalized = await normalizePhoto(photo);
-    const { data, error: submissionError } = await supabase.rpc(
-      "submit_gem_suggestion",
-      {
-        p_id: clientRequestId,
+    const submitSuggestion = async (id: string) => {
+      const { data, error } = await service.rpc("reserve_gem_suggestion", {
+        p_id: id,
+        p_user_id: userId,
         p_name: name,
         p_description: description,
         p_region: region,
@@ -366,13 +433,21 @@ export async function POST(request: Request) {
         p_location_captured_at: locationCapturedAt,
         p_terms_version: TERMS_VERSION,
         p_consent_confirmed: true,
-      },
-    );
+      });
+      if (error) throw mapSupabaseError(error);
+      return (Array.isArray(data) ? data[0] : data) as RpcSubmission | null;
+    };
 
-    if (submissionError) throw mapSupabaseError(submissionError);
-    const submission = (Array.isArray(data) ? data[0] : data) as
-      | RpcSubmission
-      | null;
+    const submission = await submitSuggestion(clientRequestId);
+    // A failed upload is withdrawn by the compensating transaction below.
+    // Tell the client to rotate its id instead of silently creating another
+    // proposal from the same replay.
+    if (submission?.status === "withdrawn") {
+      // The browser keeps its request id after a lost response. Do not create
+      // a new server-side id here: that would turn the same replay into a new
+      // proposal every time. The client rotates only after this explicit reply.
+      throw new ContributionRequestError("contribution_retry_required", 409);
+    }
     if (
       !submission?.id ||
       !submission.object_path ||
@@ -381,7 +456,20 @@ export async function POST(request: Request) {
       throw new ContributionRequestError("contribution_unavailable", 503);
     }
 
-    const { error: uploadError } = await supabase.storage
+    const alreadyValidated = await mediaMatchesNormalizedPhoto(
+      service,
+      submission.id,
+      submission.object_path,
+      normalized,
+      "validated",
+    );
+    if (alreadyValidated?.validation_version === MEDIA_VALIDATION_VERSION) {
+      return json({
+        suggestion: { id: submission.id, name, status: "pending" },
+      }, 201);
+    }
+
+    const { error: uploadError } = await service.storage
       .from(CONTRIBUTION_BUCKET)
       .upload(submission.object_path, normalized.bytes, {
         contentType: "image/webp",
@@ -398,10 +486,68 @@ export async function POST(request: Request) {
       await supabase.rpc("withdraw_gem_suggestion", {
         p_id: submission.id,
       });
-      await supabase.storage
+      await service.storage
         .from(CONTRIBUTION_BUCKET)
         .remove([submission.object_path]);
       throw new ContributionRequestError("contribution_upload_failed", 503);
+    }
+
+    if (
+      uploadError &&
+      !(await existingObjectMatchesNormalizedPhoto(
+        service,
+        submission.object_path,
+        normalized,
+      ))
+    ) {
+      // A path collision is safe to reuse only when its bytes are exactly the
+      // normalized server output. Never promote declared metadata alone.
+      await supabase.rpc("withdraw_gem_suggestion", { p_id: submission.id });
+      await service.storage.from(CONTRIBUTION_BUCKET).remove([submission.object_path]);
+      throw new ContributionRequestError("contribution_upload_failed", 503);
+    }
+
+    // Finalization re-acquires the account-deletion lock after Storage upload.
+    // It both binds every server-computed field and refuses to validate an
+    // object once deletion has begun.
+    const { data: validationData, error: validationError } = await service.rpc(
+      "finalize_gem_suggestion_media",
+      {
+        p_user_id: userId,
+        p_contribution_id: submission.id,
+        p_object_path: submission.object_path,
+        p_photo_sha256: normalized.sha256,
+        p_photo_perceptual_hash: normalized.perceptualHash,
+        p_byte_size: normalized.size,
+        p_width: normalized.width,
+        p_height: normalized.height,
+        p_validation_version: MEDIA_VALIDATION_VERSION,
+      },
+    );
+    const validation = Array.isArray(validationData)
+      ? validationData[0]
+      : validationData;
+    if (
+      validationError ||
+      validation?.validation_status !== "validated" ||
+      validation.validation_version !== MEDIA_VALIDATION_VERSION
+    ) {
+      // A lost response after the marker was written is a successful replay,
+      // not an upload failure. Require every server-written value to match.
+      const existingMedia = await mediaMatchesNormalizedPhoto(
+        service,
+        submission.id,
+        submission.object_path,
+        normalized,
+      );
+      if (
+        existingMedia?.validation_status !== "validated" ||
+        existingMedia.validation_version !== MEDIA_VALIDATION_VERSION
+      ) {
+        await supabase.rpc("withdraw_gem_suggestion", { p_id: submission.id });
+        await service.storage.from(CONTRIBUTION_BUCKET).remove([submission.object_path]);
+        throw new ContributionRequestError("contribution_upload_failed", 503);
+      }
     }
 
     return json(
@@ -414,6 +560,65 @@ export async function POST(request: Request) {
       },
       201,
     );
+  } catch (error) {
+    if (error instanceof ContributionRequestError) {
+      return json({ error: error.code }, error.status);
+    }
+    return json({ error: "contribution_unavailable" }, 503);
+  }
+}
+
+export async function DELETE(request: Request) {
+  try {
+    const requestOrigin = new URL(request.url).origin;
+    const suppliedOrigin = request.headers.get("origin");
+    const fetchSite = request.headers.get("sec-fetch-site");
+    if (
+      suppliedOrigin !== requestOrigin ||
+      fetchSite === "cross-site"
+    ) {
+      throw new ContributionRequestError("cross_site_request", 403);
+    }
+    const body = (await request.json().catch(() => null)) as { id?: unknown } | null;
+    const id = typeof body?.id === "string" ? body.id.trim() : "";
+    if (!isUuid(id)) throw new ContributionRequestError("invalid_contribution", 400);
+
+    const supabase = await createClient();
+    const userId = await authenticatedUserId(supabase);
+    const service = (() => {
+      try {
+        return createServiceRoleClient();
+      } catch {
+        throw new ContributionRequestError("contribution_unavailable", 503);
+      }
+    })();
+    const { data: media, error: mediaError } = await supabase
+      .from("gem_suggestions")
+      .select("contribution_media(object_path)")
+      .eq("id", id)
+      .eq("author_id", userId)
+      .maybeSingle();
+    if (mediaError || !media) throw new ContributionRequestError("contribution_unavailable", 503);
+
+    const { error: withdrawalError } = await supabase.rpc("withdraw_gem_suggestion", {
+      p_id: id,
+    });
+    if (withdrawalError) throw mapSupabaseError(withdrawalError);
+
+    const path = (media as { contribution_media?: Array<{ object_path?: string }> })
+      .contribution_media?.[0]?.object_path;
+    if (path) {
+      const { error: removalError } = await service.storage
+        .from(CONTRIBUTION_BUCKET)
+        .remove([path]);
+      if (removalError) {
+        // The database state and RLS policy already make this object
+        // unreadable. Return a retryable failure until physical cleanup is
+        // confirmed instead of claiming that removal completed.
+        throw new ContributionRequestError("contribution_cleanup_failed", 503);
+      }
+    }
+    return json({ id, status: "withdrawn" });
   } catch (error) {
     if (error instanceof ContributionRequestError) {
       return json({ error: error.code }, error.status);

@@ -48,7 +48,8 @@ test("contribution API gathers separate, bounded evidence and screens automation
   assert.match(route, /perceptualHash/);
   assert.match(route, /p_photo_perceptual_hash/);
   assert.match(route, /p_location_accuracy_m/);
-  assert.doesNotMatch(route, /service_role|SUPABASE_SECRET|sb_secret_/);
+  assert.match(route, /createServiceRoleClient/);
+  assert.doesNotMatch(route, /SUPABASE_SERVICE_ROLE_KEY/);
 });
 
 test("database migration makes anti-fraud checks atomic and rewards review-only", async () => {

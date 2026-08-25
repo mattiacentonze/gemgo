@@ -1,0 +1,186 @@
+.visit-verification-form,
+.visit-verification-guest {
+  display: grid;
+  gap: 14px;
+  margin: 18px 0;
+  padding: 18px;
+  border: 1px solid color-mix(in srgb, var(--green) 28%, var(--line));
+  border-radius: 18px;
+  background: linear-gradient(145deg, #edf8f1, #fff);
+  text-align: left;
+}
+
+.visit-verification-form > header {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+}
+
+.visit-verification-form > header > svg {
+  margin-top: 2px;
+  color: var(--green);
+}
+
+.visit-verification-form h3 {
+  margin: 7px 0 4px;
+}
+
+.visit-verification-form header p,
+.visit-verification-form fieldset > p,
+.visit-verification-guest p {
+  margin: 0;
+  color: var(--slate);
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+.visit-live-pill {
+  display: inline-flex;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: #d8f2e2;
+  color: #076544;
+  font-size: 0.66rem;
+  font-weight: 850;
+}
+
+.visit-verification-form fieldset {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  margin: 0;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.82);
+}
+
+.visit-verification-form legend {
+  padding: 0 5px;
+  color: var(--forest);
+  font-size: 0.76rem;
+  font-weight: 850;
+}
+
+.visit-photo-control {
+  position: relative;
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 10px 14px;
+  border: 1px solid rgba(23, 112, 82, 0.28);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--forest);
+  font-size: 0.78rem;
+  font-weight: 820;
+  cursor: pointer;
+}
+
+.visit-photo-control input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.visit-photo-control:focus-within {
+  outline: 3px solid color-mix(in srgb, var(--green) 34%, transparent);
+  outline-offset: 2px;
+}
+
+.visit-verification-form fieldset > small {
+  overflow-wrap: anywhere;
+  color: var(--slate);
+}
+
+.visit-location-button {
+  width: 100%;
+  min-height: 44px;
+}
+
+.visit-consent-control {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+  color: var(--slate);
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+
+.visit-consent-control input {
+  width: 20px;
+  height: 20px;
+  margin-top: 1px;
+  accent-color: var(--green);
+}
+
+.visit-verification-message {
+  margin: 0;
+  padding: 11px 12px;
+  border-radius: 11px;
+  font-size: 0.76rem;
+  font-weight: 760;
+  line-height: 1.45;
+}
+
+.visit-verification-message.is-info {
+  background: #eef2ee;
+  color: var(--forest);
+}
+
+.visit-verification-message.is-success {
+  background: #dff5e7;
+  color: #076544;
+}
+
+.visit-verification-message.is-error {
+  background: #fff0e8;
+  color: #943f1b;
+}
+
+.verification-demo-disclosure {
+  display: grid;
+  gap: 8px;
+  margin-top: 18px;
+  padding: 13px 14px;
+  border: 1px solid rgba(239, 125, 52, 0.24);
+  border-radius: 14px;
+  background: #fff8ee;
+  text-align: left;
+}
+
+.verification-demo-disclosure .ai-demo-pill {
+  justify-self: start;
+}
+
+.verification-demo-disclosure p {
+  margin: 0;
+  color: var(--slate);
+  font-size: 0.76rem;
+  line-height: 1.5;
+}
+
+@media (max-width: 520px) {
+  .visit-verification-form,
+  .visit-verification-guest {
+    padding: 14px;
+  }
+
+  .visit-verification-form > header {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .visit-verification-form .is-spinning {
+    animation: none;
+  }
+}

@@ -14,13 +14,33 @@ export async function GET() {
     );
   }
 
-  const { data, error } = await supabase.rpc("export_my_account_data");
-  if (error || !data) {
+  const [accountResult, visitEvidenceResult] = await Promise.all([
+    supabase.rpc("export_my_account_data"),
+    supabase
+      .from("visit_verification_evidence")
+      .select(
+        "verification_id,trip_id,experience_id,photo_sha256,photo_perceptual_hash,byte_size,width,height,location_accuracy_m,distance_m,location_captured_at,accepted_gemdrop,points_awarded,validation_version,created_at",
+      )
+      .eq("user_id", authData.user.id)
+      .order("created_at", { ascending: false }),
+  ]);
+  if (accountResult.error || !accountResult.data || visitEvidenceResult.error) {
     return NextResponse.json(
       { error: "export_failed" },
       { status: 500, headers: { "Cache-Control": "no-store" } },
     );
   }
+
+  const accountData =
+    typeof accountResult.data === "object" &&
+    accountResult.data !== null &&
+    !Array.isArray(accountResult.data)
+      ? accountResult.data
+      : { account: accountResult.data };
+  const data = {
+    ...accountData,
+    visitVerificationEvidence: visitEvidenceResult.data ?? [],
+  };
 
   return new NextResponse(JSON.stringify(data, null, 2), {
     status: 200,

@@ -21,13 +21,13 @@ The tourist interface is focused on four destinations:
 
 GemDrop is not a standalone menu page. It is a contextual intervention shown when changed crowd, weather or access conditions make a comparable alternative useful.
 
-## Current capabilities
+## Current source-tree capabilities
 
 - real OpenStreetMap/Leaflet maps on the homepage, results, experience detail and My Trip;
 - gentler mouse-wheel zoom and clustering when more than two nearby markers overlap;
 - the existing 50-place public pilot catalogue plus 16 deduplicated Bavarian Alpify entries, for 66 mapped places with source provenance;
 - six deeper pan-Alpine demonstration experiences for jury storytelling;
-- natural-language parsing in English, Italian, German, French and Slovenian;
+- deterministic natural-language parsing in English, Italian, German, French and Slovenian, including longest-phrase precedence, bounded negation and rejection of invalid real dates;
 - editable structured controls after parsing;
 - geocoding through local pilot aliases and OpenStreetMap Nominatim;
 - live Open-Meteo context with conservative fallback behaviour;
@@ -36,13 +36,16 @@ GemDrop is not a standalone menu page. It is a contextual intervention shown whe
 - freely licensed Wikimedia Commons destination photography;
 - multiple saved trips, rename, duplicate, delete and legacy-trip migration;
 - optional Supabase accounts with Google OAuth when configured and email/password fallback;
+- five-language password recovery with a PKCE callback, non-enumerating request response, expired/reused-link handling and global sign-out after a successful reset;
 - guest-to-account import and cross-device sync for trips and collections, with conflict tombstones;
 - device-local offline essentials;
-- contextual GemDrop switching;
-- GPS-radius verification, partner-code verification and an explicitly labelled demo path;
+- contextual GemDrop switching to a deterministic lower-pressure alternative, with authenticated acceptance recorded against the saved trip;
+- authenticated arrival evidence that combines a private, server-normalised photo with a fresh browser geolocation claim checked against the catalogue destination; this is anti-abuse evidence, not cryptographic proof of presence or transport mode;
 - a separate local demo ledger plus a server-only verified GemPoints ledger;
-- authenticated photo contributions, private moderation storage and an idempotent 70-GemPoint award only after admin/owner approval;
+- authenticated photo contributions whose payload-bound reservation and media finalisation are service-role-only after server decoding, metadata stripping and normalisation, with legacy hashes quarantined from dedup, durable withdrawn-media cleanup, and an idempotent 70-GemPoint award only after admin/owner approval;
+- an editorial admin area for destination copy in all five languages, accommodation and media records, draft/publish/archive controls and an append-only audit trail; only published destination copy can override the reviewed static fallback in the public product;
 - `member`, `content_editor`, `admin` and `owner` roles with server-side authorization;
+- recent-session account deletion requests processed after a bounded in-flight drain by a retryable service-only worker that retains the immutable Auth subject, removes private contribution and visit-evidence objects, then deletes the Auth user;
 - temporary reward codes and device-local impact metrics;
 - responsive desktop and mobile layouts;
 - source and regression tests for the integrated product boundaries.
@@ -80,12 +83,13 @@ Open `/` for the public product story and `/app` for the integrated application.
 ## Quality checks
 
 ```bash
-npm run typecheck
-npm run lint
-npm test
+npm run preflight
+npm run audit:dependencies
+npm run test:authenticated
+npm run test:visual
 ```
 
-`npm test` still builds and validates the legacy Cloudflare/Vinext compatibility artifact before running rendered-output and source regression tests.
+`npm run preflight` runs the i18n and Biome checks, typechecking, the legacy Cloudflare/Vinext compatibility build and the complete source regression suite. The authenticated and visual Playwright suites remain explicit release checks.
 
 CI runs for pull requests and every push to `main`.
 
@@ -98,17 +102,23 @@ app/
   app/profile/page.tsx                  Supabase Auth profile and guest handoff
   app/admin/page.tsx                    moderation queue and owner-only role controls
   app/notifications/page.tsx            notification centre
+  auth/forgot-password/page.tsx         non-enumerating recovery request
+  auth/update-password/page.tsx         recovery-session password update
+  api/visits/route.ts                    private photo + claimed-GPS visit evidence
+  api/catalogue-content/route.ts         published editorial destination copy
   components/IntegratedAppShell.tsx     tourist and institutional product journey
   components/ExperienceMap.tsx          Leaflet maps, clusters, origin and route geometry
   components/AlpineOverview.tsx         real pan-Alpine catalogue map
   components/DestinationPhoto.tsx       licensed Wikimedia destination media
   product/catalogue.ts                  official + Alpify catalogue and deduplication
+  lib/prompt-parser.ts                  five-language deterministic prompt parsing
   product/transit.ts                    lazy Bavarian GTFS boundary
   product/recommendation-engine.ts      parsing, compatibility gates and distinct ranking roles
   product/live-context.ts               geocoding, weather and route context
   product/storage.ts                    scoped guest/account caches and demo ledger
-lib/supabase/                           SSR/client Auth and session helpers
-supabase/migrations/                    RLS, roles, contributions and verified ledger
+lib/supabase/                           public, SSR/client and server-only Supabase clients
+supabase/functions/                     scheduled account-deletion worker
+supabase/migrations/                    RLS, roles, CMS, evidence and verified ledger
   styles/                               modular desktop/mobile design system
 public/
   manifest.webmanifest                  PWA manifest
@@ -122,4 +132,4 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for state boundaries and the pr
 
 Vercel is the only public release target. It is connected to GitHub and builds the native Next.js application from `main` using `npm run build:vercel`.
 
-Supabase now provides Auth, account persistence, private contribution media, role-based moderation and the verified GemPoints ledger. Google OAuth credentials, redirect allow-lists and production SMTP remain dashboard configuration requirements. See [docs/VERCEL_SUPABASE_DEPLOYMENT.md](docs/VERCEL_SUPABASE_DEPLOYMENT.md).
+Supabase provides Auth, account persistence, private contribution and visit-evidence media, role-based moderation, published editorial content and the verified GemPoints ledger. The server upload/verification routes require a server-only service-role environment variable. Google OAuth credentials, Auth and recovery redirect allow-lists, production SMTP, the account-deletion worker secret/Vault/cron setup, production migrations and the release deployment remain operator tasks until explicitly verified. See [docs/VERCEL_SUPABASE_DEPLOYMENT.md](docs/VERCEL_SUPABASE_DEPLOYMENT.md).

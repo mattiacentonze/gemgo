@@ -14,6 +14,8 @@ const cases: Array<{
   { name: "home-notebook-de", path: "/", locale: "de", viewport: { width: 1024, height: 768 } },
   { name: "explore-tablet-sl", path: "/app/explore", locale: "sl", viewport: { width: 768, height: 1024 } },
   { name: "profile-mobile-de", path: "/app/profile", locale: "de", viewport: { width: 390, height: 844 } },
+  { name: "password-recovery-mobile-fr", path: "/auth/forgot-password", locale: "fr", viewport: { width: 390, height: 844 } },
+  { name: "password-update-invalid-notebook-it", path: "/auth/update-password?error=invalid_or_expired", locale: "it", viewport: { width: 1024, height: 768 } },
   { name: "privacy-mobile-sl", path: "/privacy", locale: "sl", viewport: { width: 360, height: 800 } },
   { name: "admin-guest-it", path: "/app/admin", locale: "it", viewport: { width: 430, height: 932 } },
   { name: "notifications-narrow-fr", path: "/app/notifications", locale: "fr", viewport: { width: 320, height: 780 } },
@@ -46,8 +48,10 @@ for (const visualCase of cases) {
     });
     page.on("response", (response) => {
       const url = new URL(response.url());
-      const expectedGuestResponse = url.pathname === "/api/gems" && response.status() === 401;
-      if (url.origin === appOrigin && response.status() >= 400 && !expectedGuestResponse) {
+      const expectedFallbackResponse =
+        (url.pathname === "/api/gems" && response.status() === 401) ||
+        (url.pathname === "/api/catalogue-content" && response.status() === 503);
+      if (url.origin === appOrigin && response.status() >= 400 && !expectedFallbackResponse) {
         errors.push(`first-party response ${response.status()}: ${url.pathname}`);
       }
     });

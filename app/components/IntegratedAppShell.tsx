@@ -76,13 +76,17 @@ import {
   transportLabel,
 } from "../i18n/pan-ui";
 import {
-  allExperiences,
-  catalogueExperiences,
+  allExperiences as staticAllExperiences,
+  catalogueExperiences as staticCatalogueExperiences,
   catalogueSummary,
   pilotRegions,
   totalCatalogueEntries,
   type PilotRegion,
 } from "../product/catalogue";
+import {
+  applyPublishedDestinationContent,
+  type PublishedDestinationContent,
+} from "../product/published-content";
 import type { TransitAccessPlan } from "../product/transit";
 import {
   applyPromptToPreferences,
@@ -137,10 +141,15 @@ import {
   localizedExperienceReasons,
 } from "../i18n/experience-content";
 import { seasonLabel, seasonUi } from "../i18n/season";
+import { visitVerificationCopy } from "../i18n/visit-verification";
 import { loadStoredNotifications, upsertStoredNotification } from "../product/notifications";
 import { calculateVisitPoints } from "../product/gempoints";
 import { curatedScenarioFor } from "../product/curated-alternatives";
+import { gemDropAlternativeFor } from "../product/gemdrop";
 import { useAuth } from "./AuthProvider";
+import VisitVerificationForm, {
+  type VerifiedVisitResult,
+} from "./VisitVerificationForm";
 
 type ExploreStage = "brief" | "results" | "experience";
 type TripMode = "active" | "saved" | "collections";
@@ -160,6 +169,14 @@ const ExperienceMap = dynamic(() => import("./ExperienceMap"), {
 });
 
 const EMPTY_EXPERIENCES: Experience[] = [];
+
+const appAria: Record<Locale, { home: string; close: string; points: (count: string) => string }> = {
+  en: { home: "GemGo home", close: "Close", points: (count) => `${count} GemPoints` },
+  it: { home: "Home GemGo", close: "Chiudi", points: (count) => `${count} GemPoints` },
+  de: { home: "GemGo-Startseite", close: "Schließen", points: (count) => `${count} GemPoints` },
+  fr: { home: "Accueil GemGo", close: "Fermer", points: (count) => `${count} GemPoints` },
+  sl: { home: "Domov GemGo", close: "Zapri", points: (count) => `${count} GemPoints` },
+};
 
 const copy = {
   en: {
@@ -1191,12 +1208,21 @@ function IntegratedAppShellForIdentity({
   persistenceIdentity: string;
 }) {
   const { locale, setLocale } = usePersistentLocale();
+  const [publishedDestinationContent, setPublishedDestinationContent] = useState<PublishedDestinationContent[]>([]);
+  const allExperiences = useMemo(
+    () => applyPublishedDestinationContent(staticAllExperiences, publishedDestinationContent),
+    [publishedDestinationContent],
+  );
+  const catalogueExperiences = useMemo(() => {
+    const catalogueIds = new Set(staticCatalogueExperiences.map((experience) => experience.id));
+    return allExperiences.filter((experience) => catalogueIds.has(experience.id));
+  }, [allExperiences]);
   const [languageOpen, setLanguageOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [section, setSection] = useState<AppSection>("explore");
   const [stage, setStage] = useState<ExploreStage>("brief");
   const defaultOrigin =
-    allExperiences.find((experience) => experience.name === "Cogne") ??
+    allExperiences.find((experience) => experience.id === "catalogue-vda_001") ??
     allExperiences[0];
   const [preferences, setPreferences] = useState<SearchPreferences>({
     ...defaultPreferences,
@@ -1230,6 +1256,7 @@ function IntegratedAppShellForIdentity({
   const [unlocks, setUnlocks] = useState<RewardUnlock[]>([]);
   const [rewardReceipt, setRewardReceipt] = useState<{ unlock: RewardUnlock; label: string } | null>(null);
   const [gemDropOpen, setGemDropOpen] = useState(false);
+  const [gemDropSaving, setGemDropSaving] = useState(false);
   const [verificationExperienceId, setVerificationExperienceId] = useState<string | null>(null);
   const [verificationMessage, setVerificationMessage] = useState("");
   const [qrCode, setQrCode] = useState("");
@@ -1248,16 +1275,38 @@ function IntegratedAppShellForIdentity({
   const [isProcessing, startProcessing] = useTransition();
 
   useEffect(() => {
+    const controller = new AbortController();
+    setPublishedDestinationContent([]);
+    void fetch(`/api/catalogue-content?locale=${encodeURIComponent(locale)}`, {
+      signal: controller.signal,
+    })
+      .then(async (response) => {
+        if (!response.ok) return [];
+        const body = (await response.json()) as { content?: PublishedDestinationContent[] };
+        return Array.isArray(body.content) ? body.content : [];
+      })
+      .then((content) => {
+        if (!controller.signal.aborted) setPublishedDestinationContent(content);
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) setPublishedDestinationContent([]);
+      });
+    return () => controller.abort();
+  }, [locale]);
+
+  useEffect(() => {
     const examples = Object.values(promptExamples);
     setPromptDraft((current) => examples.includes(current) ? promptExamples[locale] : current);
     setPreferences((current) => examples.includes(current.prompt) ? { ...current, prompt: promptExamples[locale] } : current);
   }, [locale]);
 
   const t = copy[locale];
+  const aria = appAria[locale];
   const u = panUi[locale];
   const plannerText = plannerCopy[locale];
   const mvp = mvpCopy[locale];
   const activityText = activityCopy[locale];
+  const visitVerificationText = visitVerificationCopy[locale];
   const originExperience = useMemo(
     () =>
       allExperiences.find(
@@ -1286,7 +1335,7 @@ function IntegratedAppShellForIdentity({
       activeExperienceIds
         .map((id) => allExperiences.find((experience) => experience.id === id))
         .filter((experience): experience is Experience => Boolean(experience)),
-    [activeExperienceIds],
+    [activeExperienceIds, allExperiences],
   );
   const activeExperience = activeExperiences.at(-1) ?? null;
   const activeTripTransport =
@@ -1296,12 +1345,21 @@ function IntegratedAppShellForIdentity({
   );
   const verificationExperience =
     activeExperiences.find((experience) => experience.id === verificationExperienceId) ?? null;
+  const verificationRecords = activeTrip?.trip.verificationRecords ?? [];
   const verifiedExperienceIds = new Set(
-    activeTrip?.trip.verifiedExperienceIds ??
-      (activeTrip?.trip.verified && activeTrip.trip.experienceId
-        ? [activeTrip.trip.experienceId]
-        : []),
+    verificationRecords
+      .filter((record) => record.status === "verified")
+      .map((record) => record.experienceId),
   );
+  if (activeTrip?.trip.verified && activeTrip.trip.experienceId) {
+    verifiedExperienceIds.add(activeTrip.trip.experienceId);
+  }
+  const completedExperienceIds = new Set([
+    ...verifiedExperienceIds,
+    ...verificationRecords
+      .filter((record) => record.status === "demo")
+      .map((record) => record.experienceId),
+  ]);
   const isBuildingTrip = Boolean(
     buildingTripId && activeTrip?.id === buildingTripId,
   );
@@ -1348,7 +1406,7 @@ function IntegratedAppShellForIdentity({
       }).filter(
         (item) => !activeExperienceIds.includes(item.experience.id),
       ),
-    [activeExperienceIds, rankingPreferences, recommendationOrigin, weather],
+    [activeExperienceIds, allExperiences, rankingPreferences, recommendationOrigin, weather],
   );
   const roadCandidates = useMemo(
     () =>
@@ -1369,7 +1427,7 @@ function IntegratedAppShellForIdentity({
         weather,
         routeTimes,
       }).filter((item) => !activeExperienceIds.includes(item.experience.id)),
-    [activeExperienceIds, rankingPreferences, recommendationOrigin, routeTimes, weather],
+    [activeExperienceIds, allExperiences, rankingPreferences, recommendationOrigin, routeTimes, weather],
   );
 
   const selected =
@@ -1425,7 +1483,7 @@ function IntegratedAppShellForIdentity({
           overlap(experience.kind, rankingPreferences.kinds),
       )
       .slice(0, 6);
-  }, [activeExperienceIds, ranked, rankingPreferences, recommendationOrigin, routeTimes]);
+  }, [activeExperienceIds, allExperiences, ranked, rankingPreferences, recommendationOrigin, routeTimes]);
 
   const visibleResultExperiences = useMemo(
     () => [
@@ -1445,24 +1503,10 @@ function IntegratedAppShellForIdentity({
     [activeExperiences, visibleResultExperiences],
   );
 
-  const gemDropAlternative = (() => {
-    if (!activeExperience || !activeTrip) return null;
-    return (
-      allExperiences
-        .filter(
-          (experience) =>
-            experience.id !== activeExperience.id &&
-            overlap(experience.kind, activeExperience.kind),
-        )
-        .sort((first, second) => {
-          const crowd = { low: 0, moderate: 1, high: 2 };
-          return (
-            crowd[first.crowd] - crowd[second.crowd] ||
-            first.durationMinutes - second.durationMinutes
-          );
-        })[0] ?? null
-    );
-  })();
+  const gemDropAlternative =
+    activeExperience && activeTrip
+      ? gemDropAlternativeFor(allExperiences, activeExperience)
+      : null;
 
   useEffect(() => {
     queueMicrotask(() => setFloatingTarget(document.body));
@@ -2063,8 +2107,7 @@ function IntegratedAppShellForIdentity({
     setToast(systemUi[locale].deleted);
   };
 
-  const completeVerification = (
-    status: "demo" | "verified",
+  const completeDemoVerification = (
     options: {
       source?: "gps" | "qr" | "manual-demo" | "activity-demo";
       provider?: ActivityProvider;
@@ -2072,20 +2115,19 @@ function IntegratedAppShellForIdentity({
     } = {},
   ) => {
     const experience = verificationExperience;
-    if (!activeTrip || !experience || verifiedExperienceIds.has(experience.id)) return;
+    if (!activeTrip || !experience || completedExperienceIds.has(experience.id)) return;
     const plannedTransport = activeTrip.trip.legTransport ?? activeTrip.preferences.transport;
     const adjustment = mobilityAdjustment(plannedTransport, options.actualTransport);
     const actualTransport = options.actualTransport ?? plannedTransport;
     const pointsBreakdown = calculateVisitPoints(experience, actualTransport, activeTrip.preferences.startsAt);
     const awardedPoints = pointsBreakdown.total;
-    const nextVerifiedIds = [...verifiedExperienceIds, experience.id];
-    const allStopsVerified = tripExperienceIds(activeTrip).every((id) => nextVerifiedIds.includes(id));
+    const nextVerifiedIds = [...verifiedExperienceIds];
     const verifiedTrip: SavedTrip = {
       ...activeTrip,
       updatedAt: new Date().toISOString(),
       trip: {
         ...activeTrip.trip,
-        verified: status === "verified" && allStopsVerified,
+        verified: false,
         verifiedExperienceIds: nextVerifiedIds,
         verificationRecords: [
           ...(activeTrip.trip.verificationRecords ?? []).filter(
@@ -2094,7 +2136,7 @@ function IntegratedAppShellForIdentity({
           {
             experienceId: experience.id,
             verifiedAt: new Date().toISOString(),
-            status,
+            status: "demo",
             source: options.source ?? "manual-demo",
             provider: options.provider,
             actualTransport: options.actualTransport,
@@ -2110,7 +2152,7 @@ function IntegratedAppShellForIdentity({
       type: "visit",
       label: systemUi[locale].visitLedger(experience.name, adjustment.tone),
       createdAt: new Date().toISOString(),
-      status,
+      status: "demo",
       metadata: {
         transport: actualTransport,
         plannedTransport,
@@ -2130,7 +2172,7 @@ function IntegratedAppShellForIdentity({
         type: "gemdrop",
         label: systemUi[locale].gemDropLedger,
         createdAt: new Date().toISOString(),
-        status,
+        status: "demo",
         metadata: {
           transport: options.actualTransport ?? plannedTransport,
           plannedTransport,
@@ -2192,6 +2234,53 @@ function IntegratedAppShellForIdentity({
     setVerificationMessage("");
   };
 
+  const completeVerifiedVisit = async (result: VerifiedVisitResult) => {
+    const experience = verificationExperience;
+    if (!activeTrip || !experience) return;
+    const nextVerifiedIds = [...verifiedExperienceIds, experience.id];
+    const allStopsVerified = tripExperienceIds(activeTrip).every((id) =>
+      nextVerifiedIds.includes(id),
+    );
+    const verifiedTrip: SavedTrip = {
+      ...activeTrip,
+      updatedAt: new Date().toISOString(),
+      trip: {
+        ...activeTrip.trip,
+        verified: allStopsVerified,
+        verifiedExperienceIds: nextVerifiedIds,
+        verificationRecords: [
+          ...(activeTrip.trip.verificationRecords ?? []).filter(
+            (record) => record.experienceId !== experience.id,
+          ),
+          {
+            experienceId: experience.id,
+            verifiedAt: result.verified_at,
+            status: "verified",
+            source: "photo-gps",
+            awardedPoints: result.points_awarded,
+          },
+        ],
+      },
+    };
+    updateActive(verifiedTrip);
+    upsertStoredNotification({
+      id: `verified-visit-${result.verification_id}`,
+      title: visitVerificationText.verifiedStop,
+      detail: `${experience.name} · +${result.awarded_now} GemPoints`,
+      createdAt: result.verified_at,
+      kind: "points",
+      href: appPath.points,
+    });
+    setToast(
+      result.awarded_now > 0
+        ? `${experience.name} · +${result.awarded_now} GemPoints`
+        : visitVerificationText.alreadyVerified,
+    );
+    await auth.refreshAccount();
+    setVerificationExperienceId(null);
+    setVerificationMessage("");
+  };
+
   const verifyGps = () => {
     if (!verificationExperience || !navigator.geolocation) {
       setVerificationMessage(systemUi[locale].geoUnavailable);
@@ -2208,7 +2297,7 @@ function IntegratedAppShellForIdentity({
           },
           verificationExperience,
         );
-        if (distance <= 2) completeVerification("demo", { source: "gps" });
+        if (distance <= 2) completeDemoVerification({ source: "gps" });
         else
           setVerificationMessage(systemUi[locale].distanceArea(distance.toFixed(1)));
       },
@@ -2219,7 +2308,7 @@ function IntegratedAppShellForIdentity({
 
   const verifyQr = () => {
     if (qrCode.trim().toUpperCase() === "GEMGO-DEMO-2026")
-      completeVerification("demo", { source: "qr" });
+      completeDemoVerification({ source: "qr" });
     else setVerificationMessage(systemUi[locale].invalidQr);
   };
 
@@ -2236,8 +2325,38 @@ function IntegratedAppShellForIdentity({
     );
   };
 
-  const switchGemDrop = () => {
+  const switchGemDrop = async () => {
     if (!activeTrip || !gemDropAlternative) return;
+    setGemDropSaving(true);
+    if (auth.user) {
+      try {
+        await auth.refreshAccount();
+        const response = await fetch("/api/visits", {
+          method: "PUT",
+          headers: {
+            accept: "application/json",
+            "content-type": "application/json",
+          },
+          body: JSON.stringify({
+            acceptanceId: crypto.randomUUID(),
+            tripId: activeTrip.id,
+            originalExperienceId: activeExperience?.id,
+            alternativeExperienceId: gemDropAlternative.id,
+          }),
+        });
+        if (!response.ok) {
+          setToast(visitVerificationText.gemDropSaveError);
+          return;
+        }
+      } catch {
+        setToast(visitVerificationText.gemDropSaveError);
+        return;
+      } finally {
+        setGemDropSaving(false);
+      }
+    } else {
+      setGemDropSaving(false);
+    }
     setUndoSnapshot({
       savedTrips,
       activeTrip,
@@ -2333,7 +2452,7 @@ function IntegratedAppShellForIdentity({
         <Link
           className="brand brand-compact"
           href="/"
-          aria-label="GemGo homepage"
+          aria-label={aria.home}
         >
           <span className="brand-mark">
             <img src="/assets/gemgo-logo-green.svg?v=2" alt="" />
@@ -2399,7 +2518,7 @@ function IntegratedAppShellForIdentity({
           <button
             type="button"
             className="header-points-link"
-            aria-label={`${displayedBalance.toLocaleString(locale)} GemPoints`}
+            aria-label={aria.points(displayedBalance.toLocaleString(locale))}
             onClick={() => chooseSection("rewards")}
           >
             <Coins size={18} />
@@ -3264,9 +3383,14 @@ function IntegratedAppShellForIdentity({
                       const previous = activeExperiences[index - 1];
                       const legMinutes = index > 0 ? activeLegMinutes[index - 1] : null;
                       const verified = verifiedExperienceIds.has(experience.id);
+                      const demoCompleted =
+                        !auth.user &&
+                        !verified &&
+                        completedExperienceIds.has(experience.id);
+                      const completed = verified || demoCompleted;
                       return (
-                        <article className={`timeline-item${verified ? " is-verified" : ""}`} key={experience.id}>
-                          <div className="timeline-marker">{verified ? <Check size={16} /> : index + 1}</div>
+                        <article className={`timeline-item${completed ? " is-verified" : ""}`} key={experience.id}>
+                          <div className="timeline-marker">{completed ? <Check size={16} /> : index + 1}</div>
                           <div className="timeline-stop-copy">
                             <time>{index === 0 ? formatDateTime(activeTrip.preferences.startsAt, locale) : `${formatDuration(legMinutes ?? 0)} · ${activityText.estimated}`}</time>
                             <strong>{experience.name}</strong>
@@ -3274,8 +3398,8 @@ function IntegratedAppShellForIdentity({
                             {index > 0 && <span><Navigation size={14} />{transportLabel(locale, activeTripTransport)} · {formatDuration(legMinutes ?? 0)}</span>}
                           </div>
                           <div className="timeline-stop-actions">
-                            <button type="button" className={verified ? "is-verified" : ""} disabled={verified} onClick={() => { setVerificationMessage(""); setQrCode(""); setVerificationExperienceId(experience.id); }}>
-                              <BadgeCheck size={16} />{verified ? activityText.verified : t.verify}
+                            <button type="button" className={completed ? "is-verified" : ""} disabled={completed} onClick={() => { setVerificationMessage(""); setQrCode(""); setVerificationExperienceId(experience.id); }}>
+                              <BadgeCheck size={16} />{verified ? visitVerificationText.verifiedStop : demoCompleted ? activityText.verified : t.verify}
                             </button>
                             <a href={googleMapsDirectionsUrl(experience, activeTripTransport, previous)} target="_blank" rel="noreferrer"><Navigation size={16} />{activityText.openNavigation}</a>
                           </div>
@@ -3488,6 +3612,7 @@ function IntegratedAppShellForIdentity({
           locale={locale}
           original={activeExperience}
           alternative={gemDropAlternative}
+          saving={gemDropSaving}
           onClose={closeGemDrop}
           onSwitch={switchGemDrop}
         />
@@ -3515,14 +3640,18 @@ function IntegratedAppShellForIdentity({
           experience={verificationExperience}
           plannedTransport={activeTripTransport}
           visitDate={activeTrip?.preferences.startsAt}
+          signedIn={Boolean(auth.user)}
+          tripId={activeTrip?.id ?? null}
           message={verificationMessage}
           qrCode={qrCode}
           onQrCode={setQrCode}
           onGps={verifyGps}
           onQr={verifyQr}
-          onDemo={() => completeVerification("demo", { source: "manual-demo" })}
+          onBeforeSubmit={auth.refreshAccount}
+          onVerified={completeVerifiedVisit}
+          onDemo={() => completeDemoVerification({ source: "manual-demo" })}
           onActivity={(provider, actualTransport) =>
-            completeVerification("demo", {
+            completeDemoVerification({
               source: "activity-demo",
               provider,
               actualTransport,
@@ -3564,7 +3693,7 @@ function IntegratedAppShellForIdentity({
 function MapRegionControls({
   locale,
   activeRegion,
-  experiences = allExperiences,
+  experiences = staticAllExperiences,
   onSelect,
 }: {
   locale: Locale;
@@ -3941,7 +4070,7 @@ function ConditionChangeModal({
   return (
     <div className="modal-backdrop condition-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="condition-change-title">
       <section className="condition-change-modal">
-        <button type="button" className="modal-close" onClick={onClose} aria-label="Close"><X size={20} /></button>
+        <button type="button" className="modal-close" onClick={onClose} aria-label={appAria[locale].close}><X size={20} /></button>
         <div className="condition-modal-heading">
           <span className="ai-feature-pill"><Sparkles size={15} />{text.aiDemo}</span>
           <AlertTriangle size={34} />
@@ -3966,14 +4095,16 @@ function GemDropModal({
   locale,
   original,
   alternative,
+  saving,
   onClose,
   onSwitch,
 }: {
   locale: Locale;
   original: Experience;
   alternative: Experience;
+  saving: boolean;
   onClose: () => void;
-  onSwitch: () => void;
+  onSwitch: () => void | Promise<void>;
 }) {
   useModalA11y(onClose);
   return (
@@ -4046,14 +4177,16 @@ function GemDropModal({
             type="button"
             className="button button-primary"
             onClick={onSwitch}
+            disabled={saving}
           >
+            {saving ? <LoaderCircle className="is-spinning" size={17} /> : <ArrowRight size={17} />}
             {tr(locale, "Switch my trip", "Cambia il mio viaggio")}
-            <ArrowRight size={17} />
           </button>
           <button
             type="button"
             className="button button-secondary"
             onClick={onClose}
+            disabled={saving}
           >
             {tr(locale, "Keep original plan", "Mantieni il piano originale")}
           </button>
@@ -4068,11 +4201,15 @@ function VerificationModal({
   experience,
   plannedTransport,
   visitDate,
+  signedIn,
+  tripId,
   message,
   qrCode,
   onQrCode,
   onGps,
   onQr,
+  onBeforeSubmit,
+  onVerified,
   onDemo,
   onActivity,
   onClose,
@@ -4081,11 +4218,15 @@ function VerificationModal({
   experience: Experience;
   plannedTransport: TransportMode;
   visitDate?: string;
+  signedIn: boolean;
+  tripId: string | null;
   message: string;
   qrCode: string;
   onQrCode: (value: string) => void;
   onGps: () => void;
   onQr: () => void;
+  onBeforeSubmit: () => void | Promise<void>;
+  onVerified: (result: VerifiedVisitResult) => void | Promise<void>;
   onDemo: () => void;
   onActivity: (provider: ActivityProvider, actualTransport: TransportMode) => void;
   onClose: () => void;
@@ -4094,12 +4235,13 @@ function VerificationModal({
   const [provider, setProvider] = useState<ActivityProvider>("strava");
   const [actualTransport, setActualTransport] = useState<TransportMode>(plannedTransport);
   const text = activityCopy[locale];
+  const proofText = visitVerificationCopy[locale];
   const adjustment = mobilityAdjustment(plannedTransport, actualTransport);
   const pointsEstimate = calculateVisitPoints(experience, actualTransport, visitDate);
   return (
     <div className="modal-backdrop" role="dialog" aria-modal="true">
       <div className="verification-card verification-modal">
-        <button type="button" className="modal-close" onClick={onClose}>
+        <button type="button" className="modal-close" onClick={onClose} aria-label={appAria[locale].close}>
           <X size={20} />
         </button>
         <BadgeCheck size={36} />
@@ -4111,30 +4253,29 @@ function VerificationModal({
             "La verifica assegna punti e misura la redistribuzione dei flussi senza conservare uno storico dettagliato degli spostamenti.",
           )}
         </p>
+        <VisitVerificationForm
+          locale={locale}
+          signedIn={signedIn}
+          tripId={tripId}
+          experienceId={experience.id}
+          onBeforeSubmit={onBeforeSubmit}
+          onVerified={onVerified}
+        />
+        <div className="verification-demo-disclosure">
+          <span className="ai-demo-pill">{proofText.guestBadge}</span>
+          <p>{proofText.demoFallback}</p>
+        </div>
         <button type="button" className="verification-method" onClick={onGps}>
           <LocateFixed size={24} />
           <span>
-            <strong>
-              {tr(
-                locale,
-                "Verify current location",
-                "Verifica la posizione attuale",
-              )}
-            </strong>
-            <small>
-              {tr(
-                locale,
-                "Checks whether you are within 2 km of",
-                "Controlla se ti trovi entro 2 km da",
-              )}{" "}
-              {experience.name}.
-            </small>
+            <strong>{proofText.demoGpsTitle}</strong>
+            <small>{proofText.demoGpsHelp}</small>
           </span>
         </button>
         <div className="qr-verification">
           <label>
             <span>
-              {tr(locale, "Partner QR code", "Codice QR del partner")}
+              {proofText.demoQrLabel}
             </span>
             <input
               value={qrCode}
@@ -4148,7 +4289,7 @@ function VerificationModal({
             onClick={onQr}
           >
             <QrCode size={17} />
-            {tr(locale, "Verify code", "Verifica codice")}
+            {proofText.demoQrAction}
           </button>
         </div>
         <section className="activity-verification-demo">
@@ -4191,11 +4332,7 @@ function VerificationModal({
           <button type="button" className="button button-primary button-full" onClick={() => onActivity(provider, actualTransport)}><Watch size={17} />{text.import}</button>
         </section>
         <button type="button" className="button button-ghost" onClick={onDemo}>
-          {tr(
-            locale,
-            "Use clearly labelled demo verification",
-            "Usa la verifica demo chiaramente indicata",
-          )}
+          {proofText.demoManual}
         </button>
         {message && <p className="verification-message">{message}</p>}
       </div>
@@ -4344,7 +4481,7 @@ function RewardsPage({
       .filter((id): id is string => Boolean(id)),
   );
   const collectionBadges = pilotRegions.flatMap((region) => {
-    const regional = allExperiences.filter(
+    const regional = staticAllExperiences.filter(
       (experience) => experience.region === region && experience.catalogueSource !== "team-expert",
     );
     const matches = (experience: Experience, pattern: RegExp) =>

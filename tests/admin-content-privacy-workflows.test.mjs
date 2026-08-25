@@ -5,6 +5,9 @@ import test from "node:test";
 const source = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 const migrationPath = "supabase/migrations/20260813083427_admin_content_privacy_workflows.sql";
 const migration = await source(migrationPath);
+const deletionMigration = await source(
+  "supabase/migrations/20260825101459_account_deletion_worker.sql",
+);
 
 const section = (start, end) => {
   const from = migration.indexOf(start);
@@ -82,6 +85,12 @@ test("account deletion purges sync data, queues privileged cleanup and blocks st
   assert.match(migration, /account_deletion_pending/);
 });
 
+test("account-write triggers fail fast instead of deadlocking behind deletion", () => {
+  assert.match(deletionMigration, /pg_try_advisory_xact_lock/);
+  assert.match(deletionMigration, /account_write_retry/);
+  assert.match(deletionMigration, /errcode = '40001'/);
+});
+
 test("the admin UI exposes destination, stay, media and audit operations in five locales", async () => {
   const [component, page] = await Promise.all([
     source("app/components/AdminContentOperations.tsx"),
@@ -96,9 +105,11 @@ test("the admin UI exposes destination, stay, media and audit operations in five
     "destination_media",
     "content_audit_events",
   ]) {
-    assert.match(component, new RegExp(`from\\(\"${table}\"\\)`));
+    assert.match(component, new RegExp(`from\\("${table}"\\)`));
   }
   assert.match(component, /canPublish = role === "admin" \|\| role === "owner"/);
+  assert.match(component, /\.eq\("version", existing\.version\)/);
+  assert.match(component, /stale_editorial_version/);
   assert.match(component, /existing\?\.object_path \?\? null/);
   assert.match(page, /<AdminContentOperations locale=\{locale\} role=\{auth\.role\}/);
 });
