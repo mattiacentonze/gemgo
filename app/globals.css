@@ -34,6 +34,7 @@
 @import "./styles/app-map-and-navigation-fixes.css";
 @import "./styles/mvp-final.css";
 @import "./styles/global-footer.css";
+@import "./styles/visit-verification.css";
 /* Media credits stay available to keyboard and screen-reader users without
    obscuring compact destination cards. */
 .destination-photo figcaption {

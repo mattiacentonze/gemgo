@@ -198,15 +198,23 @@ test("My Trip persists multiple plans and GemPoints use an event ledger", async 
   assert.match(shell, /auth\.user \? auth\.verifiedBalance : balance/);
 });
 
-test("visit verification supports GPS, partner codes and an explicitly labelled demo path", async () => {
-  const shell = await source("app/components/IntegratedAppShell.tsx");
-  assert.match(shell, /navigator\.geolocation/);
-  assert.match(shell, /distance <= 2/);
-  assert.match(shell, /Partner QR code/);
-  assert.match(shell, /demo verification/);
-  assert.match(shell, /status: "demo" \| "verified"/);
-  assert.match(shell, /distance <= 2\) completeVerification\("demo"/);
+test("visit verification separates server proof from GPS, QR and activity demos", async () => {
+  const [shell, form, route, copy] = await Promise.all([
+    source("app/components/IntegratedAppShell.tsx"),
+    source("app/components/VisitVerificationForm.tsx"),
+    source("app/api/visits/route.ts"),
+    source("app/i18n/visit-verification.ts"),
+  ]);
+  assert.match(form, /navigator\.geolocation/);
+  assert.match(form, /capture="environment"/);
+  assert.match(form, /\/api\/visits/);
+  assert.match(route, /validateVisitLocation/);
+  assert.match(route, /record_verified_visit/);
+  assert.match(shell, /distance <= 2\) completeDemoVerification/);
+  assert.match(shell, /proofText\.demoQrLabel/);
+  assert.match(shell, /completeVerifiedVisit/);
   assert.match(shell, /GEMGO-DEMO-2026/);
+  assert.match(copy, /demoFallback:/);
   assert.doesNotMatch(shell, /\^\(GEMGO\|GEM\)-/);
 });
 

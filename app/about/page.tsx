@@ -19,6 +19,14 @@ import { usePersistentLocale } from "../hooks/usePersistentLocale";
 import { useHashScroll } from "../hooks/useHashScroll";
 import { marketingCopy } from "../i18n/marketing";
 
+const pilotScopeAria = {
+  en: "EUSALP pilot scope",
+  it: "Ambito del pilota EUSALP",
+  de: "Umfang des EUSALP-Piloten",
+  fr: "Périmètre du pilote EUSALP",
+  sl: "Obseg pilota EUSALP",
+} as const;
+
 const content = {
   en: {
     eyebrow: "Why GemGo exists",
@@ -305,7 +313,7 @@ export default function AboutPage() {
         </article>
       </section>
 
-      <section className="eus-alp-facts" aria-label="EUSALP pilot scope">
+      <section className="eus-alp-facts" aria-label={pilotScopeAria[locale]}>
         <div>
           <Globe2 />
           <strong>48</strong>

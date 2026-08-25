@@ -67,6 +67,7 @@ const copy = {
     deviceUnsupported: "This browser cannot show web notifications. On iPhone or iPad, first add GemGo to the Home Screen and open it there.",
     testTitle: "GemGo notifications are active",
     testBody: "Future trip, crowd and GemPoints updates can now appear on this device.",
+    unread: "Unread",
   },
   it: {
     eyebrow: "Cronologia sul dispositivo",
@@ -91,6 +92,7 @@ const copy = {
     deviceUnsupported: "Questo browser non supporta le notifiche web. Su iPhone o iPad, aggiungi prima GemGo alla schermata Home e aprila da lì.",
     testTitle: "Le notifiche GemGo sono attive",
     testBody: "Gli aggiornamenti su viaggio, affollamento e GemPoints possono ora comparire su questo dispositivo.",
+    unread: "Non letto",
   },
   de: {
     eyebrow: "Lokaler Verlauf",
@@ -115,6 +117,7 @@ const copy = {
     deviceUnsupported: "Dieser Browser unterstützt keine Web-Benachrichtigungen. Auf iPhone oder iPad GemGo zuerst zum Home-Bildschirm hinzufügen und von dort öffnen.",
     testTitle: "GemGo-Benachrichtigungen sind aktiv",
     testBody: "Reise-, Besucher- und GemPoints-Updates können jetzt auf diesem Gerät erscheinen.",
+    unread: "Ungelesen",
   },
   fr: {
     eyebrow: "Historique local",
@@ -139,6 +142,7 @@ const copy = {
     deviceUnsupported: "Ce navigateur ne prend pas en charge les notifications web. Sur iPhone ou iPad, ajoutez d’abord GemGo à l’écran d’accueil et ouvrez-le depuis celui-ci.",
     testTitle: "Les notifications GemGo sont actives",
     testBody: "Les mises à jour de voyage, d’affluence et de GemPoints peuvent maintenant apparaître sur cet appareil.",
+    unread: "Non lu",
   },
   sl: {
     eyebrow: "Lokalna zgodovina",
@@ -163,6 +167,7 @@ const copy = {
     deviceUnsupported: "Ta brskalnik ne podpira spletnih obvestil. Na iPhonu ali iPadu najprej dodaj GemGo na začetni zaslon in ga odpri od tam.",
     testTitle: "Obvestila GemGo so vključena",
     testBody: "Posodobitve poti, gneče in GemPoints se lahko zdaj prikažejo na tej napravi.",
+    unread: "Neprebrano",
   },
 } as const;
 
@@ -314,7 +319,7 @@ export default function NotificationsPage() {
                 <p>{item.detail}</p>
                 <time dateTime={item.createdAt}>{new Date(item.createdAt).toLocaleString(locale)}</time>
               </div>
-              {unread && <i className="notification-unread-dot" aria-label="Unread" />}
+              {unread && <i className="notification-unread-dot" aria-label={text.unread} />}
             </>
           );
           return item.href ? (

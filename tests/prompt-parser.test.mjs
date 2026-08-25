@@ -45,6 +45,48 @@ for (const { input, expected } of cases) {
   });
 }
 
+const multilingualMatrix = [
+  {
+    locale: "EN",
+    input: "tomorrow, three days in Bavaria by train with quiet lakes",
+    expected: { days: 3, startDate: "2026-07-30", region: "bavaria", transport: "public_transport", interest: "lakes", avoidCrowds: true },
+  },
+  {
+    locale: "IT",
+    input: "domani, due giorni in Valle d’Aosta con i mezzi pubblici, senza folle e facile",
+    expected: { days: 2, startDate: "2026-07-30", region: "aosta", transport: "public_transport", avoidCrowds: true, difficulty: "easy" },
+  },
+  {
+    locale: "DE",
+    input: "übermorgen drei Tage in Bayern mit öffentlichen Verkehrsmitteln ohne Menschenmengen und leicht",
+    expected: { days: 3, startDate: "2026-07-31", region: "bavaria", transport: "public_transport", avoidCrowds: true, difficulty: "easy" },
+  },
+  {
+    locale: "FR",
+    input: "demain, deux jours en Vallée d’Aoste en transports publics, sans foule, facile",
+    expected: { days: 2, startDate: "2026-07-30", region: "aosta", transport: "public_transport", avoidCrowds: true, difficulty: "easy" },
+  },
+  {
+    locale: "SL",
+    input: "jutri, štiri dni na Bavarskem z javnim prevozom, brez gneče in lahko",
+    expected: { days: 4, startDate: "2026-07-30", region: "bavaria", transport: "public_transport", avoidCrowds: true, difficulty: "easy" },
+  },
+];
+
+for (const { locale, input, expected } of multilingualMatrix) {
+  test(`parses the complete ${locale} deterministic matrix`, () => {
+    const parsed = parsePrompt(input, { now });
+    assert.equal(parsed.days, expected.days);
+    assert.equal(parsed.startDate, expected.startDate);
+    assert.equal(parsed.region, expected.region);
+    assert.equal(parsed.transport, expected.transport);
+    assert.equal(parsed.avoidCrowds, expected.avoidCrowds);
+    if (expected.interest) assert(parsed.interests.includes(expected.interest));
+    if (expected.difficulty) assert.equal(parsed.difficulty, expected.difficulty);
+    assert.equal(isValidParseResult(parsed), true);
+  });
+}
+
 test("handles transport and interest negations without inventing defaults", () => {
   const italian = parsePrompt("non voglio la macchina, senza musei", { now });
   assert.equal(italian.transport, undefined);
@@ -64,6 +106,34 @@ test("handles transport and interest negations without inventing defaults", () =
   assert.deepEqual(slovenian.excludedInterests, ["culture"]);
 });
 
+test("keeps negation attached to the exact matched span and prefers e-bike phrases", () => {
+  const french = parsePrompt("je ne veux pas marcher", { now });
+  assert.deepEqual(french.excludedTransports, ["walking"]);
+  assert.equal(french.transport, undefined);
+
+  const eBike = parsePrompt("no e-bike", { now });
+  assert.deepEqual(eBike.excludedTransports, ["e_bike"]);
+  assert.equal(eBike.transport, undefined);
+  assert.equal(eBike.ambiguous.includes("transport"), false);
+
+  assert.equal(parsePrompt("non impegnativo", { now }).difficulty, "easy");
+  assert.equal(parsePrompt("pas difficile", { now }).difficulty, "easy");
+  assert.equal(parsePrompt("ne zahtevno", { now }).difficulty, "easy");
+});
+
+test("recognises explicit crowd avoidance before and after crowd terms in every locale", () => {
+  for (const input of [
+    "avoid crowds",
+    "evitare la folla",
+    "Menschenmengen vermeiden",
+    "éviter les foules",
+    "izogibati se gneči",
+  ]) {
+    assert.equal(parsePrompt(input, { now }).avoidCrowds, true, input);
+  }
+  assert.equal(parsePrompt("crowded places", { now }).avoidCrowds, false);
+});
+
 test("parses relative, weekday and explicit dates", () => {
   assert.equal(
     parsePrompt("dopodomani", { now }).startDate,
@@ -81,6 +151,32 @@ test("parses relative, weekday and explicit dates", () => {
     parsePrompt("start 2026-08-05", { now }).startDate,
     "2026-08-05",
   );
+});
+
+test("treats sentence-ending punctuation as a boundary in every locale", () => {
+  const punctuatedTransports = [
+    ["Travel by bike.", "cycling"],
+    ["Viaggio in bici.", "cycling"],
+    ["Anreise mit dem Zug.", "public_transport"],
+    ["Voyage à vélo.", "cycling"],
+    ["Potovanje z vlakom.", "public_transport"],
+  ];
+
+  for (const [input, transport] of punctuatedTransports) {
+    assert.equal(parsePrompt(input, { now }).transport, transport, input);
+  }
+
+  const withDate = parsePrompt("Start 2026-08-05. Travel by bike.", { now });
+  assert.equal(withDate.startDate, "2026-08-05");
+  assert.equal(withDate.transport, "cycling");
+});
+
+test("handles Slovenian weekday cases and rejects impossible calendar dates", () => {
+  assert.equal(parsePrompt("v sredo", { now }).startDate, "2026-08-05");
+  assert.equal(parsePrompt("v soboto", { now }).startDate, "2026-08-01");
+  assert.equal(parsePrompt("v nedeljo", { now }).startDate, "2026-08-02");
+  assert.equal(parsePrompt("31/02/2026", { now }).startDate, undefined);
+  assert.equal(parsePrompt("2026-02-31", { now }).startDate, undefined);
 });
 
 test("supports light fuzzy matching, mixed languages and hours", () => {
@@ -129,4 +225,16 @@ test("keeps incomplete input genuinely incomplete and flags ambiguity", () => {
   const ambiguous = parsePrompt("by bike and by train", { now });
   assert(ambiguous.ambiguous.includes("transport"));
   assert.equal(isValidParseResult(ambiguous), true);
+
+  const regions = parsePrompt("Bavaria or Aosta", { now });
+  assert.equal(regions.region, "aosta");
+  assert(regions.ambiguous.includes("region"));
+});
+
+test("validates all parsed fields instead of accepting structurally invalid results", () => {
+  const valid = parsePrompt("two days", { now });
+  assert.equal(isValidParseResult({ ...valid, startDate: "2026-02-31" }), false);
+  assert.equal(isValidParseResult({ ...valid, avoidCrowds: "yes" }), false);
+  assert.equal(isValidParseResult({ ...valid, confidence: 1.1 }), false);
+  assert.equal(isValidParseResult({ ...valid, ambiguous: [3] }), false);
 });

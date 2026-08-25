@@ -108,7 +108,7 @@ export type TripState = {
     experienceId: string;
     verifiedAt: string;
     status: "demo" | "verified";
-    source: "gps" | "qr" | "manual-demo" | "activity-demo";
+    source: "gps" | "qr" | "manual-demo" | "activity-demo" | "photo-gps";
     provider?: "strava" | "garmin" | "apple-health" | "health-connect";
     actualTransport?: TransportMode;
     awardedPoints: number;

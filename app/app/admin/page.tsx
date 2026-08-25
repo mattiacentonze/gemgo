@@ -6,15 +6,20 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { createClient } from "../../../lib/supabase/client";
 import AdminContentOperations from "../../components/AdminContentOperations";
 import { useAuth, type AppRole } from "../../components/AuthProvider";
+import type { Locale } from "../../domain";
 import { usePersistentLocale } from "../../hooks/usePersistentLocale";
+
+type ContributionRegion = "fussen_allgau" | "bavaria" | "aosta";
+type ContributionCategory = "nature" | "culture" | "viewpoint" | "activity" | "local_place";
+type ContributionRiskFlag = "low_location_accuracy" | "aged_location_claim";
 
 type Suggestion = {
   id: string;
   author_id: string;
   name: string;
   description: string;
-  region: string;
-  category: string;
+  region: ContributionRegion;
+  category: ContributionCategory;
   map_url: string | null;
   status: string;
   created_at: string;
@@ -23,7 +28,7 @@ type Suggestion = {
   location_accuracy_m: number | null;
   location_captured_at: string | null;
   location_source: string | null;
-  risk_flags: string[];
+  risk_flags: ContributionRiskFlag[];
   contribution_media?: Array<{ object_path: string }>;
 };
 
@@ -43,11 +48,52 @@ const copy = {
   sl: { title: "Upravljanje vsebin", intro: "Preglejte čakalno vrsto prispevkov. Le admin in owner lahko sprejmeta odločitev z nagrado.", denied: "Ta razdelek zahteva urednika vsebin, admina ali ownerja.", queue: "Čakalna vrsta prispevkov", empty: "Ni čakajočih prispevkov.", approve: "Odobri in dodeli 70", reject: "Zavrni", reason: "Razlog za zavrnitev", source: "Odpri izvorni zemljevid", photo: "Odpri zasebno fotografijo", location: "Odpri navedeno lokacijo", locationNote: "Navedena lokacija brskalnika — ni neodvisno potrjena", risk: "Opozorila za pregled", noRisk: "Ni samodejnih opozoril", pending: "čaka", error: "Dejanja ni bilo mogoče dokončati.", roles: "Vloge uporabnikov", rolesHelp: "Le owner lahko dodeljuje vloge. Zadnjega ownerja ni mogoče znižati.", save: "Shrani vlogo", back: "Nazaj na profil", self: "Svojega prispevka ne morete pregledati." },
 } as const;
 
+type AdminLabels = {
+  regions: Record<ContributionRegion, string>;
+  categories: Record<ContributionCategory, string>;
+  riskFlags: Record<ContributionRiskFlag, string>;
+  roles: Record<AppRole, string>;
+};
+
+const adminLabels = {
+  en: {
+    regions: { fussen_allgau: "Füssen / Allgäu", bavaria: "Bavaria", aosta: "Valle d’Aosta" },
+    categories: { nature: "Nature", culture: "Culture", viewpoint: "Viewpoint", activity: "Activity", local_place: "Local place" },
+    riskFlags: { low_location_accuracy: "Low location accuracy", aged_location_claim: "Location claim older than five minutes" },
+    roles: { member: "Member", content_editor: "Content editor", admin: "Admin", owner: "Owner" },
+  },
+  it: {
+    regions: { fussen_allgau: "Füssen / Allgäu", bavaria: "Baviera", aosta: "Valle d’Aosta" },
+    categories: { nature: "Natura", culture: "Cultura", viewpoint: "Punto panoramico", activity: "Attività", local_place: "Luogo locale" },
+    riskFlags: { low_location_accuracy: "Bassa precisione della posizione", aged_location_claim: "Posizione acquisita da oltre cinque minuti" },
+    roles: { member: "Membro", content_editor: "Redattore contenuti", admin: "Amministratore", owner: "Proprietario" },
+  },
+  de: {
+    regions: { fussen_allgau: "Füssen / Allgäu", bavaria: "Bayern", aosta: "Aostatal" },
+    categories: { nature: "Natur", culture: "Kultur", viewpoint: "Aussichtspunkt", activity: "Aktivität", local_place: "Lokaler Ort" },
+    riskFlags: { low_location_accuracy: "Geringe Standortgenauigkeit", aged_location_claim: "Standortangabe älter als fünf Minuten" },
+    roles: { member: "Mitglied", content_editor: "Inhaltsredaktion", admin: "Administrator", owner: "Inhaber" },
+  },
+  fr: {
+    regions: { fussen_allgau: "Füssen / Allgäu", bavaria: "Bavière", aosta: "Vallée d’Aoste" },
+    categories: { nature: "Nature", culture: "Culture", viewpoint: "Point de vue", activity: "Activité", local_place: "Lieu local" },
+    riskFlags: { low_location_accuracy: "Faible précision de localisation", aged_location_claim: "Position relevée il y a plus de cinq minutes" },
+    roles: { member: "Membre", content_editor: "Éditeur de contenu", admin: "Administrateur", owner: "Propriétaire" },
+  },
+  sl: {
+    regions: { fussen_allgau: "Füssen / Allgäu", bavaria: "Bavarska", aosta: "Dolina Aoste" },
+    categories: { nature: "Narava", culture: "Kultura", viewpoint: "Razgledna točka", activity: "Dejavnost", local_place: "Lokalni kraj" },
+    riskFlags: { low_location_accuracy: "Nizka natančnost lokacije", aged_location_claim: "Podatek o lokaciji je starejši od petih minut" },
+    roles: { member: "Član", content_editor: "Urednik vsebin", admin: "Skrbnik", owner: "Lastnik" },
+  },
+} satisfies Record<Locale, AdminLabels>;
+
 const roles: AppRole[] = ["member", "content_editor", "admin", "owner"];
 
 export default function AdminPage() {
   const { locale } = usePersistentLocale();
   const t = copy[locale];
+  const labels = adminLabels[locale];
   const auth = useAuth();
   const supabase = useMemo(() => createClient(), []);
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
@@ -65,8 +111,9 @@ export default function AdminPage() {
     setError("");
     const { data, error: queueError } = await supabase
       .from("gem_suggestions")
-      .select("id,author_id,name,description,region,category,map_url,status,created_at,latitude,longitude,location_accuracy_m,location_captured_at,location_source,risk_flags,contribution_media(object_path)")
+      .select("id,author_id,name,description,region,category,map_url,status,created_at,latitude,longitude,location_accuracy_m,location_captured_at,location_source,risk_flags,contribution_media!inner(object_path,validation_status)")
       .eq("status", "pending")
+      .eq("contribution_media.validation_status", "validated")
       .order("created_at", { ascending: true });
     if (queueError) {
       setError(t.error);
@@ -123,11 +170,11 @@ export default function AdminPage() {
 
   return (
     <main className="profile-page-v2 admin-page">
-      <section className="profile-hero-v2"><div><span className="eyebrow"><ShieldCheck size={15} />{auth.role}</span><h1>{t.title}</h1><p>{t.intro}</p></div></section>
+      <section className="profile-hero-v2"><div><span className="eyebrow"><ShieldCheck size={15} />{labels.roles[auth.role]}</span><h1>{t.title}</h1><p>{t.intro}</p></div></section>
       {error && <p className="profile-error" role="alert">{error}</p>}
-      <section className="profile-badges-v2"><div className="section-intro"><h2>{t.queue}</h2></div>{suggestions.length === 0 ? <p>{t.empty}</p> : <div className="admin-contribution-grid">{suggestions.map((item) => <article className="profile-auth-card" key={item.id}><span className="eyebrow">{t.pending} · {item.region} · {item.category}</span><h3>{item.name}</h3><p>{item.description}</p><small>{new Date(item.created_at).toLocaleString(locale)}</small><p>{item.map_url && <a href={item.map_url} target="_blank" rel="noreferrer noopener">{t.source}</a>}{photoUrls[item.id] && <> · <a href={photoUrls[item.id]} target="_blank" rel="noreferrer noopener">{t.photo}</a></>}{item.latitude !== null && item.longitude !== null && <> · <a href={`https://www.google.com/maps/search/?api=1&query=${item.latitude},${item.longitude}`} target="_blank" rel="noreferrer noopener"><MapPinned size={15} />{t.location}</a></>}</p>{item.location_captured_at && <p><small>{t.locationNote} · ±{Math.round(item.location_accuracy_m ?? 0)} m · {new Date(item.location_captured_at).toLocaleString(locale)}</small></p>}<p className={item.risk_flags?.length ? "profile-error" : "profile-success"}><ShieldAlert size={16} /><strong>{t.risk}:</strong> {item.risk_flags?.length ? item.risk_flags.join(", ") : t.noRisk}</p>{canDecide && auth.user?.id !== item.author_id && <><label><span>{t.reason}</span><textarea value={notes[item.id] ?? ""} onChange={(event) => setNotes({ ...notes, [item.id]: event.target.value })} /></label><div className="profile-data-actions"><button disabled={busy === item.id} onClick={() => void decide(item.id, "approved")}><CheckCircle2 />{t.approve}</button><button disabled={busy === item.id || !notes[item.id]?.trim()} onClick={() => void decide(item.id, "rejected")}><XCircle />{t.reject}</button></div></>}{auth.user?.id === item.author_id && <p>{t.self}</p>}</article>)}</div>}</section>
+      <section className="profile-badges-v2"><div className="section-intro"><h2>{t.queue}</h2></div>{suggestions.length === 0 ? <p>{t.empty}</p> : <div className="admin-contribution-grid">{suggestions.map((item) => <article className="profile-auth-card" key={item.id}><span className="eyebrow">{t.pending} · {labels.regions[item.region]} · {labels.categories[item.category]}</span><h3>{item.name}</h3><p>{item.description}</p><small>{new Date(item.created_at).toLocaleString(locale)}</small><p>{item.map_url && <a href={item.map_url} target="_blank" rel="noreferrer noopener">{t.source}</a>}{photoUrls[item.id] && <> · <a href={photoUrls[item.id]} target="_blank" rel="noreferrer noopener">{t.photo}</a></>}{item.latitude !== null && item.longitude !== null && <> · <a href={`https://www.google.com/maps/search/?api=1&query=${item.latitude},${item.longitude}`} target="_blank" rel="noreferrer noopener"><MapPinned size={15} />{t.location}</a></>}</p>{item.location_captured_at && <p><small>{t.locationNote} · ±{Math.round(item.location_accuracy_m ?? 0)} m · {new Date(item.location_captured_at).toLocaleString(locale)}</small></p>}<p className={item.risk_flags?.length ? "profile-error" : "profile-success"}><ShieldAlert size={16} /><strong>{t.risk}:</strong> {item.risk_flags?.length ? item.risk_flags.map((flag) => labels.riskFlags[flag]).join(", ") : t.noRisk}</p>{canDecide && auth.user?.id !== item.author_id && <><label><span>{t.reason}</span><textarea value={notes[item.id] ?? ""} onChange={(event) => setNotes({ ...notes, [item.id]: event.target.value })} /></label><div className="profile-data-actions"><button disabled={busy === item.id} onClick={() => void decide(item.id, "approved")}><CheckCircle2 />{t.approve}</button><button disabled={busy === item.id || !notes[item.id]?.trim()} onClick={() => void decide(item.id, "rejected")}><XCircle />{t.reject}</button></div></>}{auth.user?.id === item.author_id && <p>{t.self}</p>}</article>)}</div>}</section>
       <AdminContentOperations locale={locale} role={auth.role} />
-      {auth.role === "owner" && <section className="profile-badges-v2"><div className="section-intro"><span className="eyebrow"><UsersRound size={15} />RBAC</span><h2>{t.roles}</h2><p>{t.rolesHelp}</p></div><div className="admin-role-list">{roleRows.map((row) => <article key={row.user_id}><div><strong>{row.display_name}</strong><small>{row.email}</small></div><select aria-label={`${t.roles}: ${row.display_name}`} value={row.role} onChange={(event) => setRoleRows((current) => current.map((item) => item.user_id === row.user_id ? { ...item, role: event.target.value as AppRole } : item))}>{roles.map((role) => <option key={role} value={role}>{role}</option>)}</select><button disabled={busy === row.user_id} onClick={() => void saveRole(row)}>{t.save}</button></article>)}</div></section>}
+      {auth.role === "owner" && <section className="profile-badges-v2"><div className="section-intro"><span className="eyebrow"><UsersRound size={15} />RBAC</span><h2>{t.roles}</h2><p>{t.rolesHelp}</p></div><div className="admin-role-list">{roleRows.map((row) => <article key={row.user_id}><div><strong>{row.display_name}</strong><small>{row.email}</small></div><select aria-label={`${t.roles}: ${row.display_name}`} value={row.role} onChange={(event) => setRoleRows((current) => current.map((item) => item.user_id === row.user_id ? { ...item, role: event.target.value as AppRole } : item))}>{roles.map((role) => <option key={role} value={role}>{labels.roles[role]}</option>)}</select><button disabled={busy === row.user_id} onClick={() => void saveRole(row)}>{t.save}</button></article>)}</div></section>}
     </main>
   );
 }

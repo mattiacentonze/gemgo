@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 
 import { createClient } from "../../../../lib/supabase/server";
 
@@ -50,33 +50,25 @@ export async function POST(request: NextRequest) {
   if (error) {
     const code = error.message.includes("owner_transfer_required")
       ? "owner_transfer_required"
-      : "deletion_request_failed";
+      : error.message.includes("reauthentication_required")
+        ? "reauthentication_required"
+        : "deletion_request_failed";
     return NextResponse.json(
       { error: code },
-      { status: code === "owner_transfer_required" ? 409 : 500, headers: { "Cache-Control": "no-store" } },
+      { status: code === "owner_transfer_required" ? 409 : code === "reauthentication_required" ? 403 : 500, headers: { "Cache-Control": "no-store" } },
     );
   }
 
   const result = Array.isArray(data) ? data[0] : data;
-  const paths = result && typeof result === "object" && Array.isArray(result.storage_paths)
-    ? (result.storage_paths as unknown[]).filter((path: unknown): path is string => typeof path === "string")
-    : [];
-  let storageCleanupPending = paths.length > 0;
-  if (paths.length > 0) {
-    const removal = await supabase.storage.from("gem-contributions").remove(paths);
-    storageCleanupPending = Boolean(removal.error);
-  }
 
-  // Global sign-out revokes refresh tokens on every device. Existing access
-  // JWTs can remain valid until expiry, so the database migration separately
-  // blocks writes as soon as the deletion request is queued.
+  // Storage cleanup and auth.users deletion are performed only by the trusted
+  // worker. Global sign-out revokes refresh tokens; DB triggers block writes.
   await supabase.auth.signOut({ scope: "global" });
 
   return NextResponse.json(
     {
       status: "pending",
       requestId: result && typeof result === "object" ? result.request_id : null,
-      storageCleanupPending,
     },
     { status: 202, headers: { "Cache-Control": "no-store" } },
   );

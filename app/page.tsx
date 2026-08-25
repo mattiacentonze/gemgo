@@ -20,6 +20,14 @@ import { usePersistentLocale } from "./hooks/usePersistentLocale";
 import { useHashScroll } from "./hooks/useHashScroll";
 import { marketingCopy } from "./i18n/marketing";
 
+const benefitsAria = {
+  en: "GemGo benefits",
+  it: "Vantaggi di GemGo",
+  de: "GemGo-Vorteile",
+  fr: "Avantages de GemGo",
+  sl: "Prednosti GemGo",
+} as const;
+
 export default function HomePage() {
   useHashScroll();
   const { locale, setLocale } = usePersistentLocale();
@@ -47,7 +55,7 @@ export default function HomePage() {
               <Link href="/app/explore" className="button button-primary button-large"><Search size={21} />{text.hero.find}</Link>
               <a href="#how" className="button button-secondary button-large"><PlayCircle size={21} />{text.navigation.how}</a>
             </div>
-            <div className="landing-benefits" aria-label="GemGo benefits">
+            <div className="landing-benefits" aria-label={benefitsAria[locale]}>
               <span><Users size={23} />{text.hero.trust[0]}</span>
               <span><Clock3 size={23} />{text.hero.trust[1]}</span>
               <span><Leaf size={23} />{text.hero.trust[2]}</span>
