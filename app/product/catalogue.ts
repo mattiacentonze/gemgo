@@ -272,7 +272,7 @@ const toneFor = (type: string): Experience["imageTone"] => {
 const demoComparison: Record<string, Experience["comparison"]> = {
   bav_020: {
     original: "Neuschwanstein Castle",
-    reachDifference: "About 30 minutes by road",
+    reachDifference: "Travel time varies: final road access is signal-controlled",
     advantages: [
       "Comparable castle experience",
       "Lower estimated pressure",
