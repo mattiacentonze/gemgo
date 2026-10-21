@@ -136,7 +136,7 @@ test("landing comparison cards use curated automatic galleries without manual co
   assert.equal((comparison.match(/interactive=\{false\}/g) ?? []).length, 2);
   assert.match(gallery, /"Neuschwanstein Castle": \[/);
   assert.match(gallery, /"Falkenstein Ruin Pfronten": \[/);
-  assert.match(gallery, /"Hohes Schloss Füssen": \\[/);
+  assert.match(gallery, /"Hohes Schloss Füssen": \[/);
   assert.match(comparison, /Hohes Schloss Füssen/);
   assert.doesNotMatch(comparison, /About 30 min away/);
   assert.match(gallery, /window\.setInterval/);
