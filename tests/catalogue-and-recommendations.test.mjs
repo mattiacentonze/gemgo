@@ -218,8 +218,8 @@ test("every catalogue and expert caption has all four non-English translations",
   const translatedIds = [...translationSource.matchAll(/^\s{2}"([^"]+)": \[$/gm)]
     .map((match) => match[1]);
   assert.equal(editorialIds.length, 66);
-  assert.equal(expertIds.length, 21);
-  assert.equal(new Set(translatedIds).size, 87);
+  assert.equal(expertIds.length, 22);
+  assert.equal(new Set(translatedIds).size, 88);
   assert.deepEqual(
     [...editorialIds, ...expertIds].filter((id) => !translatedIds.includes(id)),
     [],
@@ -271,7 +271,7 @@ test("the tourism-expert sequence takes priority over generic kind and difficult
 
 test("all contest alternatives share one base award and the eight expert sequences stay intact", () => {
   assert.equal(curatedScenarios.length, 8);
-  assert.equal(curatedScenarioExperiences.length, 21);
+  assert.equal(curatedScenarioExperiences.length, 22);
   assert(curatedScenarioExperiences.every((item) => item.points === BASE_VISIT_POINTS));
   assert.deepEqual(
     curatedScenarioFor({ origin: "Neuschwanstein", prompt: "" })?.alternatives.map((item) => item.id),
