@@ -41,7 +41,9 @@ test("renders the overtourism-first pan-Alpine product story", async () => {
   assert.match(html, /Alpine alternative/i);
   assert.match(html, /Find a better alternative/i);
   assert.match(html, /Neuschwanstein Castle/i);
-  assert.match(html, /Falkenstein Ruin Pfronten/i);
+  assert.match(html, /Hohes Schloss Füssen/i);
+  assert.match(html, /Short drive to Füssen/i);
+  assert.doesNotMatch(html, /About 30 min away/i);
   assert.match(html, /href="\/about"/i);
   assert.match(html, /Popular plans concentrate pressure/i);
   assert.match(html, /choose better/i);
