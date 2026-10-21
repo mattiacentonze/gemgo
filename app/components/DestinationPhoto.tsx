@@ -50,6 +50,15 @@ const localDestinationMedia: Record<string, Media[]> = {
       title: "Neuschwanstein Castle in winter",
     },
   ],
+  "Hohes Schloss Füssen": [
+    {
+      url: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/71/Aerial_image_of_the_High_Castle_of_F%C3%BCssen_(view_from_the_southwest).jpg/960px-Aerial_image_of_the_High_Castle_of_F%C3%BCssen_(view_from_the_southwest).jpg",
+      source: "https://commons.wikimedia.org/wiki/File:Aerial_image_of_the_High_Castle_of_F%C3%BCssen_(view_from_the_southwest).jpg",
+      author: "Carsten Steger",
+      license: "CC BY-SA 4.0 · Wikimedia Commons thumbnail",
+      title: "Real aerial photograph of Hohes Schloss Füssen from the southwest",
+    },
+  ],
   "Falkenstein Ruin Pfronten": [
     {
       url: "/assets/falkenstein-pfronten-ridge.webp",
