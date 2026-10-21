@@ -476,6 +476,12 @@ Object.assign(translatedCaptions, {
     "Le pont romain à arche unique franchit le Lys au centre de Pont-Saint-Martin et fait toujours partie du réseau de rues de la ville.",
     "Rimski most z enim lokom prečka Lys v središču Pont-Saint-Martina in je še vedno del mestne cestne mreže.",
   ],
+  "expert-hohes-schloss-fussen": [
+    "Il castello tardogotico di Hohes Schloss domina il centro storico di Füssen, con facciate dipinte, gallerie d’arte e panorami sulle Prealpi.",
+    "Das gut erhaltene spätgotische Hohe Schloss thront über Füssens Altstadt, mit bemalten historischen Fassaden, Kunstgalerien und Blick auf das Alpenvorland.",
+    "Le château de style gothique tardif Hohes Schloss domine la vieille ville de Füssen, avec des façades peintes, des galeries d’art et des vues sur les Préalpes.",
+    "Dobro ohranjen poznogotski grad Hohes Schloss stoji nad starim mestnim jedrom Füssna, s poslikanimi pročelji, umetniškimi galerijami in razgledi na alpsko predgorje.",
+  ],
   "expert-speiden": [
     "Speiden è un piccolo paese dell’Ostallgäu vicino al paesaggio dei castelli di Eisenberg e ai percorsi pedonali locali.",
     "Speiden ist ein kleines Dorf im Ostallgäu nahe der Eisenberger Burgenlandschaft und ihrer örtlichen Wanderwege.",
