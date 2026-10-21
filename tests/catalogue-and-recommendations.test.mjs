@@ -275,7 +275,7 @@ test("all contest alternatives share one base award and the eight expert sequenc
   assert(curatedScenarioExperiences.every((item) => item.points === BASE_VISIT_POINTS));
   assert.deepEqual(
     curatedScenarioFor({ origin: "Neuschwanstein", prompt: "" })?.alternatives.map((item) => item.id),
-    ["expert-speiden", "expert-eisenberg-ruin", "expert-hohenfreyberg-ruin"],
+    ["expert-hohes-schloss-fussen", "expert-speiden", "expert-eisenberg-ruin", "expert-hohenfreyberg-ruin"],
   );
   assert.deepEqual(
     curatedScenarioFor({ origin: "Aosta", prompt: "" })?.alternatives.map((item) => item.id),
